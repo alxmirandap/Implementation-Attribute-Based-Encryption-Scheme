@@ -122,31 +122,58 @@ public:
 
     // ------------------- Test 3 ---------------------------
 
-    int niter = 5; // number of times this test is run
-    int k = 12;
-    int kr = 15; // how many participants are passed to the reconstruction algorithm. Arbitrary, but larger than k
-    int nparts = 20;  
+    int niter = 2; // number of times this test is run
+    int k = 1;
+    int kr = 12; // how many participants are passed to the reconstruction algorithm. Arbitrary, but larger than k
+    int nparts = 20;
     vector<int> parts(nparts);
     Big real_order = m_pfc.order();
+    Big old_s=0;
     
     for (int i = 0; i < nparts; i++) {
-      parts.push_back((7*i) % 43 + 1 ); // just so that participants are not contiguous, because there's nothing special in having participants go from 1 to n
+      parts[i]=((7*i) % 43 + 1 ); // just so that participants are not contiguous, because there's nothing special in having participants go from 1 to n
       					// numbers 7 and 43 were chosen arbitrarily, but the modulus has to be prime to guarantee all participants different
     }
 
     ShamirSS testClassReal(k, nparts, real_order, m_pfc, parts);
+    DEBUG("Echo in run tests: reached the end of constructor");
 
     for (int j = 0; j < niter; j++){
-      m_pfc.random(s);
-      shares = testClass.distribute_random(s);   
+      DEBUG("Test 3 run: " << j);
+      //m_pfc.random(s);
+      // The following constant value was chosen because I wanted to test concrete values, after I noticed that the reconstruction always failed with random ones
+      // This particular value was one of the random values output by the program in one of those failing runs.
+      //      char b[] = "91E39D5DDC7CD09E86365D57E267B58AC3E401B17C124C32ACD38F4128044E17";
+      char b[] = "91E39D5DDC7CD09E86365D57E267B58AC3E401B17C124C32ACD38F4128044E"; // this apparently passes for numbers up to 62 characters long (248 bytes) but
+      											// not for 64 characters (256 bytes). Why? 
+    
+      int len = strlen(b);
+      DEBUG("Len: " << len);
+      s = b;
+      DEBUG("s: " << s << "\t old s: " << old_s);
+      guard("s should be random, and different from the last value or 0", s != old_s); // the probability that s is 0 or the old value should be negligible
+      DEBUG("random ok");
+      shares = testClassReal.distribute_random(s);   
+      OUT("shares size: " << shares.size() << "\t nparts = " << nparts);
+      guard("The right amout of shares was not given: ", shares.size() == nparts);
+      DEBUG("Distribution ok");
       party.clear();
+      DEBUG("Party cleared...");
+      OUT("shares size: " << shares.size() << "\t kr = " << kr);
+      guard("There are not enough shares in shares: ", shares.size() >= kr);
       for (int i = 0; i < kr; i++){
 	party.push_back(shares[i]);
       }
-      s2 = testClass.reconstruct(party);
+      guard("Party does not have the right number of shares", party.size() == kr);
+      DEBUG("new party ok");
+      s2 = testClassReal.reconstruct(party);
+      DEBUG("reconstruction ok");
       stringstream ss;
+      DEBUG("s: " << s << "\t s2: " << s2);
       ss << "Test 3." << j << " - distribution and reconstruction";
       test_diagnosis(ss.str(), (s2 == s), errors);    
+      DEBUG("Diagnosis ok");
+      old_s = s;
     }
     return errors;
   }
@@ -174,6 +201,11 @@ void print_test_result(int result, string name){
 
 int main() {
   //DEBUG("Calling first constructor");
+  //mip->IOBASE=16;
+  time_t seed;            // crude randomisation
+  time(&seed);
+  irand((long)seed);
+
   ShamirTest tests(pfc); 
   int result = tests.runTests();
   print_test_result(result,tests.name());

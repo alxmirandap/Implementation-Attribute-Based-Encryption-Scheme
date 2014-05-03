@@ -21,13 +21,10 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <ctime>
 #include <assert.h>
 #include "pairing_3.h"
 #include <vector>
-
-
-
-using namespace std;
 
 #define DEBUG_BUILD
 
@@ -41,11 +38,8 @@ using namespace std;
 #  define DEBUG(x) do {} while (0)
 #endif
 
-#ifdef DEBUG_BUILD
+
 #define OUT(x) cout << shGREEN "[OUTPUT:] " shWHITE << x << "\n"
-#else
-#  define OUT(x) do {} while (0)
-#endif
 
 extern void guard(string s, bool b);
 

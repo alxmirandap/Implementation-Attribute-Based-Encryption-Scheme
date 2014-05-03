@@ -7,13 +7,13 @@ fuzzy:
 testbed:
 	g++ -O2 -DZZNS=4 -m64 testbed.cpp -lbn -lpairs -lmiracl -o testbed
 
-shamir.o: 
-	g++ -c -O2 -DZZNS=4 -m64 shamir.cpp -lbn -lpairs -lmiracl -o shamir.o 
+shamir.o: shamir.cpp shamir.h
+	g++ -c -O2 -DZZNS=4 -m64 shamir.cpp -o shamir.o 
 
-testshamir: shamir.o utils.o
+testshamir: testshamir.cpp shamir.o utils.o
 	g++ -O2 -DZZNS=4 -m64 testshamir.cpp shamir.o utils.o -lbn -lpairs -lmiracl -o testshamir 
 
-utils.o:
+utils.o: utils.cpp utils.h
 	g++ -O2 -DZZNS=4 -m64 -c utils.cpp -o utils.o
 
 shaSS: utils.o shamir.o testshamir 
