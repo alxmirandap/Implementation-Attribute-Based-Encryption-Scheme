@@ -24,7 +24,7 @@ SharePair::SharePair():
   partIndex(0), share(0)
 {}
 
-SharePair::SharePair(int pi, Big s):
+SharePair::SharePair(const int pi, const Big s):
   partIndex(pi), share(s)
 {} 
 
@@ -33,7 +33,7 @@ SharePair::SharePair(const SharePair& other) :
   share(other.share) 
 {}
 
-void SharePair::setValues(int pi, Big s){
+void SharePair::setValues(const int pi, const Big s){
   partIndex = pi;
   share = s;
 }
@@ -55,30 +55,34 @@ string SharePair::to_string() {
   return sstrm.str();
 }
 
-int SharePair::getPartIndex(){
+int SharePair::getPartIndex() const{
   return partIndex;
 }
 
-Big SharePair::getShare() {
+Big SharePair::getShare() const {
     return share;
-  }
+}
+
+std::ostream& operator<<(ostream& out, const SharePair &sp) {
+  return out << "[" << sp.getPartIndex() << ";" << sp.getShare() << "] ";
+}
 
 //---------------------------------------------
 
-ShamirSS::ShamirSS(int in_k, int nparts, const Big& in_order, PFC &pfc, vector<int> parts):
+ShamirSS::ShamirSS(const int in_k, const int nparts, const Big& in_order, PFC &pfc, const vector<int> parts):
   m_k(in_k), m_nparts(nparts), m_order(in_order), m_pfc(pfc)
   {
     //DEBUG("Called the constructor");  
-    DEBUG("ShamirSS --- array size: " << parts.size() << "\t nparts: " << nparts);
-    guard("ShamirSS constructor has received participants vector of the wrong size", parts.size() == nparts);
+    //    DEBUG("ShamirSS --- array size: " << parts.size() << "\t nparts: " << nparts);
+    //    guard("ShamirSS constructor has received participants vector of the wrong size", parts.size() == nparts);
     for (int i = 0; i < nparts; i++){
       m_participants.push_back(parts[i]);
     }
-    DEBUG("Reached the end of constructor");
+    //    DEBUG("Reached the end of constructor");
   }
 
 
-Big ShamirSS::lagrange(int i,vector<int> parts)
+Big ShamirSS::lagrange(const int i,const vector<int> parts)
   {
     if (parts.size() < m_k) return 0; // an error value, since the Lagrange coefficient can never be 0
 
@@ -93,10 +97,12 @@ Big ShamirSS::lagrange(int i,vector<int> parts)
     return z;
   }
 
-Big ShamirSS::reconstruct (vector<SharePair> shares) {
+Big ShamirSS::reconstruct (const vector<SharePair> shares) {
+    DEBUG("============================== RECONSTRUCTION ==============================");  
     int nparts = shares.size();
     if (nparts < m_k) return -1; // a fail value, since a share is always positive
 
+    DEBUG("Reconstruction: (k)---" << m_k);
     vector<int> parts(m_k);
     for (int i=0; i < m_k; i++){
       parts[i] = shares[i].getPartIndex();
@@ -107,23 +113,24 @@ Big ShamirSS::reconstruct (vector<SharePair> shares) {
     Big c;
 
     //DEBUG("Reconstruction: ");
-   
+    DEBUG("MODULO: " << m_order);
     for (int i = 0; i < m_k; i++){
       c = lagrange(parts[i], parts);
-      //OUT("Part: " << i << " coefficient: " << c << " Share: " << shares[i].getShare());
+      DEBUG("Part: " << parts[i] << " coefficient: " << c << " Share: " << shares[i].getShare());
       t = modmult(shares[i].getShare(),c,m_order);
-      //OUT("Contribution: " << t);
-      s = (s + t) % m_order;
-      //OUT("Temporary secret: " << s);
+      DEBUG("Contribution: " << t);
+      s = (s + t); 
+      DEBUG("Temporary secret: " << s);
     }
+    s %= m_order;
     return s;
   }
 
 std::vector<SharePair> ShamirSS::distribute_random(const Big& s){
   int npoly = m_k-1;
   vector<Big> poly(npoly);
-  DEBUG("poly vector created");
-  
+    DEBUG("============================== DISTRIBUTE RANDOM ==============================");  
+    DEBUG("npoly: " << npoly);
   for (int i=0;i<npoly;i++){
     m_pfc.random(poly[i]); // random polynomial coefficient
   }
@@ -133,7 +140,8 @@ std::vector<SharePair> ShamirSS::distribute_random(const Big& s){
 
 std::vector<SharePair> ShamirSS::distribute_determ(const Big& s, vector<Big> randomness){
   DEBUG("Randomness size: " << randomness.size());
-  DEBUG("Degree minus 1: " << m_k - 1);
+  guard("Secret must be smaller than group order", s < m_order);
+  //  DEBUG("Degree minus 1: " << m_k - 1);
   guard("Distribute algorithm has received randomness of the wrong size", randomness.size() == m_k-1);
 
   vector<Big> poly(m_k);	// internal representation of the shamir polynomial
@@ -157,6 +165,7 @@ std::vector<SharePair> ShamirSS::distribute_determ(const Big& s, vector<Big> ran
       acc%=m_order;
     }    
     shares[j].setValues(pi, acc);
+    DEBUG("Share " << j << shares[j]);
   }
   return shares;
 }

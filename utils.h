@@ -26,21 +26,24 @@
 #include "pairing_3.h"
 #include <vector>
 
-#define DEBUG_BUILD
-
 #define shRED "\e[1;31m"
 #define shWHITE "\e[0;37m"
 #define shGREEN "\e[1;32m"
 
-#ifdef DEBUG_BUILD
-#  define DEBUG(x) cout << shRED "[DEBUG:] " shWHITE  <<  x << "\n"
-#else
+#define NODEBUG
+
+#ifdef NODEBUG
 #  define DEBUG(x) do {} while (0)
 #endif
+
+#ifndef NODEBUG
+#  define DEBUG(x) cout << shRED "[DEBUG:] " shWHITE  <<  x << "\n"
+#endif
+
 
 
 #define OUT(x) cout << shGREEN "[OUTPUT:] " shWHITE << x << "\n"
 
-extern void guard(string s, bool b);
+void guard(string s, bool b);
 
 

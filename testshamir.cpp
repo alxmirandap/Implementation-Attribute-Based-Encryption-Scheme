@@ -37,7 +37,7 @@ public:
   }
 
 
-  void test_diagnosis(string name, bool success, int& errors){
+  void test_diagnosis(const string& name, bool success, int& errors){
     string message;
     if (!success) {
       errors++;
@@ -48,7 +48,7 @@ public:
     OUT(message);
   }
 
-    int runTests(){   
+  int runTests(){   
     int errors = 0;
     for (int i = 0; i < m_nparts; i++) {
       m_parts.push_back(i+1);
@@ -57,6 +57,9 @@ public:
     ShamirSS testClass(m_k, m_nparts, m_order, m_pfc, m_parts);
 
     // ------------------- Test 1 ------------
+    OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
+    OUT("Beginning of test 1");
+
     Big s = 10; // secret that is shared
     Big s2; // reconstructed secret
     vector<SharePair> party;
@@ -81,16 +84,19 @@ public:
     test_diagnosis("Test 1 - reconstruction (1,2,3)", (s2 == s), errors);
 
     party.clear();
+    party.push_back(verifs[2]);
+    party.push_back(verifs[0]);
     party.push_back(verifs[3]);
     party.push_back(verifs[1]);
-    party.push_back(verifs[4]);
-    party.push_back(verifs[2]);
     s2 = testClass.reconstruct(party);
     test_diagnosis("Test 1 - reconstruction (3,1,4,2)", (s2 == s), errors);
 
     shares.clear();
 
     // ------------------- Test 2 ------------
+    OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
+    OUT("Beginning of test 2");
+
     s = 0 ;
     poly_rand[0] = 7;
     poly_rand[1] = 4;
@@ -113,16 +119,19 @@ public:
     test_diagnosis("Test 2 - reconstruction (1,2,3)", (s2 == s), errors);
 
     party.clear();
+    party.push_back(verifs[2]);
+    party.push_back(verifs[0]);
     party.push_back(verifs[3]);
     party.push_back(verifs[1]);
-    party.push_back(verifs[4]);
-    party.push_back(verifs[2]);
     s2 = testClass.reconstruct(party);
     test_diagnosis("Test 2 - reconstruction (3,1,4,2)", (s2 == s), errors);    
 
     // ------------------- Test 3 ---------------------------
 
-    int niter = 2; // number of times this test is run
+    OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
+    OUT("Beginning of test 3");
+
+    int niter = 5; // number of times this test is run
     int k = 1;
     int kr = 12; // how many participants are passed to the reconstruction algorithm. Arbitrary, but larger than k
     int nparts = 20;
@@ -136,30 +145,23 @@ public:
     }
 
     ShamirSS testClassReal(k, nparts, real_order, m_pfc, parts);
-    DEBUG("Echo in run tests: reached the end of constructor");
+    //DEBUG("Echo in run tests: reached the end of constructor");
 
     for (int j = 0; j < niter; j++){
       DEBUG("Test 3 run: " << j);
-      //m_pfc.random(s);
-      // The following constant value was chosen because I wanted to test concrete values, after I noticed that the reconstruction always failed with random ones
-      // This particular value was one of the random values output by the program in one of those failing runs.
-      //      char b[] = "91E39D5DDC7CD09E86365D57E267B58AC3E401B17C124C32ACD38F4128044E17";
-      char b[] = "91E39D5DDC7CD09E86365D57E267B58AC3E401B17C124C32ACD38F4128044E"; // this apparently passes for numbers up to 62 characters long (248 bytes) but
-      											// not for 64 characters (256 bytes). Why? 
+      m_pfc.random(s);
+      s = s % real_order;
     
-      int len = strlen(b);
-      DEBUG("Len: " << len);
-      s = b;
       DEBUG("s: " << s << "\t old s: " << old_s);
       guard("s should be random, and different from the last value or 0", s != old_s); // the probability that s is 0 or the old value should be negligible
-      DEBUG("random ok");
+      //DEBUG("random ok");
       shares = testClassReal.distribute_random(s);   
-      OUT("shares size: " << shares.size() << "\t nparts = " << nparts);
+      DEBUG("shares size: " << shares.size() << "\t nparts = " << nparts);
       guard("The right amout of shares was not given: ", shares.size() == nparts);
       DEBUG("Distribution ok");
       party.clear();
       DEBUG("Party cleared...");
-      OUT("shares size: " << shares.size() << "\t kr = " << kr);
+      DEBUG("shares size: " << shares.size() << "\t kr = " << kr);
       guard("There are not enough shares in shares: ", shares.size() >= kr);
       for (int i = 0; i < kr; i++){
 	party.push_back(shares[i]);
@@ -188,10 +190,8 @@ public:
 //-----------------------------------------------------------
 //------------------- Main Level ----------------------------
 
-miracl *mip=get_mip();  // this is necessary to get the MIRACL functioning, which means that then I can call Bigs and so forth.
-PFC pfc(AES_SECURITY);  // initialise pairing-friendly curve
 
-void print_test_result(int result, string name){
+void print_test_result(int result, const string& name){
   if (result == 0) {
     OUT( name << "Tests " shGREEN "successful!" shWHITE);
   } else {
@@ -200,13 +200,26 @@ void print_test_result(int result, string name){
 }
 
 int main() {
-  //DEBUG("Calling first constructor");
-  //mip->IOBASE=16;
-  time_t seed;            // crude randomisation
+  //  miracl *mip = mirsys(5000,0); // C version: this is necessary to get the MIRACL functioning, which means that then I can call Bigs and so forth.
+  // Miracl precision(5,0); // C++ version for the above, together with the next line
+  // miracl* mip = &precision;
+
+  // The constructor of PFC (in bn_pair.cpp) already invokes mirsys and initializes the mip pointer.
+  // Because of this, I don't do that explicitly here.
+  // It also sets the base to 16, but I include that here for clarity. One should not have to read the code of library classes to understand this code
+
+  PFC pfc(AES_SECURITY);  // initialise pairing-friendly curve
+  miracl *mip=get_mip();  // get handle on mip (Miracl Instance Pointer)
+
+  mip->IOBASE=16;
+
+  time_t seed;            // crude randomisation. Check if this is the version that is crypto-secure.
   time(&seed);
   irand((long)seed);
 
+  DEBUG("Calling first constructor");
   ShamirTest tests(pfc); 
   int result = tests.runTests();
   print_test_result(result,tests.name());
+  return 0;
 }
