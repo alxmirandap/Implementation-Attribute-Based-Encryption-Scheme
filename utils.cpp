@@ -14,6 +14,14 @@
 
 #include "utils.h"
 
+void print_test_result(int result, const string& name){
+  if (result == 0) {
+    OUT( name << "Tests " shGREEN "successful!" shWHITE);
+  } else {
+    OUT( name << result << " tests have " shRED "failed..." shWHITE);
+  }
+}
+
 void guard(string s, bool b){
   if (!b) {
     DEBUG(s);
@@ -21,3 +29,13 @@ void guard(string s, bool b){
   }
 }
 
+void test_diagnosis(const string& name, bool success, int& errors){
+  string message;
+  if (!success) {
+    errors++;
+    message = name + " has " shRED "failed" shWHITE;
+  } else {
+    message = name + " has " shGREEN "passed" shWHITE;
+  }
+  OUT(message);
+}

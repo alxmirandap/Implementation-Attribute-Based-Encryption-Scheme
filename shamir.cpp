@@ -33,15 +33,19 @@ SharePair::SharePair(const SharePair& other) :
   share(other.share) 
 {}
 
-void SharePair::setValues(const int pi, const Big s){
+SharePair& SharePair::operator=(const SharePair& other)
+{  
+  partIndex = other.partIndex;
+  share = other.share;
+  return *this;
+}
+
+void SharePair::setValues(const int pi, const Big s)
+{
   partIndex = pi;
   share = s;
 }
 
-SharePair& SharePair::operator=(const SharePair& other){
-  partIndex = other.partIndex;
-  share = other.share;
-}
 
 bool SharePair::operator==(const SharePair& rhs) const {
   if (partIndex != rhs.partIndex) return false;
@@ -65,6 +69,43 @@ Big SharePair::getShare() const {
 
 std::ostream& operator<<(ostream& out, const SharePair &sp) {
   return out << "[" << sp.getPartIndex() << ";" << sp.getShare() << "] ";
+}
+
+//---------------------------------------------
+
+ShamirAccessPolicy::ShamirAccessPolicy():
+  m_n(1), m_k(0)
+{}
+
+ShamirAccessPolicy::ShamirAccessPolicy(const int k, const int n):
+  m_n(n), m_k(k)
+{}
+
+ShamirAccessPolicy::ShamirAccessPolicy(const ShamirAccessPolicy& other):
+  m_n(other.m_n), m_k(other.m_k)
+{}
+
+ShamirAccessPolicy& ShamirAccessPolicy::operator=(const ShamirAccessPolicy& other)
+{
+  m_n = other.m_n;
+  m_k = other.m_k;
+  return *this;
+}
+  
+void ShamirAccessPolicy::setValues(const int k, const int n)
+{
+  m_n = n;
+  m_k = k;
+}
+
+int ShamirAccessPolicy::getThreshold()
+{
+  return m_k;
+}
+
+int ShamirAccessPolicy::getNumParticipants()
+{
+  return m_n;
 }
 
 //---------------------------------------------

@@ -6,7 +6,7 @@
 
   - Compile this file as
 
-  	g++ -O2 -m64 -DZZNS=4 shamir.o -lbn -lmiracl -lpairs -o testshamir
+  	g++ -O2 -m64 -DZZNS=4 testshamir.cpp shamir.o -lbn -lmiracl -lpairs -o testshamir
 */
 
 
@@ -34,18 +34,6 @@ public:
   }
   
   ~ShamirTest(){
-  }
-
-
-  void test_diagnosis(const string& name, bool success, int& errors){
-    string message;
-    if (!success) {
-      errors++;
-      message = name + " has " shRED "failed" shWHITE;
-    } else {
-      message = name + " has " shGREEN "passed" shWHITE;
-    }
-    OUT(message);
   }
 
   int runTests(){   
@@ -190,14 +178,6 @@ public:
 //-----------------------------------------------------------
 //------------------- Main Level ----------------------------
 
-
-void print_test_result(int result, const string& name){
-  if (result == 0) {
-    OUT( name << "Tests " shGREEN "successful!" shWHITE);
-  } else {
-    OUT( name << result << " tests have " shRED "failed..." shWHITE);
-  }
-}
 
 int main() {
   //  miracl *mip = mirsys(5000,0); // C version: this is necessary to get the MIRACL functioning, which means that then I can call Bigs and so forth.

@@ -2,17 +2,33 @@ class SharePair{
   int partIndex;
   Big share;
 
-public:
+ public:
   SharePair();
   SharePair(const int pi, const Big s); 
   SharePair(const SharePair& other);
-  void setValues(const int pi, const Big s);
   SharePair& operator=(const SharePair& other);
+  void setValues(const int pi, const Big s);
   bool operator==(const SharePair& rhs) const;
   string to_string() ;
   int getPartIndex() const;
   Big getShare() const;
 };
+
+class ShamirAccessPolicy{
+  int m_n;  // number of participants
+  int m_k;  // threshold
+
+  
+ public:
+  ShamirAccessPolicy();
+  ShamirAccessPolicy(const int k, const int n);
+  ShamirAccessPolicy(const ShamirAccessPolicy& other);
+  ShamirAccessPolicy& operator=(const ShamirAccessPolicy& other);
+  void setValues(const int k, const int n);
+  int getThreshold();
+  int getNumParticipants();
+};
+
 
 class ShamirSS 
 {
@@ -32,4 +48,6 @@ public:
   Big reconstruct (const vector<SharePair> shares);
   std::vector<SharePair> distribute_random(const Big& s);
   std::vector<SharePair> distribute_determ(const Big& s, const vector<Big> randomness);
+
 };
+
