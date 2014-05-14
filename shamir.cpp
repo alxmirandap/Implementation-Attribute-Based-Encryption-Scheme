@@ -203,7 +203,7 @@ std::vector<SharePair> ShamirSS::distribute_random(const Big& s){
   return distribute_determ(s, poly);
 }
 
-std::vector<SharePair> ShamirSS::distribute_determ(const Big& s, vector<Big> &randomness){
+std::vector<SharePair> ShamirSS::distribute_determ(const Big& s, const vector<Big> &randomness){
   DEBUG("Randomness size: " << randomness.size());
   guard("Secret must be smaller than group order", s < m_order);
   //  DEBUG("Degree minus 1: " << getThreshold() - 1);

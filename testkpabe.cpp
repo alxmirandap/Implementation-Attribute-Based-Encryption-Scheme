@@ -110,7 +110,7 @@ public:
     BadCTatts.push_back(1);
     BadCTatts.push_back(17);
     BadCTatts.push_back(8);
-    BadCTatts.push_back(212);
+    BadCTatts.push_back(20);
     BadCTatts.push_back(5);
 
     vector<int> CTatts; // all valid attribute indices
@@ -173,7 +173,13 @@ public:
     SharePair tempPair;
     Big privateAtt;
 
+#ifdef AttOnG1_KeyOnG2
+    vector<G2> keyFrags = testclass.genKey(policy);
+#endif
+#ifdef AttOnG2_KeyOnG1
     vector<G1> keyFrags = testclass.genKey(policy);
+#endif
+
 
     for (int i = 0; i < policy.getNumShares(); i++){
       ss << "Test 4 - " << i << ": key fragments well-formedness";
@@ -186,7 +192,7 @@ public:
     OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
     OUT("Beginning of test 5");
     
-    vector<int> UnauthCTatts;  // one invalid attribute index
+    vector<int> UnauthCTatts;  
     BadCTatts.push_back(3);
     BadCTatts.push_back(1);
     BadCTatts.push_back(17);
@@ -199,13 +205,14 @@ public:
     success = testclass.encrypt(UnauthCTatts, M, CT, AttFrags);
     test_diagnosis("Test 5: encryption with unauthorized attributes", success, errors);
     
-    GT M2 = testclass.decrypt(policy, UnauthCTatts, CT, AttFrags);
+    GT PT; // plaintext
+    PT = testclass.decrypt(policy, keyFrags, UnauthCTatts, CT, AttFrags);
     test_diagnosis("Test 5: decryption with unauthorized attributes", M2 != M, errors);
 
     success = testclass.encrypt(CTatts, M, CT, AttFrags);
     test_diagnosis("Test 5: encryption with authorized attributes", success, errors);
     
-    M2 = testclass.decrypt(policy, CTatts, CT, AttFrags);
+    PT = testclass.decrypt(policy, keyFrags, CTatts, CT, AttFrags);
     test_diagnosis("Test 5: decryption with authorized attributes", M2 != M, errors);
 
     return errors;

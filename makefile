@@ -18,8 +18,11 @@ utils.o: utils.cpp utils.h
 
 shaSS: utils.o shamir.o testshamir 
 
-testkpabe: testkpabe.cpp shamir.o utils.o
-	g++ -O2 -DZZNS=4 -m64 testkpabe.cpp utils.o shamir.o -lbn -lpairs -lmiracl -o testkpabe 
+kpabe.o: kpabe.cpp kpabe.h shamir.h
+	g++ -c -O2 -DZZNS=4 -m64 kpabe.cpp -o kpabe.o 
+
+testkpabe: testkpabe.cpp shamir.o utils.o kpabe.o
+	g++ -O2 -DZZNS=4 -m64 testkpabe.cpp kpabe.o utils.o shamir.o -lbn -lpairs -lmiracl -o testkpabe 
 
 abe: shamir.o utils.o testkpabe
 

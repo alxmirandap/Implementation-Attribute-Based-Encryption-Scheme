@@ -48,7 +48,7 @@ public:
   int getNumParticipants();
   vector<int> getParticipants();
   std::vector<SharePair> distribute_random(const Big& s);
-  std::vector<SharePair> distribute_determ(const Big& s, const vector<Big> randomness);
+  std::vector<SharePair> distribute_determ(const Big& s, const vector<Big>& randomness);
 
 };
 
