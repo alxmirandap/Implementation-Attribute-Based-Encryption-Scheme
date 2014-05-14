@@ -74,28 +74,32 @@ std::ostream& operator<<(ostream& out, const SharePair &sp) {
 //---------------------------------------------
 
 ShamirAccessPolicy::ShamirAccessPolicy():
-  m_n(1), m_k(0)
-{}
+  m_k(0)
+{
+  m_participants.push_back(1);
+}
 
 ShamirAccessPolicy::ShamirAccessPolicy(const int k, const int n):
-  m_n(n), m_k(k)
+  m_k(k)
+{
+  for (int i = 0; i < n; i++) {
+    m_participants.push_back(i+1);
+  }
+}
+
+ShamirAccessPolicy::ShamirAccessPolicy(const int k, const vector<int> parts):
+  m_k(k), m_participants(parts)
 {}
 
 ShamirAccessPolicy::ShamirAccessPolicy(const ShamirAccessPolicy& other):
-  m_n(other.m_n), m_k(other.m_k)
+  m_k(other.m_k), m_participants(other.m_participants)
 {}
 
 ShamirAccessPolicy& ShamirAccessPolicy::operator=(const ShamirAccessPolicy& other)
 {
-  m_n = other.m_n;
   m_k = other.m_k;
+  m_participants = other.m_participants;
   return *this;
-}
-  
-void ShamirAccessPolicy::setValues(const int k, const int n)
-{
-  m_n = n;
-  m_k = k;
 }
 
 int ShamirAccessPolicy::getThreshold()
@@ -105,32 +109,40 @@ int ShamirAccessPolicy::getThreshold()
 
 int ShamirAccessPolicy::getNumParticipants()
 {
-  return m_n;
+  return m_participants.size();
+}
+
+vector<int> ShamirAccessPolicy::getParticipants()
+{
+  return m_participants;
+}
+
+int ShamirAccessPolicy::getNumShares(){
+  return getNumParticipants();
 }
 
 //---------------------------------------------
 
-ShamirSS::ShamirSS(const int in_k, const int nparts, const Big& in_order, PFC &pfc, const vector<int> parts):
-  m_k(in_k), m_nparts(nparts), m_order(in_order), m_pfc(pfc)
-  {
-    //DEBUG("Called the constructor");  
-    //    DEBUG("ShamirSS --- array size: " << parts.size() << "\t nparts: " << nparts);
-    //    guard("ShamirSS constructor has received participants vector of the wrong size", parts.size() == nparts);
-    for (int i = 0; i < nparts; i++){
-      m_participants.push_back(parts[i]);
-    }
-    //    DEBUG("Reached the end of constructor");
-  }
+ShamirSS::ShamirSS(const ShamirAccessPolicy policy, const Big& in_order, PFC &pfc):
+  m_policy(policy), m_order(in_order), m_pfc(pfc)
+{}
 
+ShamirSS::ShamirSS(const int in_k, const int nparts, const Big& in_order, PFC &pfc):
+  m_policy(ShamirAccessPolicy(in_k, nparts)), m_order(in_order), m_pfc(pfc)
+{}
+
+ShamirSS::ShamirSS(const int in_k, const vector<int> parts, const Big& in_order, PFC &pfc):
+  m_policy(ShamirAccessPolicy(in_k, parts)), m_order(in_order), m_pfc(pfc)
+{}
 
 Big ShamirSS::lagrange(const int i,const vector<int> parts)
   {
-    if (parts.size() < m_k) return 0; // an error value, since the Lagrange coefficient can never be 0
+    if (parts.size() < getThreshold()) return 0; // an error value, since the Lagrange coefficient can never be 0
 
     int j;
     Big z=1;
 
-    for (int k=0;k<m_k;k++)
+    for (int k=0;k<getThreshold();k++)
       {
 	j=parts[k];
 	if (j!=i) z=modmult(z,moddiv(-j,(Big)(i-j),m_order),m_order);
@@ -141,11 +153,11 @@ Big ShamirSS::lagrange(const int i,const vector<int> parts)
 Big ShamirSS::reconstruct (const vector<SharePair> shares) {
     DEBUG("============================== RECONSTRUCTION ==============================");  
     int nparts = shares.size();
-    if (nparts < m_k) return -1; // a fail value, since a share is always positive
+    if (nparts < getThreshold()) return -1; // a fail value, since a share is always positive
 
-    DEBUG("Reconstruction: (k)---" << m_k);
-    vector<int> parts(m_k);
-    for (int i=0; i < m_k; i++){
+    DEBUG("Reconstruction: (k)---" << getThreshold());
+    vector<int> parts(getThreshold());
+    for (int i=0; i < getThreshold(); i++){
       parts[i] = shares[i].getPartIndex();
     }
  
@@ -155,7 +167,7 @@ Big ShamirSS::reconstruct (const vector<SharePair> shares) {
 
     //DEBUG("Reconstruction: ");
     DEBUG("MODULO: " << m_order);
-    for (int i = 0; i < m_k; i++){
+    for (int i = 0; i < getThreshold(); i++){
       c = lagrange(parts[i], parts);
       DEBUG("Part: " << parts[i] << " coefficient: " << c << " Share: " << shares[i].getShare());
       t = modmult(shares[i].getShare(),c,m_order);
@@ -167,8 +179,20 @@ Big ShamirSS::reconstruct (const vector<SharePair> shares) {
     return s;
   }
 
+int ShamirSS::getThreshold(){
+  return m_policy.getThreshold();
+}
+
+int ShamirSS::getNumParticipants(){
+  return m_policy.getNumParticipants();
+}
+
+vector<int> ShamirSS::getParticipants(){
+  return m_policy.getParticipants();
+}
+
 std::vector<SharePair> ShamirSS::distribute_random(const Big& s){
-  int npoly = m_k-1;
+  int npoly = getThreshold()-1;
   vector<Big> poly(npoly);
     DEBUG("============================== DISTRIBUTE RANDOM ==============================");  
     DEBUG("npoly: " << npoly);
@@ -179,27 +203,27 @@ std::vector<SharePair> ShamirSS::distribute_random(const Big& s){
   return distribute_determ(s, poly);
 }
 
-std::vector<SharePair> ShamirSS::distribute_determ(const Big& s, vector<Big> randomness){
+std::vector<SharePair> ShamirSS::distribute_determ(const Big& s, vector<Big> &randomness){
   DEBUG("Randomness size: " << randomness.size());
   guard("Secret must be smaller than group order", s < m_order);
-  //  DEBUG("Degree minus 1: " << m_k - 1);
-  guard("Distribute algorithm has received randomness of the wrong size", randomness.size() == m_k-1);
+  //  DEBUG("Degree minus 1: " << getThreshold() - 1);
+  guard("Distribute algorithm has received randomness of the wrong size", randomness.size() == getThreshold()-1);
 
-  vector<Big> poly(m_k);	// internal representation of the shamir polynomial
+  vector<Big> poly(getThreshold());	// internal representation of the shamir polynomial
   int pi; // participant index
   Big acc; // cummulative sum for computing the polynomial
   Big accX; // cummulative value for the variable power (x^i)
-  std::vector<SharePair> shares(m_nparts);  
+  std::vector<SharePair> shares(getNumParticipants());  
 
   poly[0]=s;
-  for (int i = 1; i < m_k; i++){
+  for (int i = 1; i < getThreshold(); i++){
     poly[i] = randomness[i-1];
   }
     	
-  for (int j=0;j<m_nparts;j++) {
-    pi=m_participants[j];
+  for (int j=0;j<getNumParticipants();j++) {
+    pi=getParticipants()[j];
     acc=poly[0]; accX=pi;
-    for (int k=1;k<m_k;k++) { 
+    for (int k=1;k<getThreshold();k++) { 
       // evaluate polynomial a0+a1*x+a2*x^2... for x=pi;
       acc+=modmult(poly[k],(Big)accX,m_order); 
       accX*=pi;

@@ -38,11 +38,8 @@ public:
 
   int runTests(){   
     int errors = 0;
-    for (int i = 0; i < m_nparts; i++) {
-      m_parts.push_back(i+1);
-    }
 
-    ShamirSS testClass(m_k, m_nparts, m_order, m_pfc, m_parts);
+    ShamirSS testClass(m_k, m_nparts, m_order, m_pfc);
 
     // ------------------- Test 1 ------------
     OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
@@ -132,7 +129,7 @@ public:
       					// numbers 7 and 43 were chosen arbitrarily, but the modulus has to be prime to guarantee all participants different
     }
 
-    ShamirSS testClassReal(k, nparts, real_order, m_pfc, parts);
+    ShamirSS testClassReal(k, parts, real_order, m_pfc);
     //DEBUG("Echo in run tests: reached the end of constructor");
 
     for (int j = 0; j < niter; j++){
