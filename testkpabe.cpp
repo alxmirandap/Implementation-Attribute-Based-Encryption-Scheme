@@ -91,13 +91,15 @@ public:
       ss << "Test 2 - " << i << ": attributes' computation";
 
 #ifdef AttOnG1_KeyOnG2
-      temp2 = m_pfc.mult(P, privateKeyAtts[i]);
+      temp1 = m_pfc.mult(P, privateKeyAtts[i]);
+      test_diagnosis(ss.str(), temp1 == publicKeyAtts[i], errors);
 #endif
 #ifdef AttOnG2_KeyOnG1
       temp2 = m_pfc.mult(Q, privateKeyAtts[i]);
+      test_diagnosis(ss.str(), temp2 == publicKeyAtts[i], errors);
 #endif
 
-      test_diagnosis(ss.str(), temp2 == publicKeyAtts[i], errors);
+
       ss.str("");
     }
     GT pair = m_pfc.pairing(Q,P);
@@ -155,8 +157,16 @@ public:
 
     for (int i = 0; i < CTatts.size(); i++){
       ss << "Test 3 - " << i << ": attribute fragments well-formedness";
+
+#ifdef AttOnG1_KeyOnG2
+      temp1 = m_pfc.mult(publicKeyAtts[CTatts[i]], CTrand);
+      test_diagnosis(ss.str(), temp1 == AttFrags[i], errors);
+#endif
+#ifdef AttOnG2_KeyOnG1
       temp2 = m_pfc.mult(publicKeyAtts[CTatts[i]], CTrand);
       test_diagnosis(ss.str(), temp2 == AttFrags[i], errors);
+#endif
+
       ss.str("");
     }
     
@@ -193,7 +203,10 @@ public:
       privateAtt = privateKeyAtts[shares[i].getPartIndex()];
 
 #ifdef AttOnG1_KeyOnG2
-      test_diagnosis(ss.str(), m_pfc.mult(Q, moddiv(shares[i].getShare(),privateAtt,order)) == keyFrags[i], errors);
+      G2 tmp = m_pfc.mult(Q, moddiv(shares[i].getShare(),privateAtt,order)); // for some reason, if tmp is not defined and this expression is written as is on
+      // in the next line, the compiler will interpret the result of m_pfc::mult as G2& and will not compile. 
+      // This erros does not occur for AttOnG2_KeyOnG1
+      test_diagnosis(ss.str(), tmp == keyFrags[i], errors);
 #endif
 #ifdef AttOnG2_KeyOnG1
       test_diagnosis(ss.str(), m_pfc.mult(P, moddiv(shares[i].getShare(),privateAtt,order)) == keyFrags[i], errors);

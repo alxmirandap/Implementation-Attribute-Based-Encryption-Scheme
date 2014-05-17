@@ -1,7 +1,7 @@
 
-// #define AttOnG1_KeyOnG2
-#define AttOnG2_KeyOnG1
-#undef AttOnG1_KeyOnG2
+#define AttOnG1_KeyOnG2
+// #define AttOnG2_KeyOnG1
+
 
 class KPABE {
   PFC& m_pfc;
