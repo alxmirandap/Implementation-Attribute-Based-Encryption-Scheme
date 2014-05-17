@@ -123,17 +123,36 @@ int ShamirAccessPolicy::getNumShares(){
 
 //---------------------------------------------
 
+inline void ShamirSS::initPoly(){
+    int npoly = m_policy.getThreshold()-1;
+    poly.reserve(npoly);
+    for (int i = 0; i < npoly; i++){
+      poly.push_back(0);
+    }
+}
+
+vector<Big>& ShamirSS::getDistribRandomness() {
+  return poly;
+}
+
 ShamirSS::ShamirSS(const ShamirAccessPolicy policy, const Big& in_order, PFC &pfc):
   m_policy(policy), m_order(in_order), m_pfc(pfc)
-{}
+{
+  initPoly();
+}
 
 ShamirSS::ShamirSS(const int in_k, const int nparts, const Big& in_order, PFC &pfc):
   m_policy(ShamirAccessPolicy(in_k, nparts)), m_order(in_order), m_pfc(pfc)
-{}
+{
+  initPoly();
+}
 
 ShamirSS::ShamirSS(const int in_k, const vector<int> parts, const Big& in_order, PFC &pfc):
   m_policy(ShamirAccessPolicy(in_k, parts)), m_order(in_order), m_pfc(pfc)
-{}
+{
+  initPoly();
+}
+
 
 Big ShamirSS::lagrange(const int i,const vector<int> parts)
   {
@@ -192,10 +211,11 @@ vector<int> ShamirSS::getParticipants(){
 }
 
 std::vector<SharePair> ShamirSS::distribute_random(const Big& s){
-  int npoly = getThreshold()-1;
-  vector<Big> poly(npoly);
-    DEBUG("============================== DISTRIBUTE RANDOM ==============================");  
-    DEBUG("npoly: " << npoly);
+  int npoly = poly.size();
+
+  DEBUG("============================== DISTRIBUTE RANDOM ==============================");  
+  DEBUG("npoly: " << npoly);
+
   for (int i=0;i<npoly;i++){
     m_pfc.random(poly[i]); // random polynomial coefficient
   }

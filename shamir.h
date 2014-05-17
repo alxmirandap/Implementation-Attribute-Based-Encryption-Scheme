@@ -37,6 +37,8 @@ private:
   ShamirAccessPolicy m_policy; // the associated access structure/policy
   Big m_order;	// the order of the base group
   PFC &m_pfc;
+  vector<Big> poly;
+  void initPoly();
 
 public:
   ShamirSS(const int in_k, const vector<int> parts, const Big& in_order, PFC &pfc);  
@@ -49,6 +51,6 @@ public:
   vector<int> getParticipants();
   std::vector<SharePair> distribute_random(const Big& s);
   std::vector<SharePair> distribute_determ(const Big& s, const vector<Big>& randomness);
-
+  vector<Big>& getDistribRandomness();  
 };
 

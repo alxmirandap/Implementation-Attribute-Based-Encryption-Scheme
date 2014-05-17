@@ -25,8 +25,8 @@ void print_test_result(int result, const string& name){
 void guard(string s, bool b){
   if (!b) {
     DEBUG(s);
-    assert(b);
   }
+  assert(b);  
 }
 
 void test_diagnosis(const string& name, bool success, int& errors){

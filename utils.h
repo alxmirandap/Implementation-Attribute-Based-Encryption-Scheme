@@ -30,7 +30,7 @@
 #define shWHITE "\e[0;37m"
 #define shGREEN "\e[1;32m"
 
-#define NODEBUG
+//#define NODEBUG
 
 #ifdef NODEBUG
 #  define DEBUG(x) do {} while (0)

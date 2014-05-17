@@ -1,6 +1,7 @@
 
 // #define AttOnG1_KeyOnG2
 #define AttOnG2_KeyOnG1
+#undef AttOnG1_KeyOnG2
 
 class KPABE {
   PFC& m_pfc;
@@ -23,11 +24,18 @@ class KPABE {
   G2 m_Q; 
   GT m_publicCTBlinder;
 
+#ifdef AttOnG1_KeyOnG2
+  vector<G2> makeKeyFrags(std::vector<SharePair> shares);
+#endif
+#ifdef AttOnG2_KeyOnG1
+  vector<G1> makeKeyFrags(std::vector<SharePair> shares);
+#endif
+
 
 public:
 
   KPABE(PFC &pfc, int nAttr);
-  void paramsgen(const G1& P, const G2& Q, const Big& order);  
+  void paramsgen(G1& P, G2& Q, Big& order);  
   int numberAttr();
   void setup();
   vector<Big>& getPrivateAttributes();
@@ -38,6 +46,7 @@ public:
 #ifdef AttOnG1_KeyOnG2
   vector<G1>& getPublicAttributes();
   vector<G2> genKey(const ShamirAccessPolicy& policy);
+  vector<G2> genKey(const ShamirAccessPolicy& policy, vector<Big> poly);
   bool encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G1>& AttFrags);
   GT decrypt(const ShamirAccessPolicy& policy, const vector<G2> keyFrags, const vector<int>& atts, const GT& CT, const vector<G1>& AttFrags);
 #endif
@@ -45,7 +54,8 @@ public:
 #ifdef AttOnG2_KeyOnG1
   vector<G2>& getPublicAttributes();
   vector<G1> genKey(const ShamirAccessPolicy& policy);
-  bool encrypt(const vector<int> &atts, const GT& M, const GT& CT, const vector<G2>& AttFrags);
+  vector<G1> genKey(const ShamirAccessPolicy& policy, vector<Big> poly);
+  bool encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& AttFrags);
   GT decrypt(const ShamirAccessPolicy& policy, const vector<G1> keyFrags, const vector<int>& atts, const GT& CT, const vector<G2>& AttFrags);
 #endif
 };

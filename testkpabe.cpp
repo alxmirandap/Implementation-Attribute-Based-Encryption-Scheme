@@ -35,8 +35,11 @@ class KPABETest
 
 public:
   
-  KPABETest(PFC &pfc);
-  ~KPABETest();
+  KPABETest(PFC &pfc):
+    m_pfc(pfc)
+  {}
+  ~KPABETest()
+  {}
 
 
   int runTests(){   
@@ -51,11 +54,9 @@ public:
 
     G1 P;	
     G2 Q;	
-    const Big& order = m_pfc.order();
+    Big order;
 
-
-    testclass.paramsgen(P, Q, order);  // the last argument specifies which group is used to build attribute fragments.
-    							     // implicitly it defines which group (the other one( is used to build key fragments.
+    testclass.paramsgen(P, Q, order);     				
 
     G1 temp1 = m_pfc.mult(P,order+1);
     G2 temp2 = m_pfc.mult(Q,order+1);
@@ -97,6 +98,7 @@ public:
 #endif
 
       test_diagnosis(ss.str(), temp2 == publicKeyAtts[i], errors);
+      ss.str("");
     }
     GT pair = m_pfc.pairing(Q,P);
     test_diagnosis("Test 2a: blinding factor", m_pfc.power(pair, privateKeyBlinder) == publicCTBlinder, errors);
@@ -145,14 +147,17 @@ public:
     test_diagnosis("Test 3: bad attributes, return fail", !success, errors);
     
     success = testclass.encrypt(CTatts, M, CT, AttFrags);
+    test_diagnosis("Test 3: size of attribute frags", AttFrags.size() == CTatts.size(), errors);
     CTrand = testclass.getLastEncryptionRandomness();
     test_diagnosis("Test 3: good attributes, succeed", success, errors);
     aux = m_pfc.power(publicCTBlinder, CTrand);
     test_diagnosis("Test 3: CT well-formedness", (M * aux) == CT, errors);
-    for (int i = 0; i < nattr; i++){
+
+    for (int i = 0; i < CTatts.size(); i++){
       ss << "Test 3 - " << i << ": attribute fragments well-formedness";
-      temp2 = m_pfc.mult(publicKeyAtts[i], CTrand);
+      temp2 = m_pfc.mult(publicKeyAtts[CTatts[i]], CTrand);
       test_diagnosis(ss.str(), temp2 == AttFrags[i], errors);
+      ss.str("");
     }
     
     //------------------ Test 4: Key Generation ------------------------
@@ -169,23 +174,34 @@ public:
 
     ShamirSS shamir(policy, order, m_pfc);
     std::vector<SharePair> shares = shamir.distribute_random(privateKeyBlinder);   
+    vector<Big>& poly = shamir.getDistribRandomness();
 
-    SharePair tempPair;
     Big privateAtt;
 
+    DEBUG("------------ Start GEN KEY --------------");
 #ifdef AttOnG1_KeyOnG2
-    vector<G2> keyFrags = testclass.genKey(policy);
+    vector<G2> keyFrags = testclass.genKey(policy, poly);
 #endif
 #ifdef AttOnG2_KeyOnG1
-    vector<G1> keyFrags = testclass.genKey(policy);
+    vector<G1> keyFrags = testclass.genKey(policy, poly);
 #endif
 
+    DEBUG("------------ Start TEST COMPARISON --------------");
 
     for (int i = 0; i < policy.getNumShares(); i++){
       ss << "Test 4 - " << i << ": key fragments well-formedness";
-      tempPair = shares[i];
-      privateAtt = privateKeyAtts[tempPair.getPartIndex()];
-      test_diagnosis(ss.str(), m_pfc.mult(P, moddiv(tempPair.getShare(),privateAtt,order)) == keyFrags[i], errors);
+      privateAtt = privateKeyAtts[shares[i].getPartIndex()];
+
+#ifdef AttOnG1_KeyOnG2
+      test_diagnosis(ss.str(), m_pfc.mult(Q, moddiv(shares[i].getShare(),privateAtt,order)) == keyFrags[i], errors);
+#endif
+#ifdef AttOnG2_KeyOnG1
+      test_diagnosis(ss.str(), m_pfc.mult(P, moddiv(shares[i].getShare(),privateAtt,order)) == keyFrags[i], errors);
+#endif
+    DEBUG("Iter: " << i << " Share: " << shares[i].getShare() 
+	<< " Attribute: " << privateAtt);
+      
+      ss.str("");
     }
 
     //------------------ Test 5: Decryption ------------------------
@@ -205,15 +221,15 @@ public:
     success = testclass.encrypt(UnauthCTatts, M, CT, AttFrags);
     test_diagnosis("Test 5: encryption with unauthorized attributes", success, errors);
     
-    GT PT; // plaintext
+    GT PT; // plaintetx
     PT = testclass.decrypt(policy, keyFrags, UnauthCTatts, CT, AttFrags);
-    test_diagnosis("Test 5: decryption with unauthorized attributes", M2 != M, errors);
+    test_diagnosis("Test 5: decryption with unauthorized attributes", PT != M, errors);
 
     success = testclass.encrypt(CTatts, M, CT, AttFrags);
     test_diagnosis("Test 5: encryption with authorized attributes", success, errors);
     
     PT = testclass.decrypt(policy, keyFrags, CTatts, CT, AttFrags);
-    test_diagnosis("Test 5: decryption with authorized attributes", M2 != M, errors);
+    test_diagnosis("Test 5: decryption with authorized attributes", PT == M, errors);
 
     return errors;
   }

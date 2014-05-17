@@ -64,24 +64,21 @@ GT& KPABE::getPublicCTBlinder()
 
 KPABE::KPABE(PFC& pfc, int nAttr): // the last argument specifies which group is used to build attribute fragments.
   m_pfc(pfc), m_nAttr(nAttr), m_privateKeyRand(0), m_lastCTRandomness(0), m_order(m_pfc.order())
-
 {
-
-  m_privateAttributes(nAttr);
-  m_publicAtts(nAttr);
-
+  m_privateAttributes.reserve(m_nAttr);
+  m_publicAtts.reserve(m_nAttr);
 }
 
-void KPABE::paramsgen(G1& P, G2& Q, const Big& order) 
+void KPABE::paramsgen(G1& P, G2& Q, Big& order)  // all arguments have their values changed on the outside of the function
 {
   m_pfc.random(P);
   m_pfc.random(Q);
 
 #ifdef AttOnG1_KeyOnG2
-  pfc.precomp_for_mult(Q);
+  m_pfc.precomp_for_mult(Q);
 #endif
 #ifdef AttOnG2_KeyOnG1
-  pfc.precomp_for_mult(P);
+  m_pfc.precomp_for_mult(P);
 #endif
 
   m_P = P;
@@ -91,21 +88,25 @@ void KPABE::paramsgen(G1& P, G2& Q, const Big& order)
 }
 
 void KPABE::setup(){
-  pfc.random(m_privateKeyRand);
-  m_publicCTBlinder = pfc.power(pfc.pairing(Q,P),m_privateKeyRand);
+  m_pfc.random(m_privateKeyRand);
+  m_privateKeyRand %= m_order;
+  guard("Key Rand must be smaller than group order", m_privateKeyRand < m_order);
+  m_publicCTBlinder = m_pfc.power(m_pfc.pairing(m_Q,m_P),m_privateKeyRand);
 
   for (int i = 0; i < m_nAttr; i++) {
-    pfc.random(m_privateAttributes[i]);                 
+    m_privateAttributes.push_back(0);
+    m_pfc.random(m_privateAttributes[i]);
 
 #ifdef AttOnG1_KeyOnG2
-    m_publicAttsG1[i]=pfc.mult(P,m_privateAttributes[i]);
-    pfc.precomp_for_mult(m_publicAttsG1[i],TRUE);
+    m_publicAtts.push_back(m_pfc.mult(m_P,m_privateAttributes[i]));
+    m_pfc.precomp_for_mult(m_publicAtts[i],TRUE);
 #endif
-#ifdef AttOnG2_KeyOnG1
-    m_publicAttsG2[i]=pfc.mult(P,m_privateAttributes[i]);
-    pfc.precomp_for_mult(m_publicAttsG2[i],TRUE);
+#ifdef AttOnG2_KeyOnG1   
+    m_publicAtts.push_back(m_pfc.mult(m_Q,m_privateAttributes[i]));
+    m_pfc.precomp_for_mult(m_publicAtts[i],TRUE);
 #endif
   }
+  guard("Attribute's vector size should be m_nAttr", m_privateAttributes.size() == m_nAttr);
 }
 
 
@@ -118,8 +119,31 @@ vector<G1> KPABE::genKey(const ShamirAccessPolicy& policy)
 {
   ShamirSS shamir(policy, m_order, m_pfc);
   std::vector<SharePair> shares = shamir.distribute_random(m_privateKeyRand);
+  
+  return makeKeyFrags(shares);
+}
 
-  const SharePair& temp;
+#ifdef AttOnG1_KeyOnG2
+vector<G2> KPABE::genKey(const ShamirAccessPolicy& policy, vector<Big> poly)
+#endif
+#ifdef AttOnG2_KeyOnG1
+vector<G1> KPABE::genKey(const ShamirAccessPolicy& policy, vector<Big> poly)
+#endif
+{
+  ShamirSS shamir(policy, m_order, m_pfc);
+  std::vector<SharePair> shares = shamir.distribute_determ(m_privateKeyRand, poly);
+  
+  return makeKeyFrags(shares);
+}
+
+#ifdef AttOnG1_KeyOnG2
+vector<G2> KPABE::makeKeyFrags(std::vector<SharePair> shares)
+#endif
+#ifdef AttOnG2_KeyOnG1
+vector<G1> KPABE::makeKeyFrags(std::vector<SharePair> shares)
+#endif
+{
+
   
 #ifdef AttOnG1_KeyOnG2
   vector<G2> keyFrags(shares.size());
@@ -127,20 +151,19 @@ vector<G1> KPABE::genKey(const ShamirAccessPolicy& policy)
 #ifdef AttOnG2_KeyOnG1
   vector<G1> keyFrags(shares.size());
 #endif
-    
-    
-  std::vector<SharePair> shares = shamir.distribute_random(m_privateKeyRand);
-  
+         
   for (int i = 0; i < shares.size(); i++){
-    temp = shares[i];
     
 #ifdef AttOnG1_KeyOnG2
-    keyFrags[i] = pfc.mult(Q,moddiv(temp.getShare(),m_privateAttributes[temp.getPartIndex()],m_order));
+    keyFrags[i] = m_pfc.mult(m_Q,moddiv(shares[i].getShare(),m_privateAttributes[shares[i].getPartIndex()],m_order));
+    m_pfc.precomp_for_pairing(keyFrags[i]);  // precomputes on the G2 element
 #endif
 #ifdef AttOnG2_KeyOnG1          
-    keyFrags[i] = pfc.mult(P,moddiv(temp.getShare(),m_privateAttributes[temp.getPartIndex()],m_order));
+    keyFrags[i] = m_pfc.mult(m_P,moddiv(shares[i].getShare(),m_privateAttributes[shares[i].getPartIndex()],m_order));
 #endif
-    pfc.precomp_for_pairing(keyFrags[i]);  // precomputes on the private key   
+
+    DEBUG("Iter: " << i << " Share: " << shares[i].getShare() 
+	<< " Attribute: " << m_privateAttributes[shares[i].getPartIndex()]);
   }
   
   return keyFrags;
@@ -155,23 +178,25 @@ bool KPABE::encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G1>& At
 bool KPABE::encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& AttFrags)
 #endif
 {
-
-#ifdef AttOnG1_KeyOnG2
-  vector<G1> attFrags(atts.size());
-#endif
-#ifdef AttOnG2_KeyOnG1
-  vector<G2> attFrags(atts.size());
-#endif
+  AttFrags.clear();
+  guard("Attribute fragments should be an empty vector", AttFrags.size() == 0);
+  AttFrags.reserve(atts.size());
 
   m_pfc.random(m_lastCTRandomness);
-  CT = M * pfc.power(m_publicCTBlinder ,m_lastCTRandomness);
+  CT = M * m_pfc.power(m_publicCTBlinder ,m_lastCTRandomness);
 
 
   for (int i = 0; i < atts.size(); i++){
     int att_index = atts[i];
-    if (att_index >= m_nattr) return false; 
-    attFrags[i] = m_pfc.mult(getPublicAttributes()[att_index],m_lastCTRandomness);
+    if (att_index >= m_nAttr) return false; 
+    AttFrags.push_back( m_pfc.mult(getPublicAttributes()[att_index],m_lastCTRandomness));
+#ifdef AttOnG2_KeyOnG1
+    m_pfc.precomp_for_pairing(AttFrags[i]);  // precomputes on the G2 element
+#endif
+
   }
+  guard("Attribute fragments must be as many as attributes", atts.size() == AttFrags.size());
+
   return true;
   
 }
