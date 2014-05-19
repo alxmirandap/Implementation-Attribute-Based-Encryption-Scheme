@@ -39,3 +39,10 @@ void test_diagnosis(const string& name, bool success, int& errors){
   }
   OUT(message);
 }
+
+bool contains(vector<int> set, int element){
+  for (int i = 0; i < set.size(); i++){
+    if (element == set[i]) return true;
+  }
+  return false;
+}

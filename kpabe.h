@@ -1,6 +1,6 @@
 
-#define AttOnG1_KeyOnG2
-// #define AttOnG2_KeyOnG1
+//#define AttOnG1_KeyOnG2
+ #define AttOnG2_KeyOnG1
 
 
 class KPABE {
@@ -48,7 +48,7 @@ public:
   vector<G2> genKey(const ShamirAccessPolicy& policy);
   vector<G2> genKey(const ShamirAccessPolicy& policy, vector<Big> poly);
   bool encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G1>& AttFrags);
-  GT decrypt(const ShamirAccessPolicy& policy, const vector<G2> keyFrags, const vector<int>& atts, const GT& CT, const vector<G1>& AttFrags);
+  bool decrypt(const ShamirAccessPolicy& policy,  vector<G2> keyFrags, const vector<int>& atts, const GT& CT,  vector<G1>& AttFrags, GT& PT);
 #endif
 
 #ifdef AttOnG2_KeyOnG1
@@ -56,7 +56,7 @@ public:
   vector<G1> genKey(const ShamirAccessPolicy& policy);
   vector<G1> genKey(const ShamirAccessPolicy& policy, vector<Big> poly);
   bool encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& AttFrags);
-  GT decrypt(const ShamirAccessPolicy& policy, const vector<G1> keyFrags, const vector<int>& atts, const GT& CT, const vector<G2>& AttFrags);
+  bool decrypt(const ShamirAccessPolicy& policy,  vector<G1> keyFrags, const vector<int>& atts, const GT& CT,  vector<G2>& AttFrags, GT& PT);
 #endif
 };
 

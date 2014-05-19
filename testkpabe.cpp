@@ -131,9 +131,11 @@ public:
 
 #ifdef AttOnG1_KeyOnG2
     vector<G1> AttFrags;
+    vector<G1> BadAttFrags;
 #endif
 #ifdef AttOnG2_KeyOnG1
     vector<G2> AttFrags;
+    vector<G2> BadAttFrags;
 #endif
 
 
@@ -180,9 +182,9 @@ public:
     }
 
     int threshold = 4;
-    ShamirAccessPolicy policy(threshold, pol_parts);
+    ShamirAccessPolicy policy(threshold, pol_parts, order);
 
-    ShamirSS shamir(policy, order, m_pfc);
+    ShamirSS shamir(policy, m_pfc);
     std::vector<SharePair> shares = shamir.distribute_random(privateKeyBlinder);   
     vector<Big>& poly = shamir.getDistribRandomness();
 
@@ -231,19 +233,25 @@ public:
     BadCTatts.push_back(15);
     BadCTatts.push_back(11);
 
-    success = testclass.encrypt(UnauthCTatts, M, CT, AttFrags);
-    test_diagnosis("Test 5: encryption with unauthorized attributes", success, errors);
-    
     GT PT; // plaintetx
-    PT = testclass.decrypt(policy, keyFrags, UnauthCTatts, CT, AttFrags);
-    test_diagnosis("Test 5: decryption with unauthorized attributes", PT != M, errors);
 
     success = testclass.encrypt(CTatts, M, CT, AttFrags);
     test_diagnosis("Test 5: encryption with authorized attributes", success, errors);
     
-    PT = testclass.decrypt(policy, keyFrags, CTatts, CT, AttFrags);
-    test_diagnosis("Test 5: decryption with authorized attributes", PT == M, errors);
+    success = testclass.decrypt(policy, keyFrags, CTatts, CT, AttFrags, PT);
+    test_diagnosis("Test 5: decryption with authorized attributes success", success, errors);
+    test_diagnosis("Test 5: decryption with authorized attributes equality", PT == M, errors);
 
+
+    success = testclass.encrypt(UnauthCTatts, M, CT, BadAttFrags);
+    test_diagnosis("Test 5: encryption with unauthorized attributes", success, errors);
+    
+
+
+    success = testclass.decrypt(policy, keyFrags, UnauthCTatts, CT, BadAttFrags, PT);
+    test_diagnosis("Test 5: decryption with unauthorized attributes", !success, errors);
+
+ 
     return errors;
   }
 

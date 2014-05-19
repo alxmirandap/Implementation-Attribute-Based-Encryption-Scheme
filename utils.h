@@ -30,7 +30,7 @@
 #define shWHITE "\e[0;37m"
 #define shGREEN "\e[1;32m"
 
-//#define NODEBUG
+#define NODEBUG
 
 #ifdef NODEBUG
 #  define DEBUG(x) do {} while (0)
@@ -47,4 +47,4 @@
 void print_test_result(int result, const string& name);
 void guard(string s, bool b);
 void test_diagnosis(const string& name, bool success, int& errors);
-
+bool contains(vector<int> set, int element);

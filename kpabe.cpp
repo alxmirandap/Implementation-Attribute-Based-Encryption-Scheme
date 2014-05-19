@@ -117,7 +117,7 @@ vector<G2> KPABE::genKey(const ShamirAccessPolicy& policy)
 vector<G1> KPABE::genKey(const ShamirAccessPolicy& policy)
 #endif
 {
-  ShamirSS shamir(policy, m_order, m_pfc);
+  ShamirSS shamir(policy, m_pfc);
   std::vector<SharePair> shares = shamir.distribute_random(m_privateKeyRand);
   
   return makeKeyFrags(shares);
@@ -130,7 +130,7 @@ vector<G2> KPABE::genKey(const ShamirAccessPolicy& policy, vector<Big> poly)
 vector<G1> KPABE::genKey(const ShamirAccessPolicy& policy, vector<Big> poly)
 #endif
 {
-  ShamirSS shamir(policy, m_order, m_pfc);
+  ShamirSS shamir(policy, m_pfc);
   std::vector<SharePair> shares = shamir.distribute_determ(m_privateKeyRand, poly);
   
   return makeKeyFrags(shares);
@@ -203,13 +203,42 @@ bool KPABE::encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& At
 
   
 #ifdef AttOnG1_KeyOnG2
-GT KPABE::decrypt(const ShamirAccessPolicy& policy, const vector<G2> keyFrags, const vector<int>& atts, const GT& CT, const vector<G1>& AttFrags)
+bool KPABE::decrypt(const ShamirAccessPolicy& policy, vector<G2> keyFrags, const vector<int>& atts, const GT& CT,  vector<G1>& AttFrags, GT& PT)
 #endif
 #ifdef AttOnG2_KeyOnG1
-  GT KPABE::decrypt(const ShamirAccessPolicy& policy, const vector<G1> keyFrags, const vector<int>& atts, const GT& CT, const vector<G2>& AttFrags)
+  bool KPABE::decrypt(const ShamirAccessPolicy& policy, vector<G1> keyFrags, const vector<int>& atts, const GT& CT,  vector<G2>& AttFrags, GT& PT)
 #endif
 {
-  GT temp;
-  return temp;
+  vector<int> attIndices;
+  if (!policy.evaluate(atts, attIndices)) return false;
+
+  int countAtts = attIndices.size();
+  G1 *g1[countAtts];
+  G2 *g2[countAtts];
+  G1 bufArray[countAtts];
+  
+
+  int attr;
+
+  GT combinedPair;
+
+  for (int i = 0; i < countAtts; i++) {
+    attr = attIndices[i];
+    Big coeff = policy.findCoefficient(attr, attIndices);
+
+#ifdef AttOnG1_KeyOnG2
+    bufArray[i] = m_pfc.mult(AttFrags[attr], coeff); // necessary to fix an address that can be passed to g1.
+    g1[i] = &bufArray[i];
+    g2[i] = &keyFrags[attr];
+#endif
+#ifdef AttOnG2_KeyOnG1
+    bufArray[i] = m_pfc.mult(keyFrags[attr], coeff);
+    g1[i] = &bufArray[i];
+    g2[i] = &AttFrags[attr];
+#endif
+  }
+  combinedPair = m_pfc.multi_pairing(countAtts,g2,g1);
+  PT = CT / combinedPair;
+  return true;   
 }
 
