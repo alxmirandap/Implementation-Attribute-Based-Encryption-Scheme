@@ -47,4 +47,4 @@
 void print_test_result(int result, const string& name);
 void guard(string s, bool b);
 void test_diagnosis(const string& name, bool success, int& errors);
-bool contains(vector<int> set, int element);
+int contains(vector<int> set, int element);

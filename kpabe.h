@@ -48,7 +48,9 @@ public:
   vector<G2> genKey(const ShamirAccessPolicy& policy);
   vector<G2> genKey(const ShamirAccessPolicy& policy, vector<Big> poly);
   bool encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G1>& AttFrags);
-  bool decrypt(const ShamirAccessPolicy& policy,  vector<G2> keyFrags, const vector<int>& atts, const GT& CT,  vector<G1>& AttFrags, GT& PT);
+  bool encryptS(const vector<int> &atts, const Big& M, Big& CT, vector<G1>& AttFrags);
+  bool decrypt(const ShamirAccessPolicy& policy, vector<G2> keyFrags, const vector<int>& atts, const GT& CT,  vector<G1>& AttFrags, GT& PT);
+  bool decryptS(const ShamirAccessPolicy& policy,  vector<G2> keyFrags, const vector<int>& atts, const Big& CT,  vector<G1>& AttFrags, Big& PT);
 #endif
 
 #ifdef AttOnG2_KeyOnG1
@@ -56,7 +58,9 @@ public:
   vector<G1> genKey(const ShamirAccessPolicy& policy);
   vector<G1> genKey(const ShamirAccessPolicy& policy, vector<Big> poly);
   bool encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& AttFrags);
-  bool decrypt(const ShamirAccessPolicy& policy,  vector<G1> keyFrags, const vector<int>& atts, const GT& CT,  vector<G2>& AttFrags, GT& PT);
+  bool encryptS(const vector<int> &atts, const Big& M, Big& CT, vector<G2>& AttFrags);
+  bool decrypt(const ShamirAccessPolicy& policy, vector<G1> keyFrags, const vector<int>& atts, const GT& CT,  vector<G2>& AttFrags, GT& PT);
+  bool decryptS(const ShamirAccessPolicy& policy,  vector<G1> keyFrags, const vector<int>& atts, const Big& CT,  vector<G2>& AttFrags, Big& PT);
 #endif
 };
 

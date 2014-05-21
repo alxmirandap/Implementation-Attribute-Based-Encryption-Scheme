@@ -74,37 +74,44 @@ std::ostream& operator<<(ostream& out, const SharePair &sp) {
 //---------------------------------------------
 
 ShamirAccessPolicy::ShamirAccessPolicy():
-  m_k(0)
+  m_threshold(0), m_order(0)
 {
   m_participants.push_back(1);
 }
 
-ShamirAccessPolicy::ShamirAccessPolicy(const int k, const int n):
-  m_k(k)
+ShamirAccessPolicy::ShamirAccessPolicy(const int k, const int n, Big order):
+  m_threshold(k), m_order(order)
 {
   for (int i = 0; i < n; i++) {
     m_participants.push_back(i+1);
   }
 }
 
-ShamirAccessPolicy::ShamirAccessPolicy(const int k, const vector<int> parts):
-  m_k(k), m_participants(parts)
+ShamirAccessPolicy::ShamirAccessPolicy(const int k, const vector<int> parts, Big order):
+  m_threshold(k), m_order(order), m_participants(parts)
 {}
 
 ShamirAccessPolicy::ShamirAccessPolicy(const ShamirAccessPolicy& other):
-  m_k(other.m_k), m_participants(other.m_participants)
+  m_threshold(other.m_threshold), m_order(other.m_order), m_participants(other.m_participants)
 {}
 
 ShamirAccessPolicy& ShamirAccessPolicy::operator=(const ShamirAccessPolicy& other)
 {
-  m_k = other.m_k;
+  m_threshold = other.m_threshold;
+  m_order = other.m_order;
   m_participants = other.m_participants;
   return *this;
 }
 
-int ShamirAccessPolicy::getThreshold()
+Big ShamirAccessPolicy::getOrder() const
 {
-  return m_k;
+  return m_order;
+}
+
+
+int ShamirAccessPolicy::getThreshold() const
+{
+  return m_threshold;
 }
 
 int ShamirAccessPolicy::getNumParticipants()
@@ -121,6 +128,50 @@ int ShamirAccessPolicy::getNumShares(){
   return getNumParticipants();
 }
 
+bool ShamirAccessPolicy::evaluate(vector<int> atts, vector<int>& attFragIndices, vector<int>& keyFragIndices) const{
+  attFragIndices.clear();
+  keyFragIndices.clear();
+  int nCommonAtts = 0; 
+  int i = 0;
+  int n;
+
+  DEBUG("EVALUATE: fixing the indices correctly");
+
+  while (nCommonAtts < m_threshold && i < atts.size()){
+    n = contains(m_participants, atts[i]);
+    //    DEBUG("contains returned for element: " << atts[i] << " --- returned: " << n);
+    if (n >= 0){
+      nCommonAtts++;
+      attFragIndices.push_back(i);
+      keyFragIndices.push_back(n);
+
+      //      OUT("Step " << i << ": n = " << n << " -- att index = " << i << " -- key index = " << n << " --- commonAtts: " << nCommonAtts);
+
+    } 
+    i++;
+  }
+  if (nCommonAtts < m_threshold) return false;
+  return true;
+}
+
+Big ShamirAccessPolicy::findCoefficient(const int i,const vector<int> parts) const
+{
+  if (parts.size() < m_threshold) return 0; // an error value, since the Lagrange coefficient can never be 0
+
+  int j;
+  Big z=1;
+  Big partCoef;
+
+  for (int k=0;k<getThreshold();k++)
+    {      
+      j=parts[k];
+      guard("Participant must be greater than 0", j > 0);
+      partCoef = moddiv(m_order - j,(Big)(m_order + i-j),m_order);
+      if (j!=i) z=modmult(z,partCoef,m_order);
+    }
+  return z;
+}
+
 //---------------------------------------------
 
 inline void ShamirSS::initPoly(){
@@ -131,43 +182,27 @@ inline void ShamirSS::initPoly(){
     }
 }
 
-vector<Big>& ShamirSS::getDistribRandomness() {
+vector<Big> ShamirSS::getDistribRandomness() {
   return poly;
 }
 
-ShamirSS::ShamirSS(const ShamirAccessPolicy policy, const Big& in_order, PFC &pfc):
-  m_policy(policy), m_order(in_order), m_pfc(pfc)
+ShamirSS::ShamirSS(const ShamirAccessPolicy policy, PFC &pfc):
+  m_policy(policy), m_order(policy.getOrder()), m_pfc(pfc)
 {
   initPoly();
 }
 
 ShamirSS::ShamirSS(const int in_k, const int nparts, const Big& in_order, PFC &pfc):
-  m_policy(ShamirAccessPolicy(in_k, nparts)), m_order(in_order), m_pfc(pfc)
+  m_policy(ShamirAccessPolicy(in_k, nparts, in_order)), m_order(in_order), m_pfc(pfc)
 {
   initPoly();
 }
 
 ShamirSS::ShamirSS(const int in_k, const vector<int> parts, const Big& in_order, PFC &pfc):
-  m_policy(ShamirAccessPolicy(in_k, parts)), m_order(in_order), m_pfc(pfc)
+  m_policy(ShamirAccessPolicy(in_k, parts, in_order)), m_order(in_order), m_pfc(pfc)
 {
   initPoly();
 }
-
-
-Big ShamirSS::lagrange(const int i,const vector<int> parts)
-  {
-    if (parts.size() < getThreshold()) return 0; // an error value, since the Lagrange coefficient can never be 0
-
-    int j;
-    Big z=1;
-
-    for (int k=0;k<getThreshold();k++)
-      {
-	j=parts[k];
-	if (j!=i) z=modmult(z,moddiv(-j,(Big)(i-j),m_order),m_order);
-      }
-    return z;
-  }
 
 Big ShamirSS::reconstruct (const vector<SharePair> shares) {
     DEBUG("============================== RECONSTRUCTION ==============================");  
@@ -187,7 +222,7 @@ Big ShamirSS::reconstruct (const vector<SharePair> shares) {
     //DEBUG("Reconstruction: ");
     DEBUG("MODULO: " << m_order);
     for (int i = 0; i < getThreshold(); i++){
-      c = lagrange(parts[i], parts);
+      c = m_policy.findCoefficient(parts[i], parts);
       DEBUG("Part: " << parts[i] << " coefficient: " << c << " Share: " << shares[i].getShare());
       t = modmult(shares[i].getShare(),c,m_order);
       DEBUG("Contribution: " << t);
@@ -213,18 +248,18 @@ vector<int> ShamirSS::getParticipants(){
 std::vector<SharePair> ShamirSS::distribute_random(const Big& s){
   int npoly = poly.size();
 
-  DEBUG("============================== DISTRIBUTE RANDOM ==============================");  
-  DEBUG("npoly: " << npoly);
+  // DEBUG("============================== DISTRIBUTE RANDOM ==============================");  
+  // DEBUG("npoly: " << npoly);
 
   for (int i=0;i<npoly;i++){
     m_pfc.random(poly[i]); // random polynomial coefficient
   }
-  DEBUG("Prepared randomness, ready to call deterministic algorithm");
+  //  DEBUG("Prepared randomness, ready to call deterministic algorithm");
   return distribute_determ(s, poly);
 }
 
 std::vector<SharePair> ShamirSS::distribute_determ(const Big& s, const vector<Big> &randomness){
-  DEBUG("Randomness size: " << randomness.size());
+  //  DEBUG("Randomness size: " << randomness.size());
   guard("Secret must be smaller than group order", s < m_order);
   //  DEBUG("Degree minus 1: " << getThreshold() - 1);
   guard("Distribute algorithm has received randomness of the wrong size", randomness.size() == getThreshold()-1);
@@ -250,7 +285,7 @@ std::vector<SharePair> ShamirSS::distribute_determ(const Big& s, const vector<Bi
       acc%=m_order;
     }    
     shares[j].setValues(pi, acc);
-    DEBUG("Share " << j << shares[j]);
+    //    DEBUG("Share " << j << shares[j]);
   }
   return shares;
 }

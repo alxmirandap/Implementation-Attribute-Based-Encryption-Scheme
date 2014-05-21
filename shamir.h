@@ -31,7 +31,7 @@ class ShamirAccessPolicy{
   int getNumParticipants();
   vector<int> getParticipants();
   int getNumShares(); // returns the number of shares distributed by this policy
-  bool evaluate(vector<int> atts, vector<int>& authInts) const;
+  bool evaluate(vector<int> atts, vector<int>& attFragIndices, vector<int>& keyFragIndices) const;
   Big findCoefficient(int attr, vector<int> attIndices) const;  
 };
 
@@ -56,6 +56,6 @@ public:
   vector<int> getParticipants();
   std::vector<SharePair> distribute_random(const Big& s);
   std::vector<SharePair> distribute_determ(const Big& s, const vector<Big>& randomness);
-  vector<Big>& getDistribRandomness();  
+  vector<Big> getDistribRandomness();  
 };
 

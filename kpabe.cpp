@@ -88,6 +88,8 @@ void KPABE::paramsgen(G1& P, G2& Q, Big& order)  // all arguments have their val
 }
 
 void KPABE::setup(){
+  m_privateAttributes.clear();
+  m_publicAtts.clear();
   m_pfc.random(m_privateKeyRand);
   m_privateKeyRand %= m_order;
   guard("Key Rand must be smaller than group order", m_privateKeyRand < m_order);
@@ -106,7 +108,7 @@ void KPABE::setup(){
     m_pfc.precomp_for_mult(m_publicAtts[i],TRUE);
 #endif
   }
-  guard("Attribute's vector size should be m_nAttr", m_privateAttributes.size() == m_nAttr);
+  guard("[SETUP:] Attribute's vector size should be m_nAttr", m_privateAttributes.size() == m_nAttr);
 }
 
 
@@ -120,6 +122,8 @@ vector<G1> KPABE::genKey(const ShamirAccessPolicy& policy)
   ShamirSS shamir(policy, m_pfc);
   std::vector<SharePair> shares = shamir.distribute_random(m_privateKeyRand);
   
+  DEBUG("[GENKEY] Distributed secret: " << m_privateKeyRand);
+
   return makeKeyFrags(shares);
 }
 
@@ -132,7 +136,7 @@ vector<G1> KPABE::genKey(const ShamirAccessPolicy& policy, vector<Big> poly)
 {
   ShamirSS shamir(policy, m_pfc);
   std::vector<SharePair> shares = shamir.distribute_determ(m_privateKeyRand, poly);
-  
+  DEBUG("[keyGen] private randomness used for the key generation: " << m_privateKeyRand);
   return makeKeyFrags(shares);
 }
 
@@ -162,13 +166,55 @@ vector<G1> KPABE::makeKeyFrags(std::vector<SharePair> shares)
     keyFrags[i] = m_pfc.mult(m_P,moddiv(shares[i].getShare(),m_privateAttributes[shares[i].getPartIndex()],m_order));
 #endif
 
-    DEBUG("Iter: " << i << " Share: " << shares[i].getShare() 
-	<< " Attribute: " << m_privateAttributes[shares[i].getPartIndex()]);
+    // DEBUG("Iter: " << i << " Share: " << shares[i].getShare() 
+    // 	<< " Attribute: " << m_privateAttributes[shares[i].getPartIndex()]);
   }
   
   return keyFrags;
 }
 
+
+
+#ifdef AttOnG1_KeyOnG2
+// bool KPABE::encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G1>& AttFrags)
+bool KPABE::encryptS(const vector<int> &atts, const Big& M, Big& CT, vector<G1>& AttFrags)
+#endif
+#ifdef AttOnG2_KeyOnG1
+//bool KPABE::encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& AttFrags)
+bool KPABE::encryptS(const vector<int> &atts, const Big& M, Big& CT, vector<G2>& AttFrags)
+#endif
+{
+  AttFrags.clear();
+  guard("Attribute fragments should be an empty vector", AttFrags.size() == 0);
+  AttFrags.reserve(atts.size());
+
+  m_pfc.random(m_lastCTRandomness);
+  //  CT = M * m_pfc.power(m_publicCTBlinder ,m_lastCTRandomness);
+  GT preblinder = m_pfc.power(m_pfc.pairing(m_Q,m_P),m_privateKeyRand);
+  GT blinder = m_pfc.power(preblinder, m_lastCTRandomness);
+
+  DEBUG("[ENCRYPT] Private Key Randomness: " << m_privateKeyRand);
+  DEBUG("[ENCRYPT] Last CT Randomness    : " << m_lastCTRandomness);
+  CT=lxor(M,m_pfc.hash_to_aes_key(blinder));
+
+  DEBUG("[ENCRYPT] Full blinder          : " << m_pfc.hash_to_aes_key(blinder));
+
+
+  for (int i = 0; i < atts.size(); i++){
+    int att_index = atts[i];
+    //    OUT("Attribute " << i << ": " << att_index);
+    if (att_index >= m_nAttr) return false; 
+    AttFrags.push_back( m_pfc.mult(getPublicAttributes()[att_index],m_lastCTRandomness));
+#ifdef AttOnG2_KeyOnG1
+    m_pfc.precomp_for_pairing(AttFrags[i]);  // precomputes on the G2 element
+#endif
+
+  }
+  guard("Attribute fragments must be as many as attributes", atts.size() == AttFrags.size());
+
+  return true;
+  
+}
 
 
 #ifdef AttOnG1_KeyOnG2
@@ -183,11 +229,19 @@ bool KPABE::encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& At
   AttFrags.reserve(atts.size());
 
   m_pfc.random(m_lastCTRandomness);
-  CT = M * m_pfc.power(m_publicCTBlinder ,m_lastCTRandomness);
+  GT preblinder = m_pfc.power(m_pfc.pairing(m_Q,m_P),m_privateKeyRand);
+  GT blinder = m_pfc.power(preblinder, m_lastCTRandomness);
+
+  DEBUG("[ENCRYPT] Private Key Randomness: " << m_privateKeyRand);
+  DEBUG("[ENCRYPT] Last CT Randomness    : " << m_lastCTRandomness);
+  CT = M * blinder;
+  
+  DEBUG("[ENCRYPT] Full blinder          : " << m_pfc.hash_to_aes_key(blinder));
 
 
   for (int i = 0; i < atts.size(); i++){
     int att_index = atts[i];
+    //    OUT("Attribute " << i << ": " << att_index);
     if (att_index >= m_nAttr) return false; 
     AttFrags.push_back( m_pfc.mult(getPublicAttributes()[att_index],m_lastCTRandomness));
 #ifdef AttOnG2_KeyOnG1
@@ -201,44 +255,144 @@ bool KPABE::encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& At
   
 }
 
+
   
+#ifdef AttOnG1_KeyOnG2
+// bool KPABE::decrypt(const ShamirAccessPolicy& policy, vector<G2> keyFrags, const vector<int>& atts, const GT& CT,  vector<G1>& AttFrags, GT& PT)
+bool KPABE::decryptS(const ShamirAccessPolicy& policy, vector<G2> keyFrags, const vector<int>& atts, const Big& CT,  vector<G1>& AttFrags, Big& PT)
+#endif
+#ifdef AttOnG2_KeyOnG1
+//  bool KPABE::decrypt(const ShamirAccessPolicy& policy, vector<G1> keyFrags, const vector<int>& atts, const GT& CT,  vector<G2>& AttFrags, GT& PT)
+  bool KPABE::decryptS(const ShamirAccessPolicy& policy, vector<G1> keyFrags, const vector<int>& atts, const Big& CT,  vector<G2>& AttFrags, Big& PT)
+#endif
+{
+  vector<int> attFragIndices;
+  vector<int> keyFragIndices;
+
+  // To correct: the vectors for key and attribute fragments don't have the same size and don't have to have the same order
+  // In the evaluation, it is necessary not only to find a minimal set of attributes and respective fragments that satisfy the policy
+  // but also the corresponding key fragments (in a different position). It is not needed to find the key's attributes, because they have to 
+  // match those of the corresponding attribute fragments.
+  // this verification has to be done by the respective policy. I suspect the key frags should know their corresponding attributes in the key
+
+
+  if (!policy.evaluate(atts, attFragIndices, keyFragIndices)) return false;
+  guard("Key and Attribute fragment vectors should be the same size", attFragIndices.size() == keyFragIndices.size());
+
+  int countAtts = attFragIndices.size();  
+
+  vector<int> minimalParts(countAtts);
+  for (int i = 0; i < countAtts; i++) {    
+    minimalParts[i] = atts[attFragIndices[i]];
+    //    DEBUG("Minimal Part[" << i << "]: " << minimalParts[i]);
+  }
+
+
+  G1 *g1[countAtts];
+  G2 *g2[countAtts];
+  G2 bufferArray[countAtts]; // this is a temporary placeholder so that computed fragments can have an address that can be used by g1 or g2
+  
+
+  GT combinedPair;
+
+  OUT("Order      : " << m_order);
+  for (int i = 0; i < countAtts; i++) {    
+    Big coeff = policy.findCoefficient(minimalParts[i], minimalParts);
+    OUT("coefficient: " << coeff);
+    //    OUT("Iter " << i << " --- Attribute Index: " << attIndices[i] << " - - Coeff: " << coeff << " --- Set size: " << attIndices.size());
+
+#ifdef AttOnG1_KeyOnG2
+    bufferArray[i] = m_pfc.mult(AttFrag[attFragIndices[i]], coeff); // necessary to fix an address that can be passed to g1.
+    g1[i] = &bufferArray[i];
+    g2[i] = &keyFrags[keyFragIndices[i]];
+#endif
+#ifdef AttOnG2_KeyOnG1
+    bufferArray[i] = m_pfc.mult(AttFrags[attFragIndices[i]], coeff);
+    g1[i] = &keyFrags[keyFragIndices[i]]; 
+    g2[i] = &bufferArray[i];
+#endif
+  }
+
+  for (int i = 0; i < keyFragIndices.size(); i++){
+    OUT("index for key fragments: " << keyFragIndices[i]);
+  }
+  for (int i = 0; i < attFragIndices.size(); i++){
+    OUT("index for attributes fragments: " << attFragIndices[i]);
+  }
+
+  combinedPair = m_pfc.multi_pairing(countAtts,g2,g1);
+
+  //  PT = CT / combinedPair;
+  PT=lxor(CT,m_pfc.hash_to_aes_key(combinedPair));
+  DEBUG("[DECRYPT] Full Blinder: " << m_pfc.hash_to_aes_key(combinedPair));
+
+  DEBUG("[DECRYPT] found plaintext : " << PT);
+
+
+  return true;   
+}
+
 #ifdef AttOnG1_KeyOnG2
 bool KPABE::decrypt(const ShamirAccessPolicy& policy, vector<G2> keyFrags, const vector<int>& atts, const GT& CT,  vector<G1>& AttFrags, GT& PT)
 #endif
 #ifdef AttOnG2_KeyOnG1
-  bool KPABE::decrypt(const ShamirAccessPolicy& policy, vector<G1> keyFrags, const vector<int>& atts, const GT& CT,  vector<G2>& AttFrags, GT& PT)
+  bool KPABE::decrypt(const ShamirAccessPolicy& policy, vector<G1> keyFrags, const vector<int>& atts, const GT& CT,  vector<G2>& AttFrags, GT& PT)  
 #endif
 {
-  vector<int> attIndices;
-  if (!policy.evaluate(atts, attIndices)) return false;
+  vector<int> attFragIndices;
+  vector<int> keyFragIndices;
 
-  int countAtts = attIndices.size();
+  if (!policy.evaluate(atts, attFragIndices, keyFragIndices)) return false;
+  guard("Key and Attribute fragment vectors should be the same size", attFragIndices.size() == keyFragIndices.size());
+
+  int countAtts = attFragIndices.size();  
+
+  vector<int> minimalParts(countAtts);
+  for (int i = 0; i < countAtts; i++) {    
+    minimalParts[i] = atts[attFragIndices[i]];
+    //    DEBUG("Minimal Part[" << i << "]: " << minimalParts[i]);
+  }
+
+
   G1 *g1[countAtts];
   G2 *g2[countAtts];
-  G1 bufArray[countAtts];
-  
-
-  int attr;
+  G2 bufferArray[countAtts]; // this is a temporary placeholder so that computed fragments can have an address that can be used by g1 or g2
 
   GT combinedPair;
 
-  for (int i = 0; i < countAtts; i++) {
-    attr = attIndices[i];
-    Big coeff = policy.findCoefficient(attr, attIndices);
+  OUT("Order      : " << m_order);
+  for (int i = 0; i < countAtts; i++) {    
+    Big coeff = policy.findCoefficient(minimalParts[i], minimalParts);
+    OUT("coefficient: " << coeff);
+    //    OUT("Iter " << i << " --- Attribute Index: " << attIndices[i] << " - - Coeff: " << coeff << " --- Set size: " << attIndices.size());
 
 #ifdef AttOnG1_KeyOnG2
-    bufArray[i] = m_pfc.mult(AttFrags[attr], coeff); // necessary to fix an address that can be passed to g1.
-    g1[i] = &bufArray[i];
-    g2[i] = &keyFrags[attr];
+    bufferArray[i] = m_pfc.mult(AttFrag[attFragIndices[i]], coeff); // necessary to fix an address that can be passed to g1.
+    g1[i] = &bufferArray[i];
+    g2[i] = &keyFrags[keyFragIndices[i]];
 #endif
 #ifdef AttOnG2_KeyOnG1
-    bufArray[i] = m_pfc.mult(keyFrags[attr], coeff);
-    g1[i] = &bufArray[i];
-    g2[i] = &AttFrags[attr];
+    bufferArray[i] = m_pfc.mult(AttFrags[attFragIndices[i]], coeff);
+    g1[i] = &keyFrags[keyFragIndices[i]]; 
+    g2[i] = &bufferArray[i];
 #endif
   }
+
+  for (int i = 0; i < keyFragIndices.size(); i++){
+    OUT("index for key fragments: " << keyFragIndices[i]);
+  }
+  for (int i = 0; i < attFragIndices.size(); i++){
+    OUT("index for attributes fragments: " << attFragIndices[i]);
+  }
+
   combinedPair = m_pfc.multi_pairing(countAtts,g2,g1);
+
   PT = CT / combinedPair;
+  //  PT=lxor(CT,m_pfc.hash_to_aes_key(combinedPair));
+  DEBUG("[DECRYPT] Full Blinder: " << m_pfc.hash_to_aes_key(combinedPair));
+
+  DEBUG("[DECRYPT] found plaintext : " << m_pfc.hash_to_aes_key(PT));
+
+
   return true;   
 }
-

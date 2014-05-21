@@ -1,3 +1,5 @@
+all: sham abe
+
 utils.o: utils.cpp utils.h
 	g++ -O2 -DZZNS=4 -m64 -c utils.cpp -o utils.o
 

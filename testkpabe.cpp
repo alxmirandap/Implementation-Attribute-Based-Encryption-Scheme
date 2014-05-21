@@ -32,44 +32,55 @@
 class KPABETest 
 {
   PFC &m_pfc;
+  int nattr;     
+  G1 temp1;
+  G2 temp2;
+
+  G1 P;	
+  G2 Q;	
+  Big order;
+
+  miracl* mip;
+  vector<int> pol_parts;
+  int threshold;
+
+  vector<Big> poly;
 
 public:
   
-  KPABETest(PFC &pfc):
-    m_pfc(pfc)
+  KPABETest(PFC &pfc, miracl* in_mip):
+    m_pfc(pfc), nattr(20), mip(in_mip), threshold(4)
   {}
   ~KPABETest()
   {}
 
-
-  int runTests(){   
-    int errors = 0;
-
-    const int nattr = 20;     
-    KPABE testclass(m_pfc, nattr); 
-
+  int testSetup(KPABE& testclass){
+    testclass.paramsgen(P, Q, order);
+    testclass.setup();
+    for (int i = 1; i <= 8; i++){
+      pol_parts.push_back(i);
+    }
+  }
+  
+  int test1(int errors, KPABE& testclass){
   //------------------ Test 1: scheme params generation ------------------------
     OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
     OUT("Beginning of test 1");
+   
+    temp1 = m_pfc.mult(P,order+1);
+    temp2 = m_pfc.mult(Q,order+1);
 
-    G1 P;	
-    G2 Q;	
-    Big order;
-
-    testclass.paramsgen(P, Q, order);     				
-
-    G1 temp1 = m_pfc.mult(P,order+1);
-    G2 temp2 = m_pfc.mult(Q,order+1);
     test_diagnosis("Test 1: number of attributes", testclass.numberAttr() == nattr, errors);
     test_diagnosis("Test 1: P^order == 1", temp1 == P, errors);
     test_diagnosis("Test 1: Q^order == 1", temp2 == Q, errors);
+    
+    return errors;
+  }
 
-
+  int test2(int errors, KPABE& testclass){  
   //------------------ Test 2: scheme setup ------------------------
     OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
     OUT("Beginning of test 2");
-
-    testclass.setup();
 
     vector<Big> &privateKeyAtts = testclass.getPrivateAttributes();
     Big& privateKeyBlinder = testclass.getPrivateKeyRand();
@@ -99,35 +110,50 @@ public:
       test_diagnosis(ss.str(), temp2 == publicKeyAtts[i], errors);
 #endif
 
-
       ss.str("");
     }
     GT pair = m_pfc.pairing(Q,P);
     test_diagnosis("Test 2a: blinding factor", m_pfc.power(pair, privateKeyBlinder) == publicCTBlinder, errors);
-  
+    
+    return errors;
+  }
+
+
+  int test3(int errors, KPABE& testclass){
   //------------------ Test 3: Encryption ------------------------
     OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
     OUT("Beginning of test 3");
 
+    GT& publicCTBlinder  = testclass.getPublicCTBlinder();
+
+#ifdef AttOnG1_KeyOnG2
+    vector<G1> &publicKeyAtts = testclass.getPublicAttributes();
+#endif
+#ifdef AttOnG2_KeyOnG1
+    vector<G2> &publicKeyAtts = testclass.getPublicAttributes();
+#endif
+
+
     vector<int> BadCTatts;  // one invalid attribute index
-    BadCTatts.push_back(3);
-    BadCTatts.push_back(1);
+    BadCTatts.push_back(4);
+    BadCTatts.push_back(2);
     BadCTatts.push_back(17);
-    BadCTatts.push_back(8);
+    BadCTatts.push_back(6);
     BadCTatts.push_back(20);
     BadCTatts.push_back(5);
 
     vector<int> CTatts; // all valid attribute indices
-    CTatts.push_back(3);
-    CTatts.push_back(1);
+    CTatts.push_back(4);
+    CTatts.push_back(2);
     CTatts.push_back(17);
-    CTatts.push_back(8);
+    CTatts.push_back(6);
     CTatts.push_back(12);
     CTatts.push_back(5);
 
     int CTnatts = CTatts.size();
  
-    GT CT;
+    //    GT CT;
+    Big CT;
 
 #ifdef AttOnG1_KeyOnG2
     vector<G1> AttFrags;
@@ -143,19 +169,26 @@ public:
     Big CTrand;
     GT aux;
 
-    m_pfc.random(rand); // picking a random message
-    const GT M = m_pfc.power(pair, rand);
+    stringstream ss;
 
-    bool success = testclass.encrypt(BadCTatts, M, CT, AttFrags);
+
+    // m_pfc.random(rand); // picking a random message
+    //    const GT M = m_pfc.power(pair, rand);
+
+    mip->IOBASE=256;
+    const Big M = (char *)"test message"; 
+    mip->IOBASE=16;
+
+    bool success = testclass.encryptS(BadCTatts, M, CT, AttFrags);
 
     test_diagnosis("Test 3: bad attributes, return fail", !success, errors);
     
-    success = testclass.encrypt(CTatts, M, CT, AttFrags);
+    success = testclass.encryptS(CTatts, M, CT, AttFrags);
     test_diagnosis("Test 3: size of attribute frags", AttFrags.size() == CTatts.size(), errors);
     CTrand = testclass.getLastEncryptionRandomness();
     test_diagnosis("Test 3: good attributes, succeed", success, errors);
     aux = m_pfc.power(publicCTBlinder, CTrand);
-    test_diagnosis("Test 3: CT well-formedness", (M * aux) == CT, errors);
+    //    test_diagnosis("Test 3: CT well-formedness", (M * aux) == CT, errors);
 
     for (int i = 0; i < CTatts.size(); i++){
       ss << "Test 3 - " << i << ": attribute fragments well-formedness";
@@ -171,22 +204,37 @@ public:
 
       ss.str("");
     }
-    
+
+    return errors;
+  }
+
+  int test4(int errors, KPABE& testclass){
     //------------------ Test 4: Key Generation ------------------------
     OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
     OUT("Beginning of test 4");
-    
-    vector<int> pol_parts;
-    for (int i = 1; i <= 8; i++){
-      pol_parts.push_back(i);
-    }
 
-    int threshold = 4;
+    stringstream ss;
+    bool success;
+    
+    Big& privateKeyBlinder = testclass.getPrivateKeyRand();
+    vector<Big> &privateKeyAtts = testclass.getPrivateAttributes();
+
+
+#ifdef AttOnG1_KeyOnG2
+    vector<G1> AttFrags;
+    vector<G1> BadAttFrags;
+#endif
+#ifdef AttOnG2_KeyOnG1
+    vector<G2> AttFrags;
+    vector<G2> BadAttFrags;
+#endif
+
+    
     ShamirAccessPolicy policy(threshold, pol_parts, order);
 
     ShamirSS shamir(policy, m_pfc);
     std::vector<SharePair> shares = shamir.distribute_random(privateKeyBlinder);   
-    vector<Big>& poly = shamir.getDistribRandomness();
+    poly = shamir.getDistribRandomness();
 
     Big privateAtt;
 
@@ -207,7 +255,7 @@ public:
 #ifdef AttOnG1_KeyOnG2
       G2 tmp = m_pfc.mult(Q, moddiv(shares[i].getShare(),privateAtt,order)); // for some reason, if tmp is not defined and this expression is written as is on
       // in the next line, the compiler will interpret the result of m_pfc::mult as G2& and will not compile. 
-      // This erros does not occur for AttOnG2_KeyOnG1
+      // This error does not occur for AttOnG2_KeyOnG1
       test_diagnosis(ss.str(), tmp == keyFrags[i], errors);
 #endif
 #ifdef AttOnG2_KeyOnG1
@@ -218,41 +266,160 @@ public:
       
       ss.str("");
     }
+    return errors;
+  }
 
+  int test5(int errors, KPABE& testclass){
     //------------------ Test 5: Decryption ------------------------
     OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
     OUT("Beginning of test 5");
+
+    ShamirAccessPolicy policy(threshold, pol_parts, order);
+    // Big& privateKeyBlinder = testclass.getPrivateKeyRand();
+    // ShamirSS shamir(policy, m_pfc);
+    // std::vector<SharePair> shares = shamir.distribute_random(privateKeyBlinder);   
     
-    vector<int> UnauthCTatts;  
-    BadCTatts.push_back(3);
-    BadCTatts.push_back(1);
+    // DEBUG("[TEST5] Distributed secret (t): " << privateKeyBlinder);
+
+    vector<G1> keyFrags = testclass.genKey(policy);
+    
+    mip->IOBASE=256;
+    const Big M = (char *)"hello world to be encrypted"; 
+    mip->IOBASE=16;
+
+    // attribute indices for the ciphertext:
+    vector<int> CTatts; // all valid attribute indices, authorized set
+    CTatts.push_back(4);
+    CTatts.push_back(2);
+    CTatts.push_back(17);
+    CTatts.push_back(6);
+    CTatts.push_back(12);
+    CTatts.push_back(5);
+
+    vector<int> BadCTatts;  // one invalid attribute index
+    BadCTatts.push_back(4);
+    BadCTatts.push_back(2);
     BadCTatts.push_back(17);
-    BadCTatts.push_back(9);
-    BadCTatts.push_back(12);
+    BadCTatts.push_back(6);
+    BadCTatts.push_back(20);
     BadCTatts.push_back(5);
-    BadCTatts.push_back(15);
-    BadCTatts.push_back(11);
 
-    GT PT; // plaintetx
-
-    success = testclass.encrypt(CTatts, M, CT, AttFrags);
-    test_diagnosis("Test 5: encryption with authorized attributes", success, errors);
+    vector<int> UnauthCTatts; // all valid attributes, unauthorized set
+    UnauthCTatts.push_back(3);
+    UnauthCTatts.push_back(1);
+    UnauthCTatts.push_back(17);
+    UnauthCTatts.push_back(9);
+    UnauthCTatts.push_back(12);
+    UnauthCTatts.push_back(5);
+    UnauthCTatts.push_back(15);
+    UnauthCTatts.push_back(11);
     
-    success = testclass.decrypt(policy, keyFrags, CTatts, CT, AttFrags, PT);
-    test_diagnosis("Test 5: decryption with authorized attributes success", success, errors);
-    test_diagnosis("Test 5: decryption with authorized attributes equality", PT == M, errors);
+    vector<G2> AttFrags;
+    vector<G2> BadAttFrags;
+    Big CT;
+    Big PT;
+
+    bool success = testclass.encryptS(CTatts, M, CT, AttFrags);
+    test_diagnosis("Test 5: string encryption with authorized attributes", success, errors);
+
+    success = testclass.decryptS(policy, keyFrags, CTatts, CT, AttFrags, PT);
+
+    mip->IOBASE=256;
+    DEBUG("[TEST5] found plaintext : " << PT);
+    mip->IOBASE=16;
 
 
-    success = testclass.encrypt(UnauthCTatts, M, CT, BadAttFrags);
-    test_diagnosis("Test 5: encryption with unauthorized attributes", success, errors);
+    test_diagnosis("Test 5: string decryption with authorized attributes success", success, errors);
+    test_diagnosis("Test 5: string decryption with authorized attributes equality", PT == M, errors);
     
+    success = testclass.encryptS(UnauthCTatts, M, CT, BadAttFrags);
+    test_diagnosis("Test 5: string encryption with unauthorized attributes", success, errors);
+    
+    success = testclass.decryptS(policy, keyFrags, UnauthCTatts, CT, BadAttFrags, PT);
+    test_diagnosis("Test 5: string decryption with unauthorized attributes", !success, errors);
 
 
-    success = testclass.decrypt(policy, keyFrags, UnauthCTatts, CT, BadAttFrags, PT);
-    test_diagnosis("Test 5: decryption with unauthorized attributes", !success, errors);
+    // -----------------
 
- 
+    Big rand;
+    m_pfc.random(rand); // picking a random message
+    GT pair = m_pfc.pairing(Q,P);
+    const GT GroupM = m_pfc.power(pair, rand);
+    GT GroupPT; // plaintetx
+    GT GroupCT; // main part of ciphertext
+
+    DEBUG("[TEST5] plaintext to be encrypted : " << m_pfc.hash_to_aes_key(GroupM));
+
+    success = testclass.encrypt(CTatts, GroupM, GroupCT, AttFrags);
+    test_diagnosis("Test 5: algebraic encryption with authorized attributes", success, errors);
+
+    success = testclass.decrypt(policy, keyFrags, CTatts, GroupCT, AttFrags, GroupPT);
+
+    DEBUG("[TEST5] found plaintext : " << m_pfc.hash_to_aes_key(GroupPT));
+
+
+    test_diagnosis("Test 5: algebraic decryption with authorized attributes success", success, errors);
+    test_diagnosis("Test 5: algebraic decryption with authorized attributes equality", GroupPT == GroupM, errors);
+    
+    success = testclass.encrypt(UnauthCTatts, GroupM, GroupCT, BadAttFrags);
+    test_diagnosis("Test 5: algebraic encryption with unauthorized attributes", success, errors);
+    
+    success = testclass.decrypt(policy, keyFrags, UnauthCTatts, GroupCT, BadAttFrags, GroupPT);
+    test_diagnosis("Test 5: algebraic decryption with unauthorized attributes", !success, errors);
+
+
     return errors;
+  }
+
+  int runTests(miracl *mip){   
+    int errors = 0;
+
+    KPABE testclass(m_pfc, nattr); 
+    testSetup(testclass);
+
+    // errors += test1(errors, testclass);
+    // errors += test2(errors, testclass);
+    // errors += test3(errors, testclass);
+    // errors += test4(errors, testclass);
+
+    GT old_blinder = testclass.getPublicCTBlinder();
+
+    DEBUG("[TEST SETUP] PrivateKeyRand (t): " << testclass.getPrivateKeyRand());
+    DEBUG("[TEST SETUP] PublicCTBlinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(old_blinder));
+    DEBUG("[TEST SETUP] Last Encryption Randomness before encryption (s): " << testclass.getLastEncryptionRandomness());
+    
+    vector<Big>& privateAtts = testclass.getPrivateAttributes();
+    vector<G2>& publicAtts = testclass.getPublicAttributes(); 
+    debugVectorBig("[TEST SETUP] Private attributes (t_i): ", privateAtts);
+    debugVectorG2("[TEST SETUP] Public attributes (t_i): ", publicAtts, privateAtts, Q);
+    
+    errors += test5(errors, testclass);
+
+    DEBUG("[TEST SETUP] old_blinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(old_blinder));
+    DEBUG("[TEST SETUP] current blinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(testclass.getPublicCTBlinder()));
+
+    GT full_blinder = m_pfc.power(testclass.getPublicCTBlinder(), testclass.getLastEncryptionRandomness());
+    DEBUG("[TEST SETUP] Full Blinder (e(g1,g2)^ts): " << m_pfc.hash_to_aes_key(full_blinder));
+
+    return errors;
+  }
+  
+  void debugVectorBig(string s, vector<Big> vec){    
+    for (int i = 0; i < vec.size(); i++) {
+      DEBUG(s << "(" << i << ") = " << vec[i]);
+    }
+  }
+  
+  void debugVectorG2(string s, vector<G2> vec, vector<Big> exps, G2 g){
+    G2 temp2;
+    for (int i = 0; i < vec.size(); i++) {
+      temp2 = m_pfc.mult(g, exps[i]);
+      if (temp2 == vec[i]) {
+	OUT(s << "(" << i << ") ---> Exponent: " << exps[i]);
+      } else {
+	DEBUG(s << "(" << i << ") ---> Wrong exponent");
+      }
+    }
   }
 
 
@@ -288,8 +455,8 @@ int main() {
   irand((long)seed);
 
   DEBUG("Calling first constructor");
-  KPABETest tests(pfc); 
-  int result = tests.runTests();
+  KPABETest tests(pfc, mip); 
+  int result = tests.runTests(mip);
   print_test_result(result,tests.name());
   return 0;
 }
