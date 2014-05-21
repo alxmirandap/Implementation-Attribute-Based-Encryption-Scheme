@@ -377,29 +377,29 @@ public:
     KPABE testclass(m_pfc, nattr); 
     testSetup(testclass);
 
-    // errors += test1(errors, testclass);
-    // errors += test2(errors, testclass);
-    // errors += test3(errors, testclass);
-    // errors += test4(errors, testclass);
+    errors += test1(errors, testclass);
+    errors += test2(errors, testclass);
+    errors += test3(errors, testclass);
+    errors += test4(errors, testclass);
 
-    GT old_blinder = testclass.getPublicCTBlinder();
+    // GT old_blinder = testclass.getPublicCTBlinder();
 
-    DEBUG("[TEST SETUP] PrivateKeyRand (t): " << testclass.getPrivateKeyRand());
-    DEBUG("[TEST SETUP] PublicCTBlinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(old_blinder));
-    DEBUG("[TEST SETUP] Last Encryption Randomness before encryption (s): " << testclass.getLastEncryptionRandomness());
+    // DEBUG("[TEST SETUP] PrivateKeyRand (t): " << testclass.getPrivateKeyRand());
+    // DEBUG("[TEST SETUP] PublicCTBlinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(old_blinder));
+    // DEBUG("[TEST SETUP] Last Encryption Randomness before encryption (s): " << testclass.getLastEncryptionRandomness());
     
-    vector<Big>& privateAtts = testclass.getPrivateAttributes();
-    vector<G2>& publicAtts = testclass.getPublicAttributes(); 
-    debugVectorBig("[TEST SETUP] Private attributes (t_i): ", privateAtts);
-    debugVectorG2("[TEST SETUP] Public attributes (t_i): ", publicAtts, privateAtts, Q);
+    // vector<Big>& privateAtts = testclass.getPrivateAttributes();
+    // vector<G2>& publicAtts = testclass.getPublicAttributes(); 
+    // debugVectorBig("[TEST SETUP] Private attributes (t_i): ", privateAtts);
+    // debugVectorG2("[TEST SETUP] Public attributes (t_i): ", publicAtts, privateAtts, Q);
     
     errors += test5(errors, testclass);
 
-    DEBUG("[TEST SETUP] old_blinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(old_blinder));
-    DEBUG("[TEST SETUP] current blinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(testclass.getPublicCTBlinder()));
+    // DEBUG("[TEST SETUP] old_blinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(old_blinder));
+    // DEBUG("[TEST SETUP] current blinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(testclass.getPublicCTBlinder()));
 
-    GT full_blinder = m_pfc.power(testclass.getPublicCTBlinder(), testclass.getLastEncryptionRandomness());
-    DEBUG("[TEST SETUP] Full Blinder (e(g1,g2)^ts): " << m_pfc.hash_to_aes_key(full_blinder));
+    // GT full_blinder = m_pfc.power(testclass.getPublicCTBlinder(), testclass.getLastEncryptionRandomness());
+    // DEBUG("[TEST SETUP] Full Blinder (e(g1,g2)^ts): " << m_pfc.hash_to_aes_key(full_blinder));
 
     return errors;
   }
@@ -415,7 +415,7 @@ public:
     for (int i = 0; i < vec.size(); i++) {
       temp2 = m_pfc.mult(g, exps[i]);
       if (temp2 == vec[i]) {
-	OUT(s << "(" << i << ") ---> Exponent: " << exps[i]);
+	DEBUG(s << "(" << i << ") ---> Exponent: " << exps[i]);
       } else {
 	DEBUG(s << "(" << i << ") ---> Wrong exponent");
       }

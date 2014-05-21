@@ -26,10 +26,15 @@ class KPABE {
 
 #ifdef AttOnG1_KeyOnG2
   vector<G2> makeKeyFrags(std::vector<SharePair> shares);
+  bool encrypt_main_body(const vector<int> &atts, vector<G1>& AttFrags, GT& blinder);
+  bool decrypt_main_body(const ShamirAccessPolicy& policy, vector<G2> keyFrags, const vector<int>& atts, vector<G1>& AttFrags, GT& blinder);
 #endif
 #ifdef AttOnG2_KeyOnG1
   vector<G1> makeKeyFrags(std::vector<SharePair> shares);
+  bool encrypt_main_body(const vector<int> &atts, vector<G2>& AttFrags, GT& blinder);
+  bool decrypt_main_body(const ShamirAccessPolicy& policy, vector<G1> keyFrags, const vector<int>& atts, vector<G2>& AttFrags, GT& blinder);
 #endif
+
 
 
 public:
