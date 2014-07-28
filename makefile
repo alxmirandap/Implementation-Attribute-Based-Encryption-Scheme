@@ -1,5 +1,8 @@
 all: sham abe
 
+bbench.o: basic-benchmark.cpp 
+	g++ -DZZNS=4 -m64 basic-benchmark.cpp -lbn -lpairs -lmiracl -o bbench # no optimization!!!
+
 utils.o: utils.cpp utils.h
 	g++ -O2 -DZZNS=4 -m64 -c utils.cpp -o utils.o
 

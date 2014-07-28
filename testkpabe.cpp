@@ -269,6 +269,7 @@ public:
     return errors;
   }
 
+
   int test5(int errors, KPABE& testclass){
     //------------------ Test 5: Decryption ------------------------
     OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
@@ -281,8 +282,13 @@ public:
     
     // DEBUG("[TEST5] Distributed secret (t): " << privateKeyBlinder);
 
-    vector<G1> keyFrags = testclass.genKey(policy);
-    
+#ifdef AttOnG1_KeyOnG2
+  vector<G2> keyFrags = testclass.genKey(policy);
+#endif
+#ifdef AttOnG2_KeyOnG1
+  vector<G1> keyFrags = testclass.genKey(policy);
+#endif
+   
     mip->IOBASE=256;
     const Big M = (char *)"hello world to be encrypted"; 
     mip->IOBASE=16;
@@ -313,9 +319,16 @@ public:
     UnauthCTatts.push_back(5);
     UnauthCTatts.push_back(15);
     UnauthCTatts.push_back(11);
+
+#ifdef AttOnG1_KeyOnG2
+  vector<G1> AttFrags;
+  vector<G1> BadAttFrags;
+#endif
+#ifdef AttOnG2_KeyOnG1
+  vector<G2> AttFrags;
+  vector<G2> BadAttFrags;
+#endif
     
-    vector<G2> AttFrags;
-    vector<G2> BadAttFrags;
     Big CT;
     Big PT;
 
@@ -394,6 +407,9 @@ public:
     // debugVectorG2("[TEST SETUP] Public attributes (t_i): ", publicAtts, privateAtts, Q);
     
     errors += test5(errors, testclass);
+
+
+
 
     // DEBUG("[TEST SETUP] old_blinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(old_blinder));
     // DEBUG("[TEST SETUP] current blinder (e(g1,g2)^t): " << m_pfc.hash_to_aes_key(testclass.getPublicCTBlinder()));

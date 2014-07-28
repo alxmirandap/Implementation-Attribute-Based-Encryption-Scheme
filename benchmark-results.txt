@@ -1,0 +1,222 @@
+Task: Sampling Random Bigs
+Number of repetitions: 5000000
+Total time in seconds: 6
+Average execution time: 1.2 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:11:27 2014
+Ending measurement at: Sat Jul 19 10:12:19 2014
+--------------------------------------------------------------
+Task: Sampling Random G1 elements
+Number of repetitions: 500000
+Total time in seconds: 52
+Average execution time: 0.104 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:12:19 2014
+Ending measurement at: Sat Jul 19 10:12:57 2014
+--------------------------------------------------------------
+Task: Sampling Random G2 elements
+Number of repetitions: 50000
+Total time in seconds: 38
+Average execution time: 0.76 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:12:57 2014
+Ending measurement at: Sat Jul 19 10:13:44 2014
+--------------------------------------------------------------
+Task: Creating G1 elements with exponent
+Number of repetitions: 100000
+Total time in seconds: 47
+Average execution time: 0.47 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:13:44 2014
+Ending measurement at: Sat Jul 19 10:14:33 2014
+--------------------------------------------------------------
+Task: Creating G1 elements using a fixed exponent
+Number of repetitions: 100000
+Total time in seconds: 49
+Average execution time: 0.49 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:14:33 2014
+Ending measurement at: Sat Jul 19 10:16:16 2014
+--------------------------------------------------------------
+Task: Creating G2 elements with exponent
+Number of repetitions: 100000
+Total time in seconds: 103
+Average execution time: 1.03 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:16:16 2014
+Ending measurement at: Sat Jul 19 10:17:55 2014
+--------------------------------------------------------------
+Task: Creating G2 elements using a fixed exponent
+Number of repetitions: 100000
+Total time in seconds: 99
+Average execution time: 0.99 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:17:55 2014
+Ending measurement at: Sat Jul 19 10:18:08 2014
+--------------------------------------------------------------
+Task: Computing pairing exponentiations
+Number of repetitions: 50000
+Total time in seconds: 13
+Average execution time: 0.26 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:18:08 2014
+Ending measurement at: Sat Jul 19 10:19:55 2014
+--------------------------------------------------------------
+Task: Computing pairing exponentiations with fresh random exponent
+Number of repetitions: 50000
+Total time in seconds: 107
+Average execution time: 2.14 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:19:55 2014
+Ending measurement at: Sat Jul 19 10:20:47 2014
+--------------------------------------------------------------
+Task: Computing pure pairings
+Number of repetitions: 10000
+Total time in seconds: 52
+Average execution time: 5.2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:20:47 2014
+Ending measurement at: Sat Jul 19 10:21:48 2014
+--------------------------------------------------------------
+Task: Computing pure pairings with fresh random elements 
+Number of repetitions: 10000
+Total time in seconds: 61
+Average execution time: 6.1 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:21:48 2014
+Ending measurement at: Sat Jul 19 10:23:10 2014
+--------------------------------------------------------------
+Task: Computing pure pairings and then exponentiating
+Number of repetitions: 10000
+Total time in seconds: 82
+Average execution time: 8.2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:23:10 2014
+Ending measurement at: Sat Jul 19 10:24:16 2014
+--------------------------------------------------------------
+Task: Exponentiating in G1 and then pairing with G2
+Number of repetitions: 10000
+Total time in seconds: 66
+Average execution time: 6.6 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:24:16 2014
+Ending measurement at: Sat Jul 19 10:25:26 2014
+--------------------------------------------------------------
+Task: Exponentiating in G2 and then pairing with G2
+Number of repetitions: 10000
+Total time in seconds: 70
+Average execution time: 7 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:25:26 2014
+Ending measurement at: Sat Jul 19 10:25:39 2014
+--------------------------------------------------------------
+Task: Computing pairing exponentiations
+Number of repetitions: 50000
+Total time in seconds: 13
+Average execution time: 0.26 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:25:39 2014
+Ending measurement at: Sat Jul 19 10:27:26 2014
+--------------------------------------------------------------
+Task: Computing pairing exponentiations with fresh random exponent
+Number of repetitions: 50000
+Total time in seconds: 107
+Average execution time: 2.14 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:27:26 2014
+Ending measurement at: Sat Jul 19 10:27:47 2014
+--------------------------------------------------------------
+Task: Multiplying fixed random elements of GT
+Number of repetitions: 1000000
+Total time in seconds: 21
+Average execution time: 21 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:27:47 2014
+Ending measurement at: Sat Jul 19 10:28:15 2014
+--------------------------------------------------------------
+Task: Multiplying fresh random elements of GT
+Number of repetitions: 5000
+Total time in seconds: 28
+Average execution time: 5.6 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:28:15 2014
+Ending measurement at: Sat Jul 19 10:28:37 2014
+--------------------------------------------------------------
+Task: Dividing fixed random elements of GT
+Number of repetitions: 1000000
+Total time in seconds: 22
+Average execution time: 22 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:28:37 2014
+Ending measurement at: Sat Jul 19 10:29:05 2014
+--------------------------------------------------------------
+Task: Dividing fresh random elements of GT
+Number of repetitions: 5000
+Total time in seconds: 28
+Average execution time: 5.6 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:29:05 2014
+Ending measurement at: Sat Jul 19 10:29:07 2014
+--------------------------------------------------------------
+Task: Adding Fixed Random Bigs
+Number of repetitions: 5000000
+Total time in seconds: 2
+Average execution time: 0.4 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:29:07 2014
+Ending measurement at: Sat Jul 19 10:29:16 2014
+--------------------------------------------------------------
+Task: Adding distinct Random Bigs
+Number of repetitions: 5000000
+Total time in seconds: 9
+Average execution time: 1.8 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:29:16 2014
+Ending measurement at: Sat Jul 19 10:29:20 2014
+--------------------------------------------------------------
+Task: Multiplying fixed Random Bigs
+Number of repetitions: 5000000
+Total time in seconds: 4
+Average execution time: 0.8 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:29:20 2014
+Ending measurement at: Sat Jul 19 10:29:30 2014
+--------------------------------------------------------------
+Task: Multiplying distinct Random Bigs
+Number of repetitions: 5000000
+Total time in seconds: 10
+Average execution time: 2 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:29:30 2014
+Ending measurement at: Sat Jul 19 10:29:58 2014
+--------------------------------------------------------------
+Task: Dividing fixed Random Bigs
+Number of repetitions: 5000000
+Total time in seconds: 28
+Average execution time: 5.6 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:29:58 2014
+Ending measurement at: Sat Jul 19 10:30:39 2014
+--------------------------------------------------------------
+Task: Dividing distinct Random Bigs
+Number of repetitions: 5000000
+Total time in seconds: 41
+Average execution time: 8.2 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:30:39 2014
+Ending measurement at: Sat Jul 19 10:31:12 2014
+--------------------------------------------------------------
+Task: Hashing and Xoring fixed random elements of GT
+Number of repetitions: 1000000
+Total time in seconds: 33
+Average execution time: 33 microseconds
+--------------------------------------------------------------
+Starting measurement at: Sat Jul 19 10:31:12 2014
+Ending measurement at: Sat Jul 19 10:31:41 2014
+--------------------------------------------------------------
+Task: Hashing and Xoring fresh random elements of GT
+Number of repetitions: 5000
+Total time in seconds: 29
+Average execution time: 5.8 milliseconds
+--------------------------------------------------------------
+Nothing left to do

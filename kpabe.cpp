@@ -259,7 +259,13 @@ bool KPABE::decrypt_main_body(const ShamirAccessPolicy& policy, vector<G2> keyFr
 
   G1 *g1[countAtts];
   G2 *g2[countAtts];
+
+#ifdef AttOnG1_KeyOnG2
+  G1 bufferArray[countAtts]; // this is a temporary placeholder so that computed fragments can have an address that can be used by g1 or g2
+#endif
+#ifdef AttOnG2_KeyOnG1
   G2 bufferArray[countAtts]; // this is a temporary placeholder so that computed fragments can have an address that can be used by g1 or g2
+#endif
 
   // DEBUG("Order      : " << m_order);
   for (int i = 0; i < countAtts; i++) {    
@@ -267,8 +273,9 @@ bool KPABE::decrypt_main_body(const ShamirAccessPolicy& policy, vector<G2> keyFr
     // DEBUG("coefficient: " << coeff);
     //    OUT("Iter " << i << " --- Attribute Index: " << attIndices[i] << " - - Coeff: " << coeff << " --- Set size: " << attIndices.size());
 
+    // 
 #ifdef AttOnG1_KeyOnG2
-    bufferArray[i] = m_pfc.mult(AttFrag[attFragIndices[i]], coeff); // necessary to fix an address that can be passed to g1.
+    bufferArray[i] = m_pfc.mult(AttFrags[attFragIndices[i]], coeff); // necessary to fix an address that can be passed to g1.
     g1[i] = &bufferArray[i];
     g2[i] = &keyFrags[keyFragIndices[i]];
 #endif

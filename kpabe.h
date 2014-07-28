@@ -1,6 +1,6 @@
 
 //#define AttOnG1_KeyOnG2
- #define AttOnG2_KeyOnG1
+#define AttOnG2_KeyOnG1
 
 
 class KPABE {
