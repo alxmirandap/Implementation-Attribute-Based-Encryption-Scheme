@@ -1,0 +1,68 @@
+findUnique
+
+was being used to produce a unique set of shares for evaluate(), computeLagrange() and Reconstruct().
+
+Evaluate() and Reconstruct() are universal. What is the meaning of finding unique shares?
+
+It just means that we do not trust our client and think that he may have put repeated shares in a list and we want to exclude them.
+Does this make sense at all, or should we just assume that by default all lists are unique?
+
+What happens if a client passes bad shares to a list? That should not affect the proceedings: bollocks in, bollocks out. So, we might as well assume that all shares are distinct and have not been tampered with.
+
+However, let's look at BL and simple Shamir and evaluate.
+
+- Shamir: evaluate merely counts the number of shares. 
+
+- BL: the minimal sets are examined until a match is found
+
+Reconstruct:
+
+- Shamir: k shares are chosen from the unique set. If they are all distinct, the secret will be produced. If some of them are actually equal, a secret will still be produced, but it will be wrong
+
+- BL: a minimal set is identified, then the secret is computed. There is some overlap with work done for evaluate, so it might be good to have evaluate produce a witness set with shares that are enough to reconstruct the secret. This avoids double work.
+
+
+Notice that while in Shamir I should be certain that all shares are different to evaluate and reconstruct, in BL that is not required, since I must have the precise right shares (those that correspond to the proper minimal set). 
+
+So, BL should not have to worry with producing a unique set of shares beforehand, but Shamir should. When are these required?
+
+- reconstruct calls both evaluate and lagrange (only in Shamir). 
+- lagrange should only be called for reconstruction anyway, and only with a minimal set of shares. That is, a witness set. It will not work with more, by the way.
+
+So, a plan:
+
+- lagrange should only be called with the witness returned by evaluate
+- reconstruction is faster if we assume the shares are already unique. So we can obtain unique shares before calling evaluate
+- however, that is not a requirement of BL, and so maybe it really is the responsibility of the individual reconstruction algorithm to find unique shares. 
+- I will do that outside the reconstruction. So, this will also happily assume it has unique shares
+
+
+=============================================================
+
+ShareParts:
+
+In Shamir I can have participants with several shares. Each share has an indication of which participant it belongs to.
+However, that has to be specified in the share distribution. The policy has to know to whom it will give each share, and so there has to be a way to specify this.
+
+In fact, since we are talking about threshold policies, we only need to specify how many shares we give to each participant, we do not need to specifi for each share the corresponding participant index.
+
+I think that is done to give absolute freedom in how the shares are numbered. Remember that one of the options I have now is to give arbitrary numbers to different participants. This makes it possible to choose trapdoor public values for participants, say, g^i while the participant keeps its i secret. What this is good for, I have no idea yet. 
+
+On the other hand, if I went with full flexibility I would do the same for shares, but honestly that is going to take more time than it is worth now.
+So I should step back and decide what is ok to have and what is too much.
+
+I suppose letting the participants be different is not that great a gain. Having more than one share per participant makes some sense, but is already on the borderline of what we really need. So I will keep only the number of shares I have to give each participant and a simple numbering scheme.
+
+The easiest way is to do a rectangle: if I have a total number of shares k, and for each participant i the number of shares is n(i), then I can number each share as
+i*k + j, 1 <= j <= n(i). this creates holes but is fast to compute, and creates unique share numbers. 
+
+Does this need to exist in, for example, BL?
+
+shareParts is only defined for the sake of the distribution algorithm. It is quite a policy thing. In BL, it is simply implicit in the policy representation. So, i will let it be a particular of the Shamir implementation.
+
+
+Now, this may suggest some changes to how distribution is computed. Currently, it looks for the number (name) of a participant and uses it to evaluate the polynomial. With several shares per participant, I will have to do that for each share. The shares can be implicitly numbered, but the distribution still has to change somewhat to accomodate the current case.
+
+The changes are not big. We don't need to fully honour the participants names. Since they always must have some value for shareParts, even if it is only 1, I can always use the same formula to compute the public value of each share. This may change the tests, or not. It depends on how detailed I have been in testing the policy.
+
+
