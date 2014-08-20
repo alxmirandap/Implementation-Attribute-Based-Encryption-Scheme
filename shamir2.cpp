@@ -20,20 +20,31 @@ ShamirAccessPolicy::ShamirAccessPolicy():
   m_shareParts.push_back(1);  
 }
 
-ShamirAccessPolicy::ShamirAccessPolicy(const int k, const int n):
+ShamirAccessPolicy::ShamirAccessPolicy(const int k, const unsigned int n):
   AccessPolicy(n), 
   m_threshold(k)
 {
   // calls specific base constructor
-  for (int i = 0; i < n; i++) {
-    m_shareParts.push_back(i);
+  for (unsigned int i = 0; i < n; i++){
+    m_shareParts.push_back(1);
   }
 }
 
-ShamirAccessPolicy::ShamirAccessPolicy(const int k, const vector<int> &shareParts, const vector<int> &parts):
+ShamirAccessPolicy::ShamirAccessPolicy(const int k, const vector<int> &parts):
+  AccessPolicy(parts), 
+  m_threshold(k)
+{
+  for (unsigned int i = 0; i < parts.size(); i++) {
+    m_shareParts.push_back(1);
+  }
+}
+
+ShamirAccessPolicy::ShamirAccessPolicy(const int k, const vector<int> &parts, const vector<int> &shareParts):
   AccessPolicy(parts), 
   m_threshold(k), m_shareParts(shareParts)
-{}
+{
+  guard("shareParts and parts must be the same size", parts.size() == shareParts.size());
+}
 
 ShamirAccessPolicy::ShamirAccessPolicy(const ShamirAccessPolicy& other):
   AccessPolicy(other.m_participants), 
@@ -54,7 +65,11 @@ unsigned int ShamirAccessPolicy::getThreshold() const
 }
 
 unsigned int ShamirAccessPolicy::getNumShares() const{
-  return m_shareParts.size();
+  unsigned int nshares = 0;
+  for (unsigned int i = 0; i < m_shareParts.size(); i++){
+    nshares += m_shareParts[i];
+  }
+  return nshares;
 }
 
 bool ShamirAccessPolicy::evaluate(const vector<ShareTuple> uniqueShares, vector<ShareTuple> &witnessShares) const{
@@ -85,7 +100,7 @@ bool ShamirAccessPolicy::evaluate(const vector<ShareTuple> uniqueShares, vector<
   return true;
 }
 
-vector<int> ShamirAccessPolicy::getShareParticipants() const{
+vector<int> ShamirAccessPolicy::getSharesByParticipant() const{
   return m_shareParts;
 }
 
@@ -98,7 +113,7 @@ inline void ShamirSS::initPolicy(){
     i_policy = *tempPtr;
   } else {
     cerr << "ShamirSecretSharing has an AccessPolicy that is not ShamirAccessPolicy!";
-    exit(ERR_BAD_POLICY);
+    throw std::runtime_error(ERR_BAD_POLICY);
   }
 }
 
@@ -110,26 +125,39 @@ inline void ShamirSS::initPoly(){
     }
 }
 
+void ShamirSS::init(){
+  initPolicy();
+  initPoly();
+}
 
 ShamirSS::ShamirSS(ShamirAccessPolicy* policy, const Big &order, PFC &pfc):
   SecretSharing(policy, order, pfc)
 {
-  initPolicy();
-  initPoly();
+  init();
 }
 
 ShamirSS::ShamirSS(const int in_k, const int nparts, const Big& order, PFC &pfc):
   SecretSharing( new ShamirAccessPolicy(in_k, nparts), order, pfc)
 {
-  initPolicy();
-  initPoly();
+  init();
 }
 
-ShamirSS::ShamirSS(const int in_k, const vector<int> &shareParts, const vector<int> &parts, const Big& order, PFC &pfc):
-  SecretSharing(new ShamirAccessPolicy(in_k, shareParts, parts), order, pfc)
+
+// for backwards compatibility: I need to reproduce the constructor that exists in shamir.h with four arguments. int in_k, vector<int> parts, Big order, Big pfc)
+// the new constructor requires shareparts whenever I specify arbitrary participants
+// the previous constructor only assumes that all participants have exactly one share, so in fact shareParts would simply have the value 1 in the ith position
+// this will be done by adding a new constructor to the ShamirAccessPolicy
+
+ShamirSS::ShamirSS(const int in_k, const vector<int> &parts, const Big& order, PFC &pfc):
+  SecretSharing( new ShamirAccessPolicy(in_k, parts), order, pfc)
 {
-  initPolicy();
-  initPoly();
+  init();
+}
+
+ShamirSS::ShamirSS(const int in_k, const vector<int> &parts, const vector<int> &shareParts, const Big& order, PFC &pfc):
+  SecretSharing(new ShamirAccessPolicy(in_k, parts, shareParts), order, pfc)
+{
+  init();
 }
 
 
@@ -171,7 +199,8 @@ Big ShamirSS::reconstruct (const vector<ShareTuple> uniqueShares) {
       s = (s + t); 
       DEBUG("Temporary secret: " << s);
     }
-    s %= m_order;
+    s = ((s + m_order) % m_order);
+    DEBUG("Final secret: " << s);
     return s;
   }
 
@@ -192,36 +221,66 @@ std::vector<ShareTuple> ShamirSS::distribute_random(const Big& s){
   return distribute_determ(s, poly);
 }
 
+inline int ShamirSS::getSharePoint(int partIndex, int shareIndex, int totalShares) { // shareIndex is numbered from 0 onwards
+  return partIndex * totalShares + shareIndex;
+}
+
 std::vector<ShareTuple> ShamirSS::distribute_determ(const Big& s, const vector<Big> &randomness){
-  //  DEBUG("Randomness size: " << randomness.size());
+  DEBUG("Randomness size: " << randomness.size());
   guard("Secret must be smaller than group order", s < m_order);
-  //  DEBUG("Degree minus 1: " << getThreshold() - 1);
+  DEBUG("Degree minus 1: " << getThreshold() - 1);
   guard("Distribute algorithm has received randomness of the wrong size", randomness.size() == getThreshold()-1);
 
   vector<Big> poly(getThreshold());	// internal representation of the shamir polynomial
   int pi; // participant index
+  int point; // share public information
   Big acc; // cummulative sum for computing the polynomial
   Big accX; // cummulative value for the variable power (x^i)
+  Big temp; // individual term a*x^i
+  vector<int> shareParts = i_policy.getSharesByParticipant();
 
-  std::vector<ShareTuple> shares(i_policy.getNumShares());  
+  // the number of a share is computed to be participants_index * nshares + share_number_for_this_participant
+
+  int nshares = i_policy.getNumShares();
+  ShareTuple new_share;
+  std::vector<ShareTuple> shares; 
+  shares.reserve(nshares);  
+  vector<int> parts = getParticipants();
 
   poly[0]=s;
   for (unsigned int i = 1; i < getThreshold(); i++){
     poly[i] = randomness[i-1];
   }
     	
-  for (unsigned int j=0;j<getNumParticipants();j++) {
-    pi=getParticipants()[j];
-    acc=poly[0]; accX=pi;
-    for (unsigned int k=1;k<getThreshold();k++) { 
-      // evaluate polynomial a0+a1*x+a2*x^2... for x=pi;
-      acc+=modmult(poly[k],(Big)accX,m_order); 
-      accX*=pi;
-      acc%=m_order;
-    }    
-    shares[j].setValues(pi, acc,j);
-    //    DEBUG("Share " << j << shares[j]);
+  for (unsigned int j=0;j<getNumParticipants();j++) {   
+    pi=parts[j];
+    DEBUG("Execution " << j << " / Participant " << pi);
+    for (int l = 0; l < shareParts[j]; l++) {
+      point = getSharePoint(pi, l, nshares);
+      DEBUG("----Share " << l << " / Point " << point);
+      acc=poly[0]; accX=point;
+      for (unsigned int k=1;k<getThreshold();k++) { 
+	// evaluate polynomial a0+a1*x+a2*x^2... for x=pi;
+	temp = modmult(poly[k],(Big)accX,m_order); 
+	DEBUG("a * x^" << k << ": " << temp);
+	acc+=temp;
+	accX*=point;
+	acc = (acc + m_order) % m_order;
+      }    
+      // the shares indices do not have to be consecutive and sorted, they only have to be unique. 'point' is unique
+      new_share = ShareTuple(pi, acc, point);
+      shares.push_back(new_share); 
+      DEBUG ("Share " << new_share.to_string());
+      //    DEBUG("Share " << j << shares[j]);
+    }
   }
+  DEBUG("Shares to return size: " << shares.size());
+
+    for (unsigned int i = 0; i < shares.size(); i++) {
+      DEBUG("Returning these shares: " << shares[i].to_string());
+    }
+
+
   return shares;
 }
 
@@ -237,6 +296,7 @@ Big ShamirSS::computeLagrangeCoefficient(int shareIndex, vector<ShareTuple> witn
   for (unsigned int k=0;k<witnessShares.size();k++)
     {      
       j=witnessShares[k].getShareIndex();
+      DEBUG("Reconstruction. Share: " << k << " contents: " << witnessShares[k].to_string());
       guard("Participant index must be greater than 0", j > 0);
       shareCoef = moddiv(m_order - j,(Big)(m_order + shareIndex - j),m_order);
       if (j!= shareIndex) z=modmult(z,shareCoef,m_order);

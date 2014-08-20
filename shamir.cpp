@@ -128,6 +128,11 @@ int ShamirAccessPolicy::getNumShares(){
   return getNumParticipants();
 }
 
+// This function decides if two sets of fragments have enough attributes in common to satisfy a policy
+// It is actually wrongly placed, it should not be a method of the access policy but of the ABE scheme itself, as it uses the concept of key and ciphertext fragments
+// instead of shares. These two tasks could be decoupled: first a method that looks at the fragments in the key and those in the ciphertext, and returns the set of 
+// common fragments. Then another that evaluates that set according to the policy
+
 bool ShamirAccessPolicy::evaluate(vector<int> atts, vector<int>& attFragIndices, vector<int>& keyFragIndices) const{
   attFragIndices.clear();
   keyFragIndices.clear();
@@ -156,7 +161,7 @@ bool ShamirAccessPolicy::evaluate(vector<int> atts, vector<int>& attFragIndices,
 
 Big ShamirAccessPolicy::findCoefficient(const int i,const vector<int> parts) const
 {
-  if (parts.size() < m_threshold) return 0; // an error value, since the Lagrange coefficient can never be 0
+  if (parts.size() < m_threshold) return 0; // returns an error value, since the Lagrange coefficient can never be 0
 
   int j;
   Big z=1;

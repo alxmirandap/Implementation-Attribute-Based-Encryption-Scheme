@@ -1,4 +1,3 @@
-
 class SharePair{
   int partIndex;
   Big share;
@@ -32,7 +31,7 @@ class ShamirAccessPolicy{
   vector<int> getParticipants();
   int getNumShares(); // returns the number of shares distributed by this policy
   bool evaluate(vector<int> atts, vector<int>& attFragIndices, vector<int>& keyFragIndices) const;
-  Big findCoefficient(int attr, vector<int> attIndices) const;  
+  Big findCoefficient(int attr, vector<int> attIndices) const;  //computes the lagrange coefficient for a given participant in a set
 };
 
 

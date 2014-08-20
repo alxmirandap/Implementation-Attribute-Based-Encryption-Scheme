@@ -1,19 +1,22 @@
+#define DEF_SECRET_SHARING
+
+
 
 class ShareTuple{
   int partIndex;
   Big share;
-  int shareIndex;
+  std::string shareIndex;
 
  public:
   ShareTuple();
-  ShareTuple(const int pi, const Big s, const int si); 
+  ShareTuple(const int pi, const Big s, const std::string si); 
   ShareTuple(const ShareTuple& other);
   ShareTuple& operator=(const ShareTuple& other);
   void setValues(const int pi, const Big s, const int si) ;
   bool operator==(const ShareTuple& rhs) const;
   string to_string() const;
   int getPartIndex() const;
-  int getShareIndex() const;
+  std::string getShareIndex() const;
   Big getShare() const;
 };
 
@@ -26,14 +29,14 @@ class AccessPolicy{
   
  public:
   AccessPolicy();
-  AccessPolicy(const int n); // constructor with participants numbered from 1 to n
+  AccessPolicy(const unsigned int n); // constructor with participants numbered from 1 to n
   AccessPolicy(const vector<int> &parts); // constructor where participants are explicitly numbered. 
 
   // I removed assignment and copy operators, since these seem better suited for base classes
 
   unsigned int getNumParticipants() const;
   vector<int> getParticipants() const;
-  virtual unsigned int getNumShares() const = 0; // returns the number of shares distributed by this policy
+  virtual unsigned int getNumShares() = 0; // returns the number of shares distributed by this policy
 
   // evaluate: evaluates the received shares according to the policy and returns a set of shares that are enough to reconstruct the secret if 
   // the policy is satisfied by the first argument
@@ -62,15 +65,17 @@ class SecretSharing
 public:
   SecretSharing(AccessPolicy* policy, const Big &order, PFC &pfc);  
   Big getOrder() const;
+  AccessPolicy* getPolicy() const;
   unsigned int getNumParticipants() const;
+  unsigned int getNumShares();
   vector<int> getParticipants() const; 
+  vector<ShareTuple> getSharesForParticipants(vector<int> &parts, vector<ShareTuple> &shares); // returns the subset of shares that are held by certain participants
+  virtual bool evaluate(const vector<ShareTuple> uniqueShares, vector<ShareTuple> &witnessShares) const; 
   virtual vector<Big> getDistribRandomness() = 0;  
   virtual std::vector<ShareTuple> distribute_random(const Big& s) = 0;
   virtual std::vector<ShareTuple> distribute_determ(const Big& s, const vector<Big>& randomness) = 0;
   virtual Big reconstruct (const vector<ShareTuple> shares) = 0;
 
-  virtual ~SecretSharing(){
-    delete(m_policy);
-  }
+  virtual ~SecretSharing();
 };
 

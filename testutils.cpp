@@ -1,4 +1,13 @@
+/*
+ * testutils.cpp
+ *
+ *  Created on: 18 Aug 2014
+ *      Author: uxah005
+ */
+
+#ifndef DEF_UTILS
 #include "utils.h"
+#endif
 
 int testContains() {
   vector<int> set;
@@ -47,10 +56,10 @@ int testAddVector() {
   j = 0;
   // j is used to add a signed int to the vector, not an unsigned one
   for (unsigned int i = 0; i < nbase; i++,j++) {
-    base_vecint.push_back(j);    
+    base_vecint.push_back(j);
   }
   for (unsigned int i = 0; i < nadd; i++) {
-    add_vecint.push_back(j); 
+    add_vecint.push_back(j);
   }
 
 
@@ -70,7 +79,7 @@ int testAddVector() {
   for (unsigned int i = 0; i < nbase; i++,j++) {
     ss.str("");
     ss << "Test AddVector - comparison final vector and base: pos " << i;
-    test_diagnosis(ss.str(), base_vecint[i] == j, errors);  // extra variable j is because the contents of the vector are not necessarily unsigned, 
+    test_diagnosis(ss.str(), base_vecint[i] == j, errors);  // extra variable j is because the contents of the vector are not necessarily unsigned,
     // and I want to avoid casts to make sure I'm not hiding any error. j must be unsigned, so can not be declared inside the for
   }
   for (unsigned int i = 0; i < nadd; i++) {
@@ -81,10 +90,31 @@ int testAddVector() {
   return errors;
 }
 
+int testConvertIntToStr() {
+	int errors = 0;
+
+	std::string s;
+	std::string base = "Test ConvertIntToStr - ";
+
+	int n = 23;
+	s = convertIntToStr(n);
+	test_diagnosis(base + "23", s == "23", errors);
+
+	n = 142;
+	s = convertIntToStr(n);
+	test_diagnosis(base + "142", s == "142", errors);
+
+	n = -218;
+	s = convertIntToStr(n);
+	test_diagnosis(base + "-218", s == "-218", errors);
+
+	return errors;
+}
+
 int testConvertStrToInt() {
   int errors = 0;
   int n;
-  
+
   std::string ss;
   std::string base = "Test ConvertStrToInt - ";
 
@@ -94,71 +124,71 @@ int testConvertStrToInt() {
   ss = "";
   ss = base + s;
   try {
-    n = convertStrToInt(s);  
+    n = convertStrToInt(s);
     test_diagnosis(ss, n == 145, errors);
-  } catch (std::exception &e) {    
+  } catch (std::exception &e) {
   }
-  
+
 
   s = "145a";
   ss = base + s;
   try {
-    n = convertStrToInt(s);  
+    n = convertStrToInt(s);
     test_diagnosis(ss, false, errors);
-  } catch (std::exception &e) {    
+  } catch (std::exception &e) {
     test_diagnosis(ss, true, errors);
   }
 
   s = "abc";
   ss = base + s;
   try {
-    n = convertStrToInt(s);  
+    n = convertStrToInt(s);
     test_diagnosis(ss, false, errors);
-  } catch (std::exception &e) {    
+  } catch (std::exception &e) {
     test_diagnosis(ss, true, errors);
   }
 
   s = "b637";
   ss = base + s;
   try {
-    n = convertStrToInt(s);  
+    n = convertStrToInt(s);
     test_diagnosis(ss, false, errors);
-  } catch (std::exception &e) {    
+  } catch (std::exception &e) {
     test_diagnosis(ss, true, errors);
   }
 
   s = "124.24";
   ss = base + s;
   try {
-    n = convertStrToInt(s);  
+    n = convertStrToInt(s);
     test_diagnosis(ss, false, errors);
-  } catch (std::exception &e) {    
+  } catch (std::exception &e) {
     test_diagnosis(ss, true, errors);
   }
 
   s = "-234";
   ss = base + s;
   try {
-    n = convertStrToInt(s);  
+    n = convertStrToInt(s);
     test_diagnosis(ss, n == -234, errors);
-  } catch (std::exception &e) {    
+  } catch (std::exception &e) {
   }
 
   s = "0";
   ss = base + s;
   try {
-    n = convertStrToInt(s);  
+    n = convertStrToInt(s);
     test_diagnosis(ss, n == 0, errors);
-  } catch (std::exception &e) {    
+  } catch (std::exception &e) {
   }
 
-    
+
   s = "14546377";
   ss = base + s;
   try {
-    n = convertStrToInt(s);  
+    n = convertStrToInt(s);
     test_diagnosis(ss, n == 14546377, errors);
-  } catch (std::exception &e) {    
+  } catch (std::exception &e) {
   }
 
   return errors;
@@ -225,7 +255,7 @@ int testExprTokenize() {
   for (unsigned int i = 0; i < s.size(); i++) {
     ss = base + s[i];
     exprTokenize(s[i], result, ",", "(", ")");
-    test_diagnosis(ss, result == result_tokens[i], errors);    
+    test_diagnosis(ss, result == result_tokens[i], errors);
   }
 
 
@@ -271,7 +301,7 @@ int testTrim() {
   for (unsigned int i = 0; i < s.size(); i++) {
     ss.str("");
     ss << base << "\"" << s[i] << "\"";
-    test_diagnosis(ss.str(), trim(s[i]) == r[i], errors);    
+    test_diagnosis(ss.str(), trim(s[i]) == r[i], errors);
   }
   return errors;
 }
@@ -284,7 +314,7 @@ int runTests(std::string &testName) {
   errors += testAddVector();
   errors += testConvertStrToInt();
   errors += testExprTokenize();
-  errors += testTrim(); 
+  errors += testTrim();
   return errors;
 }
 

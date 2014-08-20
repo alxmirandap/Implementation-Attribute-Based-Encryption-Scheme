@@ -514,13 +514,211 @@ int testGetNumShares() {
 	return errors;
 }
 
-int runTests(std::string &testName) {
+int testGetSharesForParticipants(PFC &pfc) {
+  int errors = 0;
+
+  ENHDEBUG("Creating instances");
+  std::string expr = op_OR + "(1, " + op_AND + "(2,3,4), " + op_AND + "(2,5), " + op_AND + "(4,5))";
+  shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, 5);
+  BLSS testScheme(policy, pfc.order(), pfc);
+
+  ENHDEBUG("Creating shares");
+  ShareTuple s1a(1, 0, "1a");
+  ShareTuple s1b(1, 0, "1b");
+  ShareTuple s2a(2, 0, "2a");
+  ShareTuple s3a(3, 0, "3a");
+  ShareTuple s3b(3, 0, "3b");
+  ShareTuple s3c(3, 0, "3c");
+  ShareTuple s4a(4, 0, "4a");
+  ShareTuple s5a(5, 0, "5a");
+
+  vector<ShareTuple> shares;
+
+  shares.push_back(s1a);
+  shares.push_back(s1b);
+  shares.push_back(s2a);
+  shares.push_back(s3a);
+  shares.push_back(s3b);
+  shares.push_back(s3c);
+  shares.push_back(s4a);
+  shares.push_back(s5a);
+
+  vector<int> parts313;
+  vector<int> parts276;
+  vector<int> parts45;
+
+  parts313.push_back(3);
+  parts313.push_back(1);
+  parts313.push_back(3);
+
+  parts276.push_back(2);
+  parts276.push_back(7);
+  parts276.push_back(6);
+
+  parts45.push_back(4);
+  parts45.push_back(5);
+
+  vector<ShareTuple> verif313;
+  vector<ShareTuple> verif276;
+  vector<ShareTuple> verif45;
+
+  verif313.push_back(s1a);
+  verif313.push_back(s1b);
+  verif313.push_back(s3a);
+  verif313.push_back(s3b);
+  verif313.push_back(s3c);
+
+  verif276.push_back(s2a);
+  
+  verif45.push_back(s4a);
+  verif45.push_back(s5a);
+  
+  std::string base = "testGetSharesForParticipants - ";
+
+  ENHDEBUG("Calling diagnosis");
+  DEBUG("call 1");
+  vector<ShareTuple> returnedShares = SecretSharing::getSharesForParticipants(parts313, shares);
+  test_diagnosis(base + "[313]", returnedShares == verif313, errors);
+
+  DEBUG("call 2");
+  returnedShares = SecretSharing::getSharesForParticipants(parts276, shares);
+  test_diagnosis(base + "[276]", returnedShares == verif276, errors);
+
+  DEBUG("call 3");
+  returnedShares = SecretSharing::getSharesForParticipants(parts45, shares);
+  test_diagnosis(base + "[45]", returnedShares == verif45, errors);
+
+  ENHDEBUG("Finished diagnosis");	
+  return errors;
+}
+
+int testReconFromShares(vector<int> party, std::string message,
+			BLSS scheme, vector<ShareTuple> shares, bool goodParty,
+			unsigned int expectedNumberShares, Big orig_secret) {
+
+  int errors = 0;
+
+  ENHDEBUG("testReconFromShares");
+  for (unsigned int i = 0; i < party.size(); i++) {
+    DEBUG("Party: " << party[i]);
+  }
+
+  for (unsigned int i = 0; i < shares.size(); i++) {
+    DEBUG("Shares: " << shares[i].to_string());
+  }
+  
+
+  vector<ShareTuple> partShares;
+  partShares = SecretSharing::getSharesForParticipants(party, shares);
+
+  for (unsigned int i = 0; i < partShares.size(); i++) {
+    DEBUG("Participant Shares: " << partShares[i].to_string());
+  }
+
+
+  vector<ShareTuple> witnessShares;
+  test_diagnosis(message + "evaluation", scheme.evaluate(partShares, witnessShares) == goodParty, errors);
+
+  for (unsigned int i = 0; i < witnessShares.size(); i++) {
+    DEBUG("Witness Shares: " << witnessShares[i].to_string());
+  }
+
+  test_diagnosis(message + "number of shares", witnessShares.size() == expectedNumberShares, errors);
+  DEBUG("number of witness shares: " << witnessShares.size());
+  DEBUG("expected number of shares: " << expectedNumberShares);
+  Big reced_secret = scheme.reconstruct(witnessShares);
+  if (goodParty) {
+    test_diagnosis(message + "reconstruction", reced_secret == orig_secret, errors);
+  } else {
+    test_diagnosis(message + "reconstruction", reced_secret != orig_secret, errors);
+  }
+
+  return errors;
+}
+
+
+int testDistributeAndReconstruct(PFC &pfc){
+  int errors = 0;
+  ENHDEBUG("testDistribute and Reconstruct");
+  int niter = 5;
+  DEBUG("Initting s");
+  Big s;
+  DEBUG("Initting old_s");
+  Big old_s=0;
+  DEBUG("Obtaining order");
+  Big order = pfc.order();
+
+
+  DEBUG("Creating instances");
+
+  std::string expr = op_OR + "(1, " + op_AND + "(2,3,4), " + op_AND + "(2,5), " + op_AND + "(4,5))";
+  shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, 5);
+  BLSS testScheme(policy, pfc.order(), pfc);
+
+  std::string base = "testDistributeAndReconstruct ";
+  
+  vector<int> party1;
+  vector<int> party234;
+  vector<int> party25;
+  vector<int> party45;
+  vector<int> badparty23;
+
+  party1.push_back(1);
+
+  party234.push_back(2);
+  party234.push_back(3);
+  party234.push_back(4);
+
+  party25.push_back(2);
+  party25.push_back(5);
+
+  party45.push_back(4);
+  party45.push_back(5);
+
+  badparty23.push_back(2);
+  badparty23.push_back(3);
+
+
+  old_s = 0;
+  for (int j = 0; j < niter; j++){
+    OUT(base + "Iteration: " << j);
+    pfc.random(s);
+    s = s % order;
+    
+    DEBUG("s: " << s << "\t old s: " << old_s);
+    guard("s should be random, and different from the last value or 0", s != old_s); // the probability that s is 0 or the old value should be negligible
+
+    vector<ShareTuple> shares = testScheme.distribute_random(s);
+
+    test_diagnosis(base + "number of shares:", shares.size() == policy->getNumShares(), errors);
+
+    errors += testReconFromShares(party1, base + "[1]", testScheme, shares, true, 1, s);
+    errors += testReconFromShares(party234, base + "[234]", testScheme, shares, true, 3, s);
+    errors += testReconFromShares(party25, base + "[25]", testScheme, shares, true, 2, s);
+    errors += testReconFromShares(party45, base + "[45]", testScheme, shares, true, 2, s);
+    errors += testReconFromShares(badparty23, base + "[23]", testScheme, shares, false, 0, s);
+
+    old_s = s;
+  }
+  return errors;
+}
+
+int runTests(std::string &testName, PFC &pfc) {
   testName = "Test BLAccessPolicy";
   int errors = 0;
 
-//  errors += testParseExpression();
+  // Policy tests
+  ENHOUT("Secret sharing policy tests");
+  errors += testParseExpression();
   errors += testEvaluate();
-//  errors += testGetNumShares();
+  errors += testGetNumShares();
+  
+  // Secret Sharing tests
+  ENHOUT("Secret sharing scheme tests");
+  errors += testGetSharesForParticipants(pfc);
+  ENHOUT("========================");
+  errors += testDistributeAndReconstruct(pfc);
+
   return errors;
 }
 
@@ -532,8 +730,10 @@ int main() {
   mip->IOBASE=10;
 
   std::string test_name;
-  int result = runTests(test_name);
+  int result = runTests(test_name, pfc);
   print_test_result(result,test_name);
 
   return 0;
 }
+
+

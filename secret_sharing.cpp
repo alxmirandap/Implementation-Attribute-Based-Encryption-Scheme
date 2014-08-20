@@ -16,7 +16,7 @@ ShareTuple::ShareTuple():
   partIndex(0), share(0), shareIndex(0)
 {}
 
-ShareTuple::ShareTuple(const int pi, const Big s, const int si):
+ShareTuple::ShareTuple(const int pi, const Big s, const std::string si):
   partIndex(pi), share(s), shareIndex(si)
 {} 
 
@@ -51,7 +51,7 @@ bool ShareTuple::operator==(const ShareTuple& rhs) const {
 
 string ShareTuple::to_string() const {
   std::stringstream sstrm;
-  sstrm << "[" << shareIndex << ";" << partIndex << ";" << share << "] ";
+  sstrm << "[" << partIndex << ";" << share << ";" << shareIndex << "] ";
   return sstrm.str();
 }
 
@@ -63,7 +63,7 @@ Big ShareTuple::getShare() const {
     return share;
 }
 
-int ShareTuple::getShareIndex() const{
+std::string ShareTuple::getShareIndex() const{
   return shareIndex;
 }
 
@@ -78,9 +78,9 @@ AccessPolicy::AccessPolicy()
   m_participants.push_back(1);
 }
 
-AccessPolicy::AccessPolicy(const int n)
+AccessPolicy::AccessPolicy(const unsigned int n)
 {
-  for (int i = 0; i < n; i++) {
+  for (unsigned int i = 0; i < n; i++) {
     m_participants.push_back(i+1);
   }
 }
@@ -99,21 +99,16 @@ vector<int> AccessPolicy::getParticipants() const
   return m_participants;
 }
 
-vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares) 
-{
-  return getUniqueShares(shares, shares.size());
-}
-
 vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares, unsigned int k) 
 // returns the first k distinct shares in the vector <shares>
 {
   vector<ShareTuple> unique;
-  vector<int> indices;
+  vector<std::string> indices;
   unique.reserve(shares.size());
   indices.reserve(shares.size());
   int n;
   ShareTuple share;
-  int shareIndex;
+  std::string shareIndex;
   
   unsigned int i = 0;
   while ( (i<k) && (i < shares.size())) {
@@ -130,6 +125,10 @@ vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares, unsigned int k)
   return unique;
 }
 
+vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares) 
+{
+  return getUniqueShares(shares, shares.size());
+}
 
 
 //================================================================
@@ -138,15 +137,49 @@ SecretSharing::SecretSharing(AccessPolicy* policy, const Big &order, PFC &pfc):
   m_policy(policy), m_order(order), m_pfc(pfc)
 {}
 
+SecretSharing::~SecretSharing(){
+    delete(m_policy);
+}
+
+
 Big SecretSharing::getOrder() const{
   return m_order;
+}
+
+AccessPolicy* SecretSharing::getPolicy() const{
+  return m_policy;
 }
 
 unsigned int SecretSharing::getNumParticipants() const{
   return m_policy->getNumParticipants();
 }
 
+unsigned int SecretSharing::getNumShares() {
+  return m_policy->getNumShares();
+}
+
 vector<int> SecretSharing::getParticipants() const{
   return m_policy->getParticipants();
+}
+
+vector<ShareTuple> SecretSharing::getSharesForParticipants(vector<int> &parts, vector<ShareTuple> &shares){
+  vector<ShareTuple> outShares;
+  outShares.reserve(shares.size());
+  int n; // this must be a signed int, otherwise contains always returns a positive value and we can not detect an error.
+  ShareTuple share;
+  for (unsigned int i = 0; i < shares.size(); i++) {
+    share = shares[i];
+    n = contains(parts, share.getPartIndex());
+    DEBUG("Share Participant: " << share.getPartIndex() << " --- Containment: " << n);
+    if ( n >= 0) {
+      DEBUG("Adding share");
+      outShares.push_back(share);
+    }
+  }
+  return outShares;
+}
+
+bool SecretSharing::evaluate(const vector<ShareTuple> uniqueShares, vector<ShareTuple> &witnessShares) const {
+  return m_policy->evaluate(uniqueShares, witnessShares);
 }
 

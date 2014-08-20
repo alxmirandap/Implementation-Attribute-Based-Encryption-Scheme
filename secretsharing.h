@@ -73,7 +73,7 @@ public:
   unsigned int getNumParticipants() const;
   unsigned int getNumShares();
   vector<int> getParticipants() const;
-  vector<ShareTuple> getSharesForParticipants(vector<int> &parts, vector<ShareTuple> &shares); // returns the subset of shares that are held by certain participants
+  static vector<ShareTuple> getSharesForParticipants(vector<int> &parts, vector<ShareTuple> &shares); // returns the subset of shares that are held by certain participants
   virtual bool evaluate(const vector<ShareTuple> uniqueShares, vector<ShareTuple> &witnessShares) const;
   virtual vector<Big> getDistribRandomness() = 0;
   virtual std::vector<ShareTuple> distribute_random(const Big& s) = 0;

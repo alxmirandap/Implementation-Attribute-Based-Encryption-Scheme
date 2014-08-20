@@ -51,6 +51,10 @@ std::string BLAccessPolicy::getDescription() const
   return m_description;
 }
 
+vector<vector<int> >& BLAccessPolicy::getMinimalSets() {
+  return m_minimal_sets;
+}
+
 unsigned int BLAccessPolicy::getNumShares()  {
 	unsigned int nshares = 0;
 	for (unsigned int i = 0; i < m_minimal_sets.size(); i++)
@@ -222,27 +226,99 @@ std::vector<std::vector<int>> BLAccessPolicy::parseFromExpression(int level, std
 
 //==============================================
 
-// inline void BLSS::initPolicy(){
-//   BLAccessPolicy* tempPtr = dynamic_cast<BLAccessPolicy*> (m_policy);
-//   if (tempPtr) {
-//     i_policy = *tempPtr;
-//   } else {
-//     cerr << "BLSecretSharing has an AccessPolicy that is not BLAccessPolicy!";
-//     exit(ERR_BAD_POLICY);
-//   }
-// }
+void BLSS::initPolicy(){
+  i_policy = std::dynamic_pointer_cast<BLAccessPolicy>(m_policy);
+  if (!i_policy) {
+    stringstream ss(ERR_BAD_POLICY);
+    ss << ": BLSS has an AccessPolicy that is not BLAccessPolicy!" << std::endl;
+    throw std::runtime_error(ss.str());
+  }
+}
+    
+void BLSS::init(){
+  initPolicy();
+  initRandomness();
+}
+  
 
-// void BLSS::init(){
-//   initPolicy();
-// }
+BLSS::BLSS(shared_ptr<BLAccessPolicy>  policy, const Big &order, PFC &pfc):
+  SecretSharing(policy, order, pfc)
+{
+  init();
+}
+ 
+// virtual inherited methods:
+vector<Big> BLSS::getDistribRandomness() {  
+  return m_randomness;
+}
 
-// BLSS::BLSS(BLAccessPolicy* policy, const Big &order, PFC &pfc):
-//   SecretSharing(policy, order, pfc)
-// {
-//   init();
-// }
+void BLSS::initRandomness() {  
+  vector< vector<int> > &minimalSets = i_policy->getMinimalSets();
+  for (unsigned int i = 0; i < minimalSets.size(); i++) {
+    vector<int> set = minimalSets[i];
+    for (unsigned int j = 0; j < set.size()-1; j++) {
+      m_randomness.push_back(0);
+    }
+  }
+}
 
 
+std::vector<ShareTuple> BLSS::distribute_random(const Big& s){
+  Big r;
+
+  vector< vector<int> > &minimalSets = i_policy->getMinimalSets();
+  
+  int count = 0;
+  for (unsigned int i = 0; i < minimalSets.size(); i++) {
+    vector<int> set = minimalSets[i];
+    for (unsigned int j = 0; j < set.size()-1; j++) {
+      m_pfc.random(m_randomness[count]);
+      count++;
+    }
+  }
+  return distribute_determ(s, m_randomness);
+}
+
+
+std::vector<ShareTuple> BLSS::distribute_determ(const Big& s, const vector<Big>& randomness){
+  int count = 0;
+  vector<ShareTuple> shares;
+
+  vector< vector<int> > minimalSets = i_policy->getMinimalSets();
+  for (unsigned int i = 0; i < minimalSets.size(); i++) {
+    vector<int> set = minimalSets[i];
+    Big currentSum = 0;
+    for (unsigned int j = 0; j < set.size(); j++) {      
+      int partIndex = set[j];
+      stringstream ss("");
+      ss << i+1 << ":" << partIndex;
+      Big value;
+      if (j < set.size()-1) {
+    	  value = randomness[count];
+    	  count++;
+    	  currentSum += value % m_order;
+      } else {
+	value = (s - currentSum + m_order) % m_order;
+      }
+      ShareTuple share(partIndex, value, ss.str());
+      shares.push_back(share);
+
+    }    
+  }
+  return shares;
+}
+
+
+Big BLSS::reconstruct (const vector<ShareTuple> shares){
+    vector<ShareTuple> witnessShares;
+    if (!i_policy->evaluate(shares, witnessShares)) return -1;
+
+    Big s = 0;
+    for (unsigned int i=0; i < witnessShares.size(); i++){
+      s = (s + witnessShares[i].getShare()) % m_order ;
+    }
+    return s;
+}
 
 
 

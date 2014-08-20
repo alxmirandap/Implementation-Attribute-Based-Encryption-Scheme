@@ -16,7 +16,7 @@
 
 
 ShareTuple::ShareTuple():
-  partIndex(0), share(0), shareIndex(0)
+  partIndex(0), share(0), shareIndex("")
 {}
 
 ShareTuple::ShareTuple(const int pi, const Big s, const std::string si):

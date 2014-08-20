@@ -354,7 +354,7 @@ public:
       test_diagnosis(ss.str(), badWitness.size() == 0, errors);
 
       DEBUG("new party ok");
-      s2 = testClassFlex.reconstruct(goodShares);
+      s2 = testClassFlex.reconstruct(goodWitness); // previously it was goodShares but witness seems to make more sense
       DEBUG("reconstruction ok");
 
       ss.str("");

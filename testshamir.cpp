@@ -14,7 +14,7 @@
 //---------------------- ShamirTest Class ------------------------
 
 #include "utils.h"
-#include "shamir.h"
+#include "shamir2.h"
 
 class ShamirTest 
 {
