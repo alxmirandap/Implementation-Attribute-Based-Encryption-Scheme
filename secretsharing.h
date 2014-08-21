@@ -44,7 +44,10 @@ class AccessPolicy{
 
   // evaluate: evaluates the received shares according to the policy and returns a set of shares that are enough to reconstruct the secret if
   // the policy is satisfied by the first argument
-  virtual bool evaluate(const vector<ShareTuple> uniqueShares, vector<ShareTuple> &witnessShares) const = 0;
+  virtual Big findCoefficient(const std::string id,const vector<std::string> shareIDs) const = 0; // every linear secret sharing scheme can produce coefficients for reconstruction
+  virtual bool evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const = 0;
+  bool evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const;
+  virtual void obtainCoveredFrags(const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const = 0;
   virtual ~AccessPolicy(){};
 };
 
@@ -67,6 +70,7 @@ class SecretSharing
 
 
 public:
+  SecretSharing(shared_ptr<AccessPolicy> policy, PFC &pfc);
   SecretSharing(shared_ptr<AccessPolicy> policy, const Big &order, PFC &pfc);
   Big getOrder() const;
   shared_ptr<AccessPolicy> getPolicy() const;

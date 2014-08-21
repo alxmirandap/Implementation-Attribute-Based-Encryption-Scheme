@@ -133,9 +133,39 @@ vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares)
   return getUniqueShares(shares, shares.size());
 }
 
+bool AccessPolicy::evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const{
+  witnessShares.clear();
+
+  DEBUG("Creating ID vector");
+  
+  vector<std::string> shareIDs;
+  for (unsigned int i = 0; i < shares.size(); i++) {
+    shareIDs.push_back(shares[i].getShareIndex());
+  }
+
+  DEBUG("Calling evaluateIDs");
+  vector<int> witnessSharesIndices;
+  bool success = evaluateIDs(shareIDs, witnessSharesIndices);
+
+  DEBUG("evalute: list of indices found");
+  for (unsigned int i = 0; i < witnessSharesIndices.size(); i++) {
+    DEBUG("Index: " << witnessSharesIndices[i]);
+    //    DEBUG("Share: " << shares[witnessSharesIndices[i]].to_string());
+  }
+  DEBUG("evalute: end of index list");
+
+  for (unsigned int i = 0; i < witnessSharesIndices.size(); i++) {
+    witnessShares.push_back(shares[witnessSharesIndices[i]]);
+  }
+  return success;
+}
+
 
 //================================================================
 
+SecretSharing::SecretSharing(shared_ptr<AccessPolicy> policy, PFC &pfc):
+  m_policy(policy), m_order(pfc.order()), m_pfc(pfc)
+{}
 SecretSharing::SecretSharing(shared_ptr<AccessPolicy> policy, const Big &order, PFC &pfc):
   m_policy(policy), m_order(order), m_pfc(pfc)
 {}
@@ -181,7 +211,8 @@ vector<ShareTuple> SecretSharing::getSharesForParticipants(vector<int> &parts, v
   return outShares;
 }
 
-bool SecretSharing::evaluate(const vector<ShareTuple> uniqueShares, vector<ShareTuple> &witnessShares) const {
-  return m_policy->evaluate(uniqueShares, witnessShares);
+bool SecretSharing::evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const {
+  return m_policy->evaluate(shares, witnessShares);
 }
+
 

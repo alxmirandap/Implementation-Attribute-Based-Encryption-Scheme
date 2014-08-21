@@ -15,8 +15,7 @@ class BLAccessPolicy : public AccessPolicy{
   void init();
 
  protected:
-  bool satisfyMinimalSet(int setID, vector<int> set, vector<ShareTuple> shares, vector<ShareTuple> &satisfyingShares) const;
-
+  bool satisfyMinimalSet(int setID, vector<int> set, vector<std::string> shareIDs, vector<int> &satisfyingSharesIndices) const;
  public:
   static std::vector<std::vector<int>> parseFromExpression(int level, std::string expr);
   vector<vector<int> >& getMinimalSets();
@@ -27,7 +26,10 @@ class BLAccessPolicy : public AccessPolicy{
   BLAccessPolicy& operator=(const BLAccessPolicy& other);
   std::string getDescription() const;
   unsigned int getNumShares();
-  bool evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const;
+  //  bool evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const;
+  bool evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const;
+  Big findCoefficient(const std::string id,const vector<std::string> shareIDs) const;
+  void obtainCoveredFrags(const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const;
 };
 
 class BLSS : public SecretSharing
@@ -42,6 +44,7 @@ class BLSS : public SecretSharing
   void initRandomness();
 
  public:
+  BLSS(shared_ptr<BLAccessPolicy> policy, PFC &pfc);
   BLSS(shared_ptr<BLAccessPolicy> policy, const Big &order, PFC &pfc);  
 
   // virtual inherited methods:

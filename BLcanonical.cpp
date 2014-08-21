@@ -55,25 +55,31 @@ vector<vector<int> >& BLAccessPolicy::getMinimalSets() {
   return m_minimal_sets;
 }
 
-unsigned int BLAccessPolicy::getNumShares()  {
-	unsigned int nshares = 0;
-	for (unsigned int i = 0; i < m_minimal_sets.size(); i++)
-	{
-		nshares += m_minimal_sets[i].size();
-	}
-	return nshares;
+Big BLAccessPolicy::findCoefficient(std::string id,const vector<std::string> shareIDs) const {
+  int n = contains<std::string>(shareIDs, id);
+  if (n >= 0) {
+    return 1; 
+  } else {
+    return 0;
+  }
 }
 
-// this function returns true if the shares received are enough to satisfy the policy. In BL, this does not just have to do with the right participant, it must
-// also be the right share. For example, consider the policy (A AND B) OR (A AND C). A receives two shares, and exactly one of them will be useful in any of the
-// minimal sets. The share A_1 is not the same as share A_2, and so the share_ID has to be equal to the one in the right position of the tree.
-// This work, however, will be done in the satisfyNode function.
+unsigned int BLAccessPolicy::getNumShares()  {
+  unsigned int nshares = 0;
+  for (unsigned int i = 0; i < m_minimal_sets.size(); i++)
+    {
+      nshares += m_minimal_sets[i].size();
+    }
+  return nshares;
+}
 
-bool BLAccessPolicy::satisfyMinimalSet(int setID, vector<int> set, vector<ShareTuple> shares, vector<ShareTuple> &satisfyingShares) const{
-  ENHDEBUG("SatisfyMinimalSet");
 
-  for(unsigned int i = 0; i < set.size(); i++) {
-    DEBUG("set[" << i << "]: " << set[i]);
+bool BLAccessPolicy::satisfyMinimalSet(int setID, vector<int> set, vector<std::string> shareIDs, vector<int> &satisfyingSharesIndices) const{
+  DEBUG("SatisfyMinimalSet");
+  DEBUG("shareIDs size " << shareIDs.size());
+
+  for (unsigned int i = 0; i < shareIDs.size(); i++) {
+    DEBUG("ShareID at position " << i << ": " << shareIDs[i]);
   }
 
   bool missedElement = false;
@@ -81,64 +87,71 @@ bool BLAccessPolicy::satisfyMinimalSet(int setID, vector<int> set, vector<ShareT
     int setElem = set[i];
     std::string elemID = convertIntToStr(setID) + ":" + convertIntToStr(setElem);
     bool elemFound = false;
-    DEBUG("ElemID: " << elemID);
 
-    for (unsigned int j = 0; (!elemFound)  && (j < shares.size()); j++) {
-      ShareTuple share = shares[j];
-      DEBUG("ShareID[" << j << "]: " << share.getShareIndex());
-      if (elemID == share.getShareIndex()) {
+    for (unsigned int j = 0; (!elemFound)  && (j < shareIDs.size()); j++) {
+      std::string shareID = shareIDs[j];
+      if (elemID == shareID) {
 	elemFound = true;
-	satisfyingShares.push_back(share);
-	DEBUG("Found element number " << i);
+	satisfyingSharesIndices.push_back(j);
+	// Found element at position i
+	DEBUG("found id " << elemID << " in position " << j);
       }
     }
     if (!elemFound) {
       missedElement = true;
     }
-    DEBUG("Checked element at position " << i << ". Found: " << elemFound);
   }
   if (missedElement) {
-    ENHDEBUG("I have missed some element of the set. Returning false.");
-    satisfyingShares.clear();
+    // I have missed some element of the set. Returning false.
+    satisfyingSharesIndices.clear();
     return false;
   }
-  DEBUG("I have not missed any element. Returning true.");
+  // I have not missed any element. Returning true."
   return true;
 }
 
-bool BLAccessPolicy::evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const{
-  witnessShares.clear();
 
-  ENHDEBUG("Evaluating shares");
 
-  vector<ShareTuple> satisfyingShares;
+
+bool BLAccessPolicy::evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const{
+  witnessSharesIndices.clear();
+
+  vector<int> satisfyingSharesIndices;
   for (unsigned int i = 0; i < m_minimal_sets.size(); i++)
   {
 	  vector<int> minimalSet = m_minimal_sets[i]; 
-
-	  ENHDEBUG("Checking minimal set");
-	  for(unsigned int j = 0; j < minimalSet.size(); j++) {
-	    DEBUG("Elem: " << j << ": " << minimalSet[j]);
-	  }
-
-	  if (satisfyMinimalSet(i+1, minimalSet, shares, satisfyingShares)){
-	    DEBUG("Satisfied!");
-	    addVector(witnessShares, satisfyingShares);
+	  if (satisfyMinimalSet(i+1, minimalSet, shareIDs, satisfyingSharesIndices)){
+	    addVector(witnessSharesIndices, satisfyingSharesIndices);
 	    return true;
 	  }
-	  ENHDEBUG("Not Satisfied!");
-	  satisfyingShares.clear();
+	  satisfyingSharesIndices.clear();
   }
-  DEBUG("End of evaluate. Returning false.");
   return false;
 }
 
+void BLAccessPolicy::obtainCoveredFrags(const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const {
+  for (unsigned int i = 0; i < m_minimal_sets.size(); i++) {
+    int count = 0;
+    vector<int> minimalSet = m_minimal_sets[i]; 
+    for (unsigned int j = 0; j < minimalSet.size(); j++) {
+      int att_index = minimalSet[j];
+      int n = contains(atts, att_index);
+      if (n >= 0) {
+	std::string shareID = convertIntToStr(i) + ":" + convertIntToStr(att_index);
+    	keyFragIndices.push_back(count);
+	attFragIndices.push_back(n);
+	coveredShareIDs.push_back(shareID);
+      }
+      count++;
+    }
+  }
+}
 
-std::vector<std::vector<int>> BLAccessPolicy::parseFromExpression(int level, std::string expr) {
+std::vector<std::vector<int> > BLAccessPolicy::parseFromExpression(int level, std::string expr) {
 // level 0 denotes the top-level of the expression. An OR is expected here
 // level 1 denotes the arguments of the OR. These could be either leaves or AND expressions
 
-	vector<vector<int>> minimalSets;
+	vector<vector<int> > minimalSets;
 	if (expr == "") {
 		return minimalSets;
 	}
@@ -155,7 +168,6 @@ std::vector<std::vector<int>> BLAccessPolicy::parseFromExpression(int level, std
 	  // If not, it must be some operator, depending on the level we are
 
     // look for string until "("
-	ENHDEBUG("CATCH in parse");
     size_t start_index = expr.find("(");
     if (start_index == std::string::npos) {
       stringstream ss(ERR_BAD_POLICY);
@@ -189,7 +201,6 @@ std::vector<std::vector<int>> BLAccessPolicy::parseFromExpression(int level, std
     //string: 5 to 9
     //number chars: 9 - 5 + 1 = 5 = end-1-(start+1)+1 = end-1-start-1+1 = end - start - 1
     std::string sub_expr = expr.substr(start_index+1, end_index - start_index - 1);
-    ENHDEBUG("sub-expression to tokenize: " << sub_expr);
     // parse sub-expression into tokens, separated by ","
     vector<std::string> tokens;
     exprTokenize(sub_expr, tokens, ",","(",")");
@@ -200,7 +211,7 @@ std::vector<std::vector<int>> BLAccessPolicy::parseFromExpression(int level, std
 	// inside an external vector, but it is its single element.
     if (level == 0) {
 		for (unsigned int i = 0; i < tokens.size(); i++) {
-			vector<vector<int>> minimalSet = parseFromExpression(level+1, tokens[i]);
+			vector<vector<int> > minimalSet = parseFromExpression(level+1, tokens[i]);
 			minimalSets.push_back(minimalSet[0]);
 		}
 		return minimalSets;
@@ -211,7 +222,7 @@ std::vector<std::vector<int>> BLAccessPolicy::parseFromExpression(int level, std
     if (level == 1) {
     	vector<int> minimalSet;
     	for (unsigned int i = 0; i < tokens.size(); i++) {
-    		vector<vector<int>> literal = parseFromExpression(level+1, tokens[i]);
+    		vector<vector<int> > literal = parseFromExpression(level+1, tokens[i]);
     		minimalSet.push_back(literal[0][0]);
 		}
 		minimalSets.push_back(minimalSet);
@@ -223,6 +234,7 @@ std::vector<std::vector<int>> BLAccessPolicy::parseFromExpression(int level, std
   minimalSets.clear();
   return minimalSets;
 }
+
 
 //==============================================
 
@@ -240,6 +252,11 @@ void BLSS::init(){
   initRandomness();
 }
   
+BLSS::BLSS(shared_ptr<BLAccessPolicy>  policy, PFC &pfc):
+  SecretSharing(policy, pfc)
+{
+  init();
+}
 
 BLSS::BLSS(shared_ptr<BLAccessPolicy>  policy, const Big &order, PFC &pfc):
   SecretSharing(policy, order, pfc)

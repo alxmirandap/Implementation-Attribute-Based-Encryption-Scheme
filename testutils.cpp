@@ -11,10 +11,12 @@
 
 int testContains() {
   vector<int> set;
+  vector<std::string> sset;
   int errors = 0;
 
   for (int i = 0; i < 5; i++) {
     set.push_back(5+i);
+    sset.push_back(convertIntToStr(5+i));
   }
   int n = contains(set, 8);
   test_diagnosis("Test Contains - element is present", (n == 3), errors);
@@ -24,6 +26,16 @@ int testContains() {
   test_diagnosis("Test Contains - bounds elements: first", (n == 0), errors);
   n = contains(set, 9);
   test_diagnosis("Test Contains - bounds elements: last", (n == 4), errors);
+
+  n = contains(sset, std::string("8"));
+  test_diagnosis("String Test Contains - element is present", (n == 3), errors);
+  n = contains(sset, std::string("10"));
+  test_diagnosis("String Test Contains - missing element", (n == -1), errors);
+  n = contains(sset, std::string("5"));
+  test_diagnosis("String Test Contains - bounds elements: first", (n == 0), errors);
+  n = contains(sset, std::string("9"));
+  test_diagnosis("String Test Contains - bounds elements: last", (n == 4), errors);
+
   return errors;
 }
 

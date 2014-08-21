@@ -20,8 +20,8 @@ int testParseExpression() {
   std::string base = "testParseExpression - [";
   
   std::string expr = "";
-  vector<vector<int>> minimalSets = testPolicy.parseFromExpression(0,expr);
-  vector<vector<int>> emptySet; 
+  vector<vector<int> > minimalSets = testPolicy.parseFromExpression(0,expr);
+  vector<vector<int> > emptySet; 
     test_diagnosis(base + expr + "]", minimalSets == emptySet, errors);
     
   expr = "a1"; // literals must be integers, not strings
@@ -83,7 +83,7 @@ int testParseExpression() {
 
     // valid expressions:
 
-    vector<vector<int>> verifSet; 
+    vector<vector<int> > verifSet; 
       vector<int> minSet; 
 
    expr = "1";
@@ -147,7 +147,7 @@ try {
 test_diagnosis(base + expr + "]", false, errors);
 }
 
-
+ 
       expr = op_OR + "(" + op_AND + "(3,4,5)," + op_AND + "(1,2)," + op_AND + "(4,1,6,5))";
       verifSet.clear();
       minSet.clear();
@@ -177,7 +177,10 @@ test_diagnosis(base + expr + "]", false, errors);
 }
 
 
-int testVectors(int errors, vector<vector<ShareTuple>> testRun, vector<vector<ShareTuple>> witnessRun, BLAccessPolicy pol, std::string expr) {
+int testVectors(int errors, vector<vector<ShareTuple> > testRun, vector<vector<ShareTuple> > witnessRun, BLAccessPolicy pol, std::string expr) {
+  ENHDEBUG("===============");
+  ENHDEBUG("Testing vectors");
+
   vector<ShareTuple> witnessVector;
   for (unsigned int i = 0; i < testRun.size(); i++) {
     witnessVector.clear();
@@ -265,8 +268,8 @@ int testExpr1(int errors) {
   ex1Witness23.push_back(s12);
   ex1Witness231.push_back(s11);
 
-  vector<vector<ShareTuple>> ex1TestRun;
-  vector<vector<ShareTuple>> ex1WitnessRun;
+  vector<vector<ShareTuple> > ex1TestRun;
+  vector<vector<ShareTuple> > ex1WitnessRun;
 
   ex1TestRun.push_back(ex1Test1);
   ex1TestRun.push_back(ex1Test2);
@@ -355,8 +358,8 @@ int testExpr2(int errors) {
   ex2WitnessA1B2B3B4.push_back(s24);
 
 
-  vector<vector<ShareTuple>> ex2TestRun;
-  vector<vector<ShareTuple>> ex2WitnessRun;
+  vector<vector<ShareTuple> > ex2TestRun;
+  vector<vector<ShareTuple> > ex2WitnessRun;
 
   ex2TestRun.push_back(ex2TestA1);
   ex2TestRun.push_back(ex2TestA2);
@@ -457,8 +460,8 @@ int testExpr3(int errors) {
   ex3WitnessA1A2B3B1C4B2.push_back(s21);
   ex3WitnessA1A2B3B1C4B2.push_back(s22);
 
-  vector<vector<ShareTuple>> ex3TestRun;
-  vector<vector<ShareTuple>> ex3WitnessRun;
+  vector<vector<ShareTuple> > ex3TestRun;
+  vector<vector<ShareTuple> > ex3WitnessRun;
 
   ex3TestRun.push_back(ex3TestA3A4A5);
   ex3TestRun.push_back(ex3TestB1B2);
@@ -716,7 +719,6 @@ int runTests(std::string &testName, PFC &pfc) {
   // Secret Sharing tests
   ENHOUT("Secret sharing scheme tests");
   errors += testGetSharesForParticipants(pfc);
-  ENHOUT("========================");
   errors += testDistributeAndReconstruct(pfc);
 
   return errors;
@@ -728,6 +730,10 @@ int main() {
   miracl *mip=get_mip();  // get handle on mip (Miracl Instance Pointer)
 
   mip->IOBASE=10;
+
+  time_t seed;            // crude randomisation. Check if this is the version that is crypto-secure.
+  time(&seed);
+  irand((long)seed);
 
   std::string test_name;
   int result = runTests(test_name, pfc);

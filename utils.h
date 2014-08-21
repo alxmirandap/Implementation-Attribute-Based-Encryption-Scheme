@@ -73,7 +73,8 @@ void print_test_result(int result, const string& name);
 void guard(string s, bool b);
 void test_diagnosis(const string& name, bool success, int& errors);
 
-template<typename T> int contains(vector<T> &set, T element);
+template<typename T> int contains(const vector<T> &set, const T element);
+template<typename T> vector<T> intersection(vector<T> &set1, vector<T> &set2);
 template<typename T> void addVector(vector<T> &storage, const vector<T> &data);
 // implementation of the template function goes in the next file
 #include "utils_impl.tcc"

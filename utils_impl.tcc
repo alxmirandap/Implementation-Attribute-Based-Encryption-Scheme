@@ -1,5 +1,5 @@
 template<typename T> 
-int contains(vector<T> &set, T element){
+int contains(const vector<T> &set, const T element){
   for (unsigned int i = 0; i < set.size(); i++){
      if (element == set[i]) {
        return i;
