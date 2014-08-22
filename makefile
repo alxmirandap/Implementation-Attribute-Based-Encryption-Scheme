@@ -6,7 +6,7 @@ OPT=
 MIRACL=-DZZNS=4 -m64
 LIBS=-lbn -lpairs -lmiracl
 
-all: testutils testBLcanonical
+all: testutils testBLcanonical testkpabe
 
 utils.o: utils.cpp utils.h
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c utils.cpp -o utils.o
@@ -29,8 +29,8 @@ BLCanonkpabe.o: BLCanonkpabe.cpp BLCanonkpabe.h
 kpabe.o: kpabe.cpp kpabe.h 
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c kpabe.cpp -o kpabe.o 
 
-testkpabe: testkpabe.cpp utils.o kpabe.o
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe.o utils.o -lbn -lpairs -lmiracl -o testkpabe 
+testkpabe: testkpabe.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe.o utils.o secretsharing.o BLcanonical.o -lbn -lpairs -lmiracl -o testkpabe 
 
 
 tree.o:	tree.cpp tree.h utils.o
@@ -53,24 +53,24 @@ BL.o: BL.cpp BL.h tree.o utils.o secretsharing.o
 
 
 
-shamir.o: shamir.cpp shamir.h
-	g++ -c -O2 -DZZNS=4 -m64 shamir.cpp -o shamir.o 
+#shamir.o: shamir.cpp shamir.h
+#	g++ -c -O2 -DZZNS=4 -m64 shamir.cpp -o shamir.o 
 
-testshamir: testshamir.cpp shamir.o utils.o
-	g++ -O2 -DZZNS=4 -m64 testshamir.cpp shamir.o utils.o -lbn -lpairs -lmiracl -o testshamir 
+#testshamir: testshamir.cpp shamir.o utils.o
+#	g++ -O2 -DZZNS=4 -m64 testshamir.cpp shamir.o utils.o -lbn -lpairs -lmiracl -o testshamir 
 
-testshamir2: testshamir2.cpp shamir2.o utils.o secretsharing.o 
-	g++ -O2 -DZZNS=4 -m64 testshamir2.cpp secretsharing.o shamir2.o utils.o -lbn -lpairs -lmiracl -o testshamir2 
+#testshamir2: testshamir2.cpp shamir2.o utils.o secretsharing.o 
+#	g++ -O2 -DZZNS=4 -m64 testshamir2.cpp secretsharing.o shamir2.o utils.o -lbn -lpairs -lmiracl -o testshamir2 
 
-sham: utils.o shamir.o testshamir 
+#sham: utils.o shamir.o testshamir 
 
-abe: shamir.o utils.o testkpabe
+#abe: shamir.o utils.o testkpabe
 
 #secret: secretsharing.o shamir2.o secret_sharing.cpp secret_sharing.h shamir2.cpp shamir2.h
 
 
-shamir2.o: shamir2.cpp shamir2.h secretsharing.o
-	g++ -W -Wall -Wextra -pedantic -std=c++0x -c -O2 -DZZNS=4 -m64 shamir2.cpp -o shamir2.o 
+#shamir2.o: shamir2.cpp shamir2.h secretsharing.o
+#	g++ -W -Wall -Wextra -pedantic -std=c++0x -c -O2 -DZZNS=4 -m64 shamir2.cpp -o shamir2.o 
 
 
 testbed:
@@ -84,11 +84,13 @@ clean:
 	rm -f kpabe.o
 	rm -f tree.o
 	rm -f secretsharing.o
+	rm -f BLcanonical.o
 	rm -f BL.o
 
 	rm -f testkpabe
 	rm -f testshamir
 	rm -f testshamir2
+	rm -f testBLcanonical
 	rm -f testutils
 	rm -f testtree
 	rm -f testBL

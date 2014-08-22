@@ -56,17 +56,18 @@ public:
 
   KPABE(shared_ptr<SecretSharing> scheme, PFC &pfc, int nAttr);
   void paramsgen(G1& P, G2& Q, Big& order);  
-  int numberAttr();
+  unsigned int numberAttr() const;
   void setup();
-  vector<Big>& getPrivateAttributes();
-  Big& getPrivateKeyRand();
-  Big& getLastEncryptionRandomness();
-  GT& getPublicCTBlinder();
+  vector<Big>& getPrivateAttributes() ;
+  Big& getPrivateKeyRand() ;
+  Big& getLastEncryptionRandomness() ;
+  GT& getPublicCTBlinder() ;
+  shared_ptr<SecretSharing> getScheme() ;
 
 #ifdef AttOnG1_KeyOnG2
-  vector<G1>& getPublicAttributes();
+  vector<G1>& getPublicAttributes() ;
   vector<G2> genKey();
-  vector<G2> genKey(vector<Big> poly);
+  vector<G2> genKey(vector<Big> randomness);
   bool encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G1>& attFrags);
   bool encryptS(const vector<int> &atts, const Big& M, Big& CT, vector<G1>& attFrags);
   bool decrypt(vector<G2> keyFrags, const vector<int>& atts, const GT& CT,  vector<G1>& attFrags, GT& PT);
@@ -74,9 +75,9 @@ public:
 #endif
 
 #ifdef AttOnG2_KeyOnG1
-  vector<G2>& getPublicAttributes();
+  vector<G2>& getPublicAttributes() ;
   vector<G1> genKey();
-  vector<G1> genKey(vector<Big> poly);
+  vector<G1> genKey(vector<Big> randomness);
   bool encrypt(const vector<int> &atts, const GT& M, GT& CT, vector<G2>& attFrags);
   bool encryptS(const vector<int> &atts, const Big& M, Big& CT, vector<G2>& attFrags);
   bool decrypt(vector<G1> keyFrags, const vector<int>& atts, const GT& CT,  vector<G2>& attFrags, GT& PT);

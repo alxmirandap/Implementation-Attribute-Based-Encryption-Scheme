@@ -14,3 +14,10 @@ void addVector(std::vector<T> &storage, const std::vector<T> &data){
     storage.push_back(data[i]);
   }
 }
+
+template<typename T>
+void debugVector(std::vector<T> list, std::string text) {
+     for (unsigned int i = 0; i < list.size(); i++) {
+     	 DEBUG(text << "[" << i << "]: " << list[i]);
+     }
+}

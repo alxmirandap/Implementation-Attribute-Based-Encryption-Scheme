@@ -75,12 +75,10 @@ unsigned int BLAccessPolicy::getNumShares()  {
 
 
 bool BLAccessPolicy::satisfyMinimalSet(int setID, vector<int> set, vector<std::string> shareIDs, vector<int> &satisfyingSharesIndices) const{
-  DEBUG("SatisfyMinimalSet");
-  DEBUG("shareIDs size " << shareIDs.size());
+  //  DEBUG("SatisfyMinimalSet");
+  //  DEBUG("shareIDs size " << shareIDs.size());
 
-  for (unsigned int i = 0; i < shareIDs.size(); i++) {
-    DEBUG("ShareID at position " << i << ": " << shareIDs[i]);
-  }
+  //  debugVector(shareIDs, "ShareID");
 
   bool missedElement = false;
   for (unsigned int i = 0; (!missedElement) && (i < set.size()); i++) {
@@ -94,7 +92,6 @@ bool BLAccessPolicy::satisfyMinimalSet(int setID, vector<int> set, vector<std::s
 	elemFound = true;
 	satisfyingSharesIndices.push_back(j);
 	// Found element at position i
-	DEBUG("found id " << elemID << " in position " << j);
       }
     }
     if (!elemFound) {
@@ -130,14 +127,14 @@ bool BLAccessPolicy::evaluateIDs(const vector<std::string> shareIDs, vector<int>
 }
 
 void BLAccessPolicy::obtainCoveredFrags(const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const {
+  int count = 0;
   for (unsigned int i = 0; i < m_minimal_sets.size(); i++) {
-    int count = 0;
     vector<int> minimalSet = m_minimal_sets[i]; 
     for (unsigned int j = 0; j < minimalSet.size(); j++) {
       int att_index = minimalSet[j];
       int n = contains(atts, att_index);
       if (n >= 0) {
-	std::string shareID = convertIntToStr(i) + ":" + convertIntToStr(att_index);
+	std::string shareID = convertIntToStr(i+1) + ":" + convertIntToStr(att_index);
     	keyFragIndices.push_back(count);
 	attFragIndices.push_back(n);
 	coveredShareIDs.push_back(shareID);

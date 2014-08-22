@@ -657,7 +657,7 @@ int testDistributeAndReconstruct(PFC &pfc){
   std::string expr = op_OR + "(1, " + op_AND + "(2,3,4), " + op_AND + "(2,5), " + op_AND + "(4,5))";
   shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, 5);
   BLSS testScheme(policy, pfc.order(), pfc);
-
+  
   std::string base = "testDistributeAndReconstruct ";
   
   vector<int> party1;
@@ -667,7 +667,7 @@ int testDistributeAndReconstruct(PFC &pfc){
   vector<int> badparty23;
 
   party1.push_back(1);
-
+  
   party234.push_back(2);
   party234.push_back(3);
   party234.push_back(4);
@@ -677,11 +677,11 @@ int testDistributeAndReconstruct(PFC &pfc){
 
   party45.push_back(4);
   party45.push_back(5);
-
+  
   badparty23.push_back(2);
   badparty23.push_back(3);
-
-
+  
+  
   old_s = 0;
   for (int j = 0; j < niter; j++){
     OUT(base + "Iteration: " << j);
@@ -690,19 +690,84 @@ int testDistributeAndReconstruct(PFC &pfc){
     
     DEBUG("s: " << s << "\t old s: " << old_s);
     guard("s should be random, and different from the last value or 0", s != old_s); // the probability that s is 0 or the old value should be negligible
-
+    
     vector<ShareTuple> shares = testScheme.distribute_random(s);
-
+    
     test_diagnosis(base + "number of shares:", shares.size() == policy->getNumShares(), errors);
-
+    
     errors += testReconFromShares(party1, base + "[1]", testScheme, shares, true, 1, s);
     errors += testReconFromShares(party234, base + "[234]", testScheme, shares, true, 3, s);
     errors += testReconFromShares(party25, base + "[25]", testScheme, shares, true, 2, s);
     errors += testReconFromShares(party45, base + "[45]", testScheme, shares, true, 2, s);
     errors += testReconFromShares(badparty23, base + "[23]", testScheme, shares, false, 0, s);
-
+    
+    
     old_s = s;
   }
+    return errors;
+}
+
+int testObtainCoveredFrags() {
+  int errors = 0;
+
+  std::string base = "testObtainCoveredFrags: ";
+  
+  vector<int> atts;
+  atts.push_back(7);
+  atts.push_back(8);
+  atts.push_back(2);
+  atts.push_back(4);
+  atts.push_back(1);
+  atts.push_back(3);
+  
+  vector<int> attFragIndices;
+  vector<int> keyFragIndices;
+  vector<std::string> coveredShareIDs;
+
+  std::string expr = op_OR + "(1, " + op_AND + "(2,3,4), " + op_AND + "(2,5), " + op_AND + "(4,5))";
+  shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, 5);
+    
+  vector<std::string> verifShareIDs;
+  verifShareIDs.push_back("1:1");
+  verifShareIDs.push_back("2:2");
+  verifShareIDs.push_back("2:3");
+  verifShareIDs.push_back("2:4");
+  verifShareIDs.push_back("3:2");
+  verifShareIDs.push_back("4:4");
+
+  vector<int> verifKeyFragIDs;
+  verifKeyFragIDs.push_back(0);
+  verifKeyFragIDs.push_back(1);
+  verifKeyFragIDs.push_back(2);
+  verifKeyFragIDs.push_back(3);
+  verifKeyFragIDs.push_back(4);
+  verifKeyFragIDs.push_back(6);
+
+  vector<int> verifAttFragIDs;
+  verifAttFragIDs.push_back(4);
+  verifAttFragIDs.push_back(2);
+  verifAttFragIDs.push_back(5);
+  verifAttFragIDs.push_back(3);
+  verifAttFragIDs.push_back(2);
+  verifAttFragIDs.push_back(3);
+
+  policy->obtainCoveredFrags(atts, attFragIndices, keyFragIndices, coveredShareIDs); 
+
+  test_diagnosis(base + "number of covered IDs", coveredShareIDs.size() == 6, errors);
+  for (unsigned int i = 0; i < coveredShareIDs.size(); i++) {
+    test_diagnosis(base + "coveredID " + convertIntToStr(i), coveredShareIDs[i] == verifShareIDs[i], errors);
+  }
+
+  test_diagnosis(base + "number of keyFragIndices", keyFragIndices.size() == 6, errors);
+  for (unsigned int i = 0; i < keyFragIndices.size(); i++) {
+    test_diagnosis(base + "keyFragIndex " + convertIntToStr(i), keyFragIndices[i] == verifKeyFragIDs[i], errors);
+  }
+
+  test_diagnosis(base + "number of attFragIndices", attFragIndices.size() == 6, errors);
+  for (unsigned int i = 0; i < attFragIndices.size(); i++) {
+    test_diagnosis(base + "attFragIndex " + convertIntToStr(i), attFragIndices[i] == verifAttFragIDs[i], errors);
+  }
+  
   return errors;
 }
 
@@ -715,11 +780,13 @@ int runTests(std::string &testName, PFC &pfc) {
   errors += testParseExpression();
   errors += testEvaluate();
   errors += testGetNumShares();
+  errors += testObtainCoveredFrags();
   
   // Secret Sharing tests
   ENHOUT("Secret sharing scheme tests");
   errors += testGetSharesForParticipants(pfc);
   errors += testDistributeAndReconstruct(pfc);
+
 
   return errors;
 }

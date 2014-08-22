@@ -22,44 +22,48 @@
 #endif
 
 
-int KPABE::numberAttr()
+unsigned int KPABE::numberAttr() const
 {
   return m_nAttr;
 }
 
-vector<Big>& KPABE::getPrivateAttributes()
+vector<Big>& KPABE::getPrivateAttributes() 
 {
   return m_privateAttributes;
 }
 
-Big& KPABE::getPrivateKeyRand()
+Big& KPABE::getPrivateKeyRand() 
 {
   return m_privateKeyRand;
 }
 
 #ifdef AttOnG1_KeyOnG2
-vector<G1>& KPABE::getPublicAttributes()
+vector<G1>& KPABE::getPublicAttributes() 
 {
   return m_publicAtts;
 }
 #endif
 #ifdef AttOnG2_KeyOnG1
-vector<G2>& KPABE::getPublicAttributes()
+vector<G2>& KPABE::getPublicAttributes() 
 {
   return m_publicAtts;
 }
 #endif
 
 
-Big& KPABE::getLastEncryptionRandomness()
+Big& KPABE::getLastEncryptionRandomness() 
 {
   return m_lastCTRandomness;
 }
 
 
-GT& KPABE::getPublicCTBlinder()
+GT& KPABE::getPublicCTBlinder() 
 {
   return m_publicCTBlinder;
+}
+
+shared_ptr<SecretSharing> KPABE::getScheme()  {
+  return m_scheme;
 }
 
 KPABE::KPABE(shared_ptr<SecretSharing> scheme, PFC& pfc, int nAttr): // the last argument specifies which group is used to build attribute fragments.
@@ -128,14 +132,14 @@ vector<G1> KPABE::genKey()
 }
 
 #ifdef AttOnG1_KeyOnG2
-vector<G2> KPABE::genKey(vector<Big> poly)
+vector<G2> KPABE::genKey(vector<Big> randomness)
 #endif
 #ifdef AttOnG2_KeyOnG1
-vector<G1> KPABE::genKey(vector<Big> poly)
+vector<G1> KPABE::genKey(vector<Big> randomness)
 #endif
 {
   // SecretSharing ssscheme(policy, m_pfc);
-  std::vector<ShareTuple> shares = m_scheme->distribute_determ(m_privateKeyRand, poly);
+  std::vector<ShareTuple> shares = m_scheme->distribute_determ(m_privateKeyRand, randomness);
   DEBUG("[keyGen] private randomness used for the key generation: " << m_privateKeyRand);
   return makeKeyFrags(shares);
 }
@@ -274,10 +278,19 @@ bool KPABE::decrypt_main_body(vector<G2> keyFrags, const vector<int>& atts, vect
   vector<int> keyFragIndices;
   vector<std::string> coveredShareIDs;
 
+  debugVector(atts, "Ciphertext attributes");
+
   m_policy->obtainCoveredFrags(atts, attFragIndices, keyFragIndices, coveredShareIDs); // this computation is independent of the values of fragments themselves
+
+  debugVector(coveredShareIDs, "IDs of covered shares");
+  debugVector(attFragIndices, "Indices for att fragments");
+  debugVector(keyFragIndices, "Indices for key fragments");
+
 
   vector<int> witnessSharesIndices;
   if (!m_policy->evaluateIDs(coveredShareIDs, witnessSharesIndices)) return false;
+
+  debugVector(witnessSharesIndices, "witnessSharesIndices");
 
   vector<std::string> minimalShareIDs;
   for (unsigned int i = 0; i < witnessSharesIndices.size(); i++) {
