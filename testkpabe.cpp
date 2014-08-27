@@ -41,7 +41,7 @@ vector<int> pol_parts;
 //------------------- Main Level ----------------------------
 
 
-int test1(int errors, KPABE& testclass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
+int test1(int errors, KPABE& testClass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
   //------------------ Test 1: scheme params generation ------------------------
   OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
   OUT("Beginning of test 1");
@@ -49,27 +49,27 @@ int test1(int errors, KPABE& testclass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
   G1 temp1 = m_pfc.mult(P,order+1);
   G2 temp2 = m_pfc.mult(Q,order+1);
 
-  test_diagnosis("Test 1: number of attributes", testclass.numberAttr() == nattr, errors);
+  test_diagnosis("Test 1: number of attributes", testClass.numberAttr() == nattr, errors);
   test_diagnosis("Test 1: P^order == 1", temp1 == P, errors);
   test_diagnosis("Test 1: Q^order == 1", temp2 == Q, errors);
     
   return errors;
 }
 
-int test2(int errors, KPABE& testclass, PFC& m_pfc, G1 &P, G2 &Q){  
+int test2(int errors, KPABE& testClass, PFC& m_pfc, G1 &P, G2 &Q){  
   //------------------ Test 2: scheme setup ------------------------
   OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
   OUT("Beginning of test 2");
 
-  vector<Big> &privateKeyAtts = testclass.getPrivateAttributes();
-  Big& privateKeyBlinder = testclass.getPrivateKeyRand();
-  GT& publicCTBlinder = testclass.getPublicCTBlinder();
+  vector<Big> &privateKeyAtts = testClass.getPrivateAttributes();
+  Big& privateKeyBlinder = testClass.getPrivateKeyRand();
+  GT& publicCTBlinder = testClass.getPublicCTBlinder();
 
 #ifdef AttOnG1_KeyOnG2
-  vector<G1> &publicKeyAtts = testclass.getPublicAttributes();
+  vector<G1> &publicKeyAtts = testClass.getPublicAttributes();
 #endif
 #ifdef AttOnG2_KeyOnG1
-  vector<G2> &publicKeyAtts = testclass.getPublicAttributes();
+  vector<G2> &publicKeyAtts = testClass.getPublicAttributes();
 #endif
     
   DEBUG("size of private key: " << privateKeyAtts.size() << " -- expected: " << nattr);
@@ -99,18 +99,18 @@ int test2(int errors, KPABE& testclass, PFC& m_pfc, G1 &P, G2 &Q){
 }
 
 
-int test3(int errors, KPABE& testclass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q){
+int test3(int errors, KPABE& testClass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q){
   //------------------ Test 3: Encryption ------------------------
   OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
   OUT("Beginning of test 3");
 
-  GT& publicCTBlinder  = testclass.getPublicCTBlinder();
+  GT& publicCTBlinder  = testClass.getPublicCTBlinder();
 
 #ifdef AttOnG1_KeyOnG2
-  vector<G1> &publicKeyAtts = testclass.getPublicAttributes();
+  vector<G1> &publicKeyAtts = testClass.getPublicAttributes();
 #endif
 #ifdef AttOnG2_KeyOnG1
-  vector<G2> &publicKeyAtts = testclass.getPublicAttributes();
+  vector<G2> &publicKeyAtts = testClass.getPublicAttributes();
 #endif
 
 
@@ -157,25 +157,25 @@ int test3(int errors, KPABE& testclass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q){
   const Big sM = (char *)"test message"; 
   mip->IOBASE=16;
 
-  bool success = testclass.encryptS(BadCTatts, sM, sCT, AttFrags);
+  bool success = testClass.encryptS(BadCTatts, sM, sCT, AttFrags);
 
   test_diagnosis("Test 3 - hash encrypt: bad attributes, return fail", !success, errors);
     
-  success = testclass.encryptS(CTatts, sM, sCT, AttFrags);
+  success = testClass.encryptS(CTatts, sM, sCT, AttFrags);
   test_diagnosis("Test 3 - hash encrypt: size of attribute frags", AttFrags.size() == CTatts.size(), errors);
-  CTrand = testclass.getLastEncryptionRandomness();
+  CTrand = testClass.getLastEncryptionRandomness();
   test_diagnosis("Test 3 - hash encrypt: good attributes, succeed", success, errors);
   aux = m_pfc.power(publicCTBlinder, CTrand);
   test_diagnosis("Test 3 - hash encrypt: CT well-formedness", lxor(sM,m_pfc.hash_to_aes_key(aux)) == sCT, errors);
 
 
-  success = testclass.encrypt(BadCTatts, M, CT, AttFrags);
+  success = testClass.encrypt(BadCTatts, M, CT, AttFrags);
 
   test_diagnosis("Test 3 - mult encrypt: bad attributes, return fail", !success, errors);
     
-  success = testclass.encrypt(CTatts, M, CT, AttFrags);
+  success = testClass.encrypt(CTatts, M, CT, AttFrags);
   test_diagnosis("Test 3 - mult encrypt: size of attribute frags", AttFrags.size() == CTatts.size(), errors);
-  CTrand = testclass.getLastEncryptionRandomness();
+  CTrand = testClass.getLastEncryptionRandomness();
   test_diagnosis("Test 3 - mult encrypt: good attributes, succeed", success, errors);
   aux = m_pfc.power(publicCTBlinder, CTrand);
   test_diagnosis("Test 3 - mult encrypt: CT well-formedness", (M * aux) == CT, errors);
@@ -203,15 +203,15 @@ int test3(int errors, KPABE& testclass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q){
   return errors;
 }
 
-int test4(int errors, KPABE& testclass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
+int test4(int errors, KPABE& testClass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
   //------------------ Test 4: Key Generation ------------------------
   OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
   OUT("Beginning of test 4");
 
   stringstream ss;
     
-  Big& privateKeyBlinder = testclass.getPrivateKeyRand();
-  vector<Big> &privateKeyAtts = testclass.getPrivateAttributes();
+  Big& privateKeyBlinder = testClass.getPrivateKeyRand();
+  vector<Big> &privateKeyAtts = testClass.getPrivateAttributes();
 
 
 #ifdef AttOnG1_KeyOnG2
@@ -227,7 +227,7 @@ int test4(int errors, KPABE& testclass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
   //  ShamirAccessPolicy policy(threshold, pol_parts, order);
   //  ShamirSS shamir(policy, m_pfc);
 
-  shared_ptr<SecretSharing> scheme = testclass.getScheme();
+  shared_ptr<SecretSharing> scheme = testClass.getScheme();
   shared_ptr<AccessPolicy> policy = scheme->getPolicy();
   std::vector<ShareTuple> shares = scheme->distribute_random(privateKeyBlinder);   
 
@@ -238,10 +238,10 @@ int test4(int errors, KPABE& testclass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
 
   DEBUG("------------ Start GEN KEY --------------");
 #ifdef AttOnG1_KeyOnG2
-  vector<G2> keyFrags = testclass.genKey(randomness);
+  vector<G2> keyFrags = testClass.genKey(randomness);
 #endif
 #ifdef AttOnG2_KeyOnG1
-  vector<G1> keyFrags = testclass.genKey(randomness);
+  vector<G1> keyFrags = testClass.genKey(randomness);
 #endif
 
   DEBUG("------------ Start TEST COMPARISON --------------");
@@ -267,26 +267,26 @@ int test4(int errors, KPABE& testclass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
 }
 
 
-int test5(int errors, KPABE& testclass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, vector<int> authCTatts, vector<int> badCTatts, vector<int> unauthCTatts){
+int test5(int errors, KPABE& testClass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, vector<int> authCTatts, vector<int> badCTatts, vector<int> unauthCTatts){
   //------------------ Test 5: Decryption ------------------------
   OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
   OUT("Beginning of test 5");
 
-  shared_ptr<SecretSharing> scheme = testclass.getScheme();
+  shared_ptr<SecretSharing> scheme = testClass.getScheme();
   shared_ptr<AccessPolicy> policy = scheme->getPolicy();
 
   //  ShamirAccessPolicy policy(threshold, pol_parts, order);
-  // Big& privateKeyBlinder = testclass.getPrivateKeyRand();
+  // Big& privateKeyBlinder = testClass.getPrivateKeyRand();
   // ShamirSS shamir(policy, m_pfc);
   // std::vector<ShareTuple> shares = shamir.distribute_random(privateKeyBlinder);   
     
   // DEBUG("[TEST5] Distributed secret (t): " << privateKeyBlinder);
 
 #ifdef AttOnG1_KeyOnG2
-  vector<G2> keyFrags = testclass.genKey();
+  vector<G2> keyFrags = testClass.genKey();
 #endif
 #ifdef AttOnG2_KeyOnG1
-  vector<G1> keyFrags = testclass.genKey();
+  vector<G1> keyFrags = testClass.genKey();
 #endif
    
   mip->IOBASE=256;
@@ -306,10 +306,10 @@ int test5(int errors, KPABE& testclass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
   Big sCT;
   Big sPT;
   bool success;
-  success = testclass.encryptS(authCTatts, sM, sCT, AttFrags);
+  success = testClass.encryptS(authCTatts, sM, sCT, AttFrags);
   test_diagnosis("Test 5: string encryption with authorized attributes", success, errors);
 
-  success = testclass.decryptS(keyFrags, authCTatts, sCT, AttFrags, sPT);
+  success = testClass.decryptS(keyFrags, authCTatts, sCT, AttFrags, sPT);
 
   mip->IOBASE=256;
   DEBUG("[TEST5] found plaintext : " << sPT);
@@ -319,10 +319,10 @@ int test5(int errors, KPABE& testclass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
   test_diagnosis("Test 5: string decryption with authorized attributes success", success, errors);
   test_diagnosis("Test 5: string decryption with authorized attributes equality", sPT == sM, errors);
     
-  success = testclass.encryptS(unauthCTatts, sM, sCT, BadAttFrags);
+  success = testClass.encryptS(unauthCTatts, sM, sCT, BadAttFrags);
   test_diagnosis("Test 5: string encryption with unauthorized attributes", success, errors);
     
-  success = testclass.decryptS( keyFrags, unauthCTatts, sCT, BadAttFrags, sPT);
+  success = testClass.decryptS( keyFrags, unauthCTatts, sCT, BadAttFrags, sPT);
   test_diagnosis("Test 5: string decryption with unauthorized attributes", !success, errors);
 
 
@@ -337,10 +337,10 @@ int test5(int errors, KPABE& testclass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
 
   DEBUG("[TEST5] plaintext to be encrypted : " << m_pfc.hash_to_aes_key(GroupM));
 
-  success = testclass.encrypt(authCTatts, GroupM, GroupCT, AttFrags);
+  success = testClass.encrypt(authCTatts, GroupM, GroupCT, AttFrags);
   test_diagnosis("Test 5: algebraic encryption with authorized attributes", success, errors);
 
-  success = testclass.decrypt( keyFrags, authCTatts, GroupCT, AttFrags, GroupPT);
+  success = testClass.decrypt( keyFrags, authCTatts, GroupCT, AttFrags, GroupPT);
 
   DEBUG("[TEST5] found plaintext : " << m_pfc.hash_to_aes_key(GroupPT));
 
@@ -348,10 +348,10 @@ int test5(int errors, KPABE& testclass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
   test_diagnosis("Test 5: algebraic decryption with authorized attributes success", success, errors);
   test_diagnosis("Test 5: algebraic decryption with authorized attributes equality", GroupPT == GroupM, errors);
     
-  success = testclass.encrypt(unauthCTatts, GroupM, GroupCT, BadAttFrags);
+  success = testClass.encrypt(unauthCTatts, GroupM, GroupCT, BadAttFrags);
   test_diagnosis("Test 5: algebraic encryption with unauthorized attributes", success, errors);
     
-  success = testclass.decrypt( keyFrags, unauthCTatts, GroupCT, BadAttFrags, GroupPT);
+  success = testClass.decrypt( keyFrags, unauthCTatts, GroupCT, BadAttFrags, GroupPT);
   test_diagnosis("Test 5: algebraic decryption with unauthorized attributes", !success, errors);
 
 
@@ -383,23 +383,23 @@ const string name() {
 } 
 
 
-int runTests(std::string &testName, KPABE testclass, PFC &pfc, miracl *mip, G1 &P, G2 &Q, Big order,
+int runTests(std::string &testName, KPABE testClass, PFC &pfc, miracl *mip, G1 &P, G2 &Q, Big order,
 	     vector<int> authCTAtts, vector<int> badCTAtts, vector<int> unauthCTAtts ){
   testName = "Test KPABE: " + testName;
   int errors = 0;
 
-  errors += test1(errors, testclass, pfc, P, Q, order);
-  errors += test2(errors, testclass, pfc, P, Q);
-  errors += test3(errors, testclass, pfc, mip, P, Q);
-  errors += test4(errors, testclass, pfc, P, Q, order);
-  errors += test5(errors, testclass, pfc, mip, P, Q, authCTAtts, badCTAtts, unauthCTAtts);
+  //  errors += test1(errors, testClass, pfc, P, Q, order);
+  // errors += test2(errors, testClass, pfc, P, Q);
+  // errors += test3(errors, testClass, pfc, mip, P, Q);
+  // errors += test4(errors, testClass, pfc, P, Q, order);
+  errors += test5(errors, testClass, pfc, mip, P, Q, authCTAtts, badCTAtts, unauthCTAtts);
 
   return errors;
 }
 
-void classSetup(KPABE &testclass, G1 &P, G2 &Q, Big &order, int nparts){
-  testclass.paramsgen(P, Q, order);
-  testclass.setup();
+void classSetup(KPABE &testClass, G1 &P, G2 &Q, Big &order, int nparts){
+  testClass.paramsgen(P, Q, order);
+  testClass.setup();
   for (int i = 0; i < nparts; i++){
     pol_parts.push_back(i);
   }

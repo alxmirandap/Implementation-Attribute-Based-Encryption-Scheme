@@ -21,3 +21,10 @@ void debugVector(std::vector<T> list, std::string text) {
      	 DEBUG(text << "[" << i << "]: " << list[i]);
      }
 }
+
+template<typename T>
+void outVector(std::vector<T> list, std::string text) {
+     for (unsigned int i = 0; i < list.size(); i++) {
+     	 OUT(text << "[" << i << "]: " << list[i]);
+     }
+}

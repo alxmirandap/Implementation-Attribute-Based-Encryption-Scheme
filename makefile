@@ -30,7 +30,7 @@ kpabe.o: kpabe.cpp kpabe.h
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c kpabe.cpp -o kpabe.o 
 
 testkpabe: testkpabe.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe.o utils.o secretsharing.o BLcanonical.o -lbn -lpairs -lmiracl -o testkpabe 
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe.o utils.o secretsharing.o BLcanonical.o $(LIBS) -o testkpabe 
 
 
 tree.o:	tree.cpp tree.h utils.o
@@ -40,8 +40,11 @@ testtree: utils.o testtree.cpp tree.o tree.h tree.cpp
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testtree.cpp utils.o tree.o $(LIBS) -o testtree
 
 
-bbench.o: basic-benchmark.cpp 
-	g++ $(MIRACL) basic-benchmark.cpp $(LIBS) -o bbench # no optimization!!!
+bbench: basic-benchmark.cpp 
+	g++ $(WARNINGS) $(CVERS) $(MIRACL) basic-benchmark.cpp $(LIBS) -o bbench # no optimization!!!
+
+benchmark: benchmark.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
+	g++ $(WARNINGS) $(CVERS) $(MIRACL) benchmark.cpp kpabe.o utils.o secretsharing.o BLcanonical.o $(LIBS) -o benchmark # no optimization!!!
 
 
 
