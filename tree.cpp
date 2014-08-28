@@ -223,36 +223,37 @@ std::shared_ptr<TreeNode> TreeNode::getChild(unsigned int i){
   return m_children[i];
 }
 
+
 bool TreeNode::appendChild(shared_ptr<NodeContent> node){
   switch (m_node->getType()){
   case NodeContentType::nil:
+    DEBUG("nil node");
     m_node = node; break;
     node->setNodeID("0");
   case NodeContentType::leaf:
+    DEBUG("leaf node");
     throw std::runtime_error("An attempt was made to append a child to a leaf node");
     break;
   case NodeContentType::inner:
+    //  DEBUG("Inner node");
     if (m_children.size() == m_node->getArity()) return false;
 
     //    TreeNode newNode(node);
     shared_ptr<TreeNode> pNode = TreeNode::makeTree(node);
     //    ENHDEBUG("Appending tree node: " << &newNode);
     m_children.push_back(pNode);
-    shared_ptr<TreeNode> storedNode = getChild(m_children.size()-1);
-    //    ENHDEBUG("Address in vector: " << &storedNode);
-    //    ENHDEBUG("Address in vector without &: " << storedNode);
     int count = m_children.size()-1;
     stringstream ss;
     ss << m_node->getNodeID() << ":" << count;
     node->setNodeID(ss.str());
     break;
   }
-
+  //  DEBUG("out of switch");
   return true;
 }
 
 bool TreeNode::appendTree(shared_ptr<TreeNode> pTree){
-switch (m_node->getType()){
+  switch (m_node->getType()){
   case NodeContentType::nil:
     m_node = pTree->m_node;
     m_children = pTree->m_children;
@@ -261,17 +262,16 @@ switch (m_node->getType()){
     break;
   case NodeContentType::inner:
     if (m_children.size() == m_node->getArity()) return false;
-
+    
     //    ENHDEBUG("Appending tree node: " << &newNode);
     m_children.push_back(pTree);
-//     shared_ptr<TreeNode> storedNode = getChild(m_children.size()-1);
-//     ENHDEBUG("Address in vector: " << &storedNode);
-//     ENHDEBUG("Address in vector without &: " << storedNode);
-//     int count = m_children.size()-1;
+    //     shared_ptr<TreeNode> storedNode = getChild(m_children.size()-1);
+    //     ENHDEBUG("Address in vector: " << &storedNode);
+    //     ENHDEBUG("Address in vector without &: " << storedNode);
+    //     int count = m_children.size()-1;
     pTree->updateID(m_node->getNodeID(), m_children.size()-1);
     break;
   }
-
   return true;
 }
 
@@ -328,27 +328,27 @@ unsigned int TreeNode::getNumLeaves(){
 }
 
 
-unsigned int TreeNode::getNumLeavesDEBUG(int level){
-  ENHDEBUG("////////////////////////");
-  ENHDEBUG("entry point. level: " << level);
-  DEBUG("getNumLeaves for node: " << &m_node  << " || Level: " << level);
-  if (m_node->getType() == NodeContentType::leaf) {
-    DEBUG("Leaf: return 1");
-    return 1;
-  }
-  DEBUG("Inner node. Num Children: " << m_children.size());
-  int nleaves = 0;
-  for (unsigned int i = 0; i < m_children.size(); i++) {
-    DEBUG("CALLING AGAIN");
-    int subleaves = getChild(i)->getNumLeavesDEBUG(level + 1);
-    DEBUG("num leaves in child: " << i << " = " << subleaves);
-    DEBUG("----------------");
-    nleaves += subleaves;
-  }
-  ENHDEBUG("Total leaves in level: " << level << " = " << nleaves);
-  DEBUG("================");
-  return nleaves;
-}
+// unsigned int TreeNode::getNumLeavesDEBUG(int level){
+//   ENHDEBUG("////////////////////////");
+//   ENHDEBUG("entry point. level: " << level);
+//   DEBUG("getNumLeaves for node: " << &m_node  << " || Level: " << level);
+//   if (m_node->getType() == NodeContentType::leaf) {
+//     DEBUG("Leaf: return 1");
+//     return 1;
+//   }
+//   DEBUG("Inner node. Num Children: " << m_children.size());
+//   int nleaves = 0;
+//   for (unsigned int i = 0; i < m_children.size(); i++) {
+//     DEBUG("CALLING AGAIN");
+//     int subleaves = getChild(i)->getNumLeavesDEBUG(level + 1);
+//     DEBUG("num leaves in child: " << i << " = " << subleaves);
+//     DEBUG("----------------");
+//     nleaves += subleaves;
+//   }
+//   ENHDEBUG("Total leaves in level: " << level << " = " << nleaves);
+//   DEBUG("================");
+//   return nleaves;
+// }
 
 
 

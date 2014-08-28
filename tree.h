@@ -62,7 +62,6 @@ class NodeContent {
 //===========================================
 
 class TreeNode {
-  //NodeContent &m_node;
   std::shared_ptr<NodeContent> m_node;
   vector<std::shared_ptr<TreeNode>> m_children; // vector of pointers for TreeNodes.
   TreeNode(std::shared_ptr<NodeContent> node);
@@ -71,7 +70,6 @@ class TreeNode {
   TreeNode();
   static std::shared_ptr<TreeNode> makeTree(std::shared_ptr<NodeContent> node);
   std::shared_ptr<NodeContent> getNode();
-  //  vector<TreeNode>& getChildren();
   std::shared_ptr<TreeNode> getChild(unsigned int i);
   bool operator==(const TreeNode& rhs) const;
   TreeNode& operator=(const TreeNode& rhs);
@@ -80,7 +78,6 @@ class TreeNode {
   std::string to_string();
   unsigned int getNumLeaves();
   unsigned int getNumChildren();
-  unsigned int getNumLeavesDEBUG(int level);
   void updateID(std::string parentID, int count);
 };
 

@@ -16,9 +16,19 @@ void addVector(std::vector<T> &storage, const std::vector<T> &data){
 }
 
 template<typename T>
-void debugVector(std::vector<T> list, std::string text) {
+void debugVector(std::string text, std::vector<T> list) {
      for (unsigned int i = 0; i < list.size(); i++) {
      	 DEBUG(text << "[" << i << "]: " << list[i]);
+     }
+}
+
+template<typename T>
+void debugVectorObj(std::string text, std::vector<T> list) {
+     if (list.size() == 0) {
+       DEBUG(text << ": no elements");
+     }     
+    for (unsigned int i = 0; i < list.size(); i++) {
+     	 DEBUG(text << "[" << i << "]: " << list[i].to_string());
      }
 }
 

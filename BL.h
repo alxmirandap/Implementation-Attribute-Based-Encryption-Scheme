@@ -3,7 +3,7 @@
 #endif
 
 #ifndef DEF_SECRET_SHARING
-#include "secret_sharing.h"
+#include "secretsharing.h"
 #endif
 
 #include "tree.h"
@@ -11,7 +11,7 @@
 
 
 class BLAccessPolicy : public AccessPolicy{
-  std::string m_description; // to facilitate parsing, the description should be input in infix, that is functional, notation.
+  std::string m_description; // to facilitate parsing, the description should be input in prefix, that is functional, notation.
   shared_ptr<TreeNode> m_treePolicy;
   void init();
 

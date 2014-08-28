@@ -8,7 +8,7 @@ LIBS=-lbn -lpairs -lmiracl
 
 all: testutils testBLcanonical testkpabe
 
-utils.o: utils.cpp utils.h
+utils.o: utils.cpp utils.h utils_impl.tcc
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c utils.cpp -o utils.o
 
 testutils: utils.o testutils.cpp
@@ -34,10 +34,17 @@ testkpabe: testkpabe.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
 
 
 tree.o:	tree.cpp tree.h utils.o
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) -c $(OPT) $(MIRACL) tree.cpp -o tree.o
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c tree.cpp -o tree.o
 
 testtree: utils.o testtree.cpp tree.o tree.h tree.cpp
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testtree.cpp utils.o tree.o $(LIBS) -o testtree
+
+ShTree.o: ShTree.h ShTree.cpp utils.o tree.o secretsharing.o
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c ShTree.cpp -o ShTree.o
+
+testShTree: ShTree.o testShTree.cpp 
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testShTree.cpp ShTree.o tree.o utils.o secretsharing.o $(LIBS) -o testShTree
+
 
 
 bbench: basic-benchmark.cpp 

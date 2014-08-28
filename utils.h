@@ -76,7 +76,8 @@ void test_diagnosis(const string& name, bool success, int& errors);
 
 template<typename T> int contains(const vector<T> &set, const T element);
 template<typename T> void addVector(vector<T> &storage, const vector<T> &data);
-template<typename T> void debugVector(vector<T> list, std::string text);
+template<typename T> void debugVector(std::string text, vector<T> list);
+template<typename T> void debugVectorObj(std::string text, vector<T> list);
 template<typename T> void outVector(vector<T> list, std::string text);
 // implementation of the template function goes in the next file
 #include "utils_impl.tcc"

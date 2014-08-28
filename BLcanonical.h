@@ -10,7 +10,7 @@
 
 
 class BLAccessPolicy : public AccessPolicy{
-  std::string m_description; // to facilitate parsing, the description should be input in infix, that is functional, notation.
+  std::string m_description; // to facilitate parsing, the description should be input in prefix, that is functional, notation.
   vector<vector<int>> m_minimal_sets;
   void init();
 
