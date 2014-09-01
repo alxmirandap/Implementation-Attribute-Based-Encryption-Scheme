@@ -278,19 +278,19 @@ bool KPABE::decrypt_main_body(vector<G2> keyFrags, const vector<int>& atts, vect
   vector<int> keyFragIndices;
   vector<std::string> coveredShareIDs;
 
-  debugVector(atts, "Ciphertext attributes");
+  debugVector("Ciphertext attributes", atts);
 
   m_policy->obtainCoveredFrags(atts, attFragIndices, keyFragIndices, coveredShareIDs); // this computation is independent of the values of fragments themselves
 
-  debugVector(coveredShareIDs, "IDs of covered shares");
-  debugVector(attFragIndices, "Indices for att fragments");
-  debugVector(keyFragIndices, "Indices for key fragments");
+  debugVector("IDs of covered shares", coveredShareIDs);
+  debugVector("Indices for att fragments", attFragIndices);
+  debugVector("Indices for key fragments", keyFragIndices);
 
 
   vector<int> witnessSharesIndices;
   if (!m_policy->evaluateIDs(coveredShareIDs, witnessSharesIndices)) return false;
 
-  debugVector(witnessSharesIndices, "witnessSharesIndices");
+  debugVector("witnessSharesIndices", witnessSharesIndices);
 
   vector<std::string> minimalShareIDs;
   for (unsigned int i = 0; i < witnessSharesIndices.size(); i++) {

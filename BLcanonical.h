@@ -27,7 +27,7 @@ class BLAccessPolicy : public AccessPolicy{
   std::string getDescription() const;
   unsigned int getNumShares();
   //  bool evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const;
-  virtual std::string createShareIndex(int set, int partID) const = 0;
+  static std::string createShareIndex(std::string setID, std::string partID);
   bool evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const;
   Big findCoefficient(const std::string id,const vector<std::string> shareIDs) const;
   void obtainCoveredFrags(const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const;

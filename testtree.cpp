@@ -469,8 +469,6 @@ int testAppendTree(){
   test_diagnosis("Test - appendTree: ID of leaf4", tree21->getChild(0)->getNodeID() == "0:1:1:1:=4", errors);
   test_diagnosis("Test - appendTree: ID of leaf6", tree21->getChild(2)->getNodeID() == "0:1:1:1:=6", errors);
   
-  test_diagnosis("Test - appendTree: I need more tests to verify how the leaf IDs are computed in updateID and appendChild. The latter seems prone to errors", 
-		 false, errors);
   return errors;
 }
 
