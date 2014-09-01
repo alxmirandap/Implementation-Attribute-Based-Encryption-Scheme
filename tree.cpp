@@ -12,28 +12,24 @@
 //NodeContent::nilNode = NodeContent();
 
 NodeContent::NodeContent():
-  m_type(NodeContentType::nil),
-  m_nodeID("0")
+  m_type(NodeContentType::nil)
 {}
 
 NodeContent::NodeContent(int leafValue):
-  m_type(NodeContentType::leaf),
-  m_nodeID("0")
+  m_type(NodeContentType::leaf)
 {
   m_leafValue = leafValue;
 }
 
 NodeContent::NodeContent(InnerNodeType nodeType, int arg1):
-  m_type(NodeContentType::inner),
-  m_nodeID("0")
+  m_type(NodeContentType::inner)
 {
   m_innerNode.type = nodeType;
   m_innerNode.arg1 = arg1;
 }
 
 NodeContent::NodeContent(InnerNodeType nodeType, int arg1, int arg2):
-  m_type(NodeContentType::inner),
-  m_nodeID("0")
+  m_type(NodeContentType::inner)
 {
   m_innerNode.type = nodeType;
   m_innerNode.arg1 = arg1;
@@ -80,30 +76,31 @@ shared_ptr<NodeContent> NodeContent::makeLeafNode(int leafValue) {
   return pNode;
 }
 
-// NodeContent* NodeContent::makeLeafNodeRaw(int leafValue) {
-//   NodeContent* newNode = new NodeContent(leafValue);
-//   return newNode;
-// }
-
 bool NodeContent::operator==(const NodeContent& rhs) const {
-  // id should not be compared, as it is not intrinsic to the object. It just reflects the Node's position in a tree
-  //  if (m_nodeID != rhs.m_nodeID) return false;
+  //  DEBUG("Checking type");
   if (m_type != rhs.m_type) return false;
   switch(m_type) {
   case(NodeContentType::inner):
+    //    DEBUG("Checking inner type");
     if (m_innerNode.type != rhs.m_innerNode.type) return false;
+    //    DEBUG("Checking arg1");
     if (m_innerNode.arg1 != rhs.m_innerNode.arg1) return false;
     if (m_innerNode.type == InnerNodeType::THR) {
+      //      DEBUG("Checking arg2");
       if (m_innerNode.arg2 != rhs.m_innerNode.arg2) return false;
     }
     break;
   case(NodeContentType::leaf):
+    //    DEBUG("Checking leaf value");
+    //    DEBUG("my value: " << m_leafValue << " - other's value: " << rhs.m_leafValue);
     if (m_leafValue != rhs.m_leafValue) return false;
+    //    DEBUG("Test passed");
     break;
   case(NodeContentType::nil):
     return true;
     break;
   }
+  REPORT("returning true");
   return true;
 }
 
@@ -132,13 +129,6 @@ int NodeContent::getLeafValue() {
   return m_leafValue;
 }
 
-std::string NodeContent::getNodeID(){
-  return m_nodeID;
-}
-
-void NodeContent::setNodeID(std::string nodeID){
-  m_nodeID = nodeID;
-}
 
 InnerNodeType NodeContent::getInnerNodeType(){
   if (m_type != NodeContentType::inner) {
@@ -165,16 +155,33 @@ unsigned int NodeContent::getThreshold(){
 //===================================================
 
 TreeNode::TreeNode():
-  m_node(NodeContent::makeNILNode())
+  m_node(NodeContent::makeNILNode()),
+  m_nodeID("")
+  //  ,m_parent(NULL)
 {
-
   m_children.clear();
 }
 
+std::string TreeNode::initNodeID(shared_ptr<NodeContent> node) {
+ switch (node->getType()) {
+  case NodeContentType::nil:
+    return ""; break;
+  case NodeContentType::leaf:
+    return ":=" + convertIntToStr(node->getLeafValue());
+    break;
+  case NodeContentType::inner:
+    return "0";
+    break;
+ default: return ""; //should never reach here
+  }
+ 
+}
 
 TreeNode::TreeNode(shared_ptr<NodeContent> node):
   m_node(node)
+  //  ,m_parent(NULL)
 {
+  m_nodeID = initNodeID(node);
   m_children.clear();
 }
 
@@ -185,10 +192,18 @@ shared_ptr<TreeNode> TreeNode::makeTree(shared_ptr<NodeContent> node){
 }
 
 bool TreeNode::operator==(const TreeNode& rhs) const {
-  //  DEBUG("testing node");
+  //  REPORT("TREE EQUALS");
+  //  DEBUG("checking node");
   if (!(*m_node == *rhs.m_node)) return false;
-  //  DEBUG("testing children size");
+  //  DEBUG("checking ID");
+  //  DEBUG("My ID: " << getNodeID() << " - other's ID: " << rhs.getNodeID());
+  //  if (getNodeID() != rhs.getNodeID()) return false;
+  // Does not check IDs. The reason is that two subtrees of different trees might still be equal if they have the same shape and elements, but due to their
+  // different positions they will have different IDs.
+  //  DEBUG("checking children");
   if (m_children.size() != rhs.m_children.size()) return false;
+  //  DEBUG("testing children size");
+  //  if (!(*m_parent == *rhs.m_parent)) return false;
   for (unsigned int i = 0; i < m_children.size(); i++) {
     //    DEBUG("testing child " << i);
     if (!(*m_children[i] == *rhs.m_children[i])) return false;
@@ -200,24 +215,38 @@ bool TreeNode::operator==(const TreeNode& rhs) const {
 
 TreeNode& TreeNode::operator=(const TreeNode& other)
 {
+  if (this == &other) return *this;
   m_node = other.m_node;
-  m_children = other.m_children;
+  m_nodeID = other.m_nodeID;
+  //  *m_parent = *other.m_parent;
+  m_children = other.m_children;  
   return *this;
 }
-
 
 shared_ptr<NodeContent> TreeNode::getNode(){
   return m_node;
 }
 
-// vector<TreeNode>& TreeNode::getChildren(){
-//   return m_children;
-// }
+shared_ptr<TreeNode> TreeNode::getParent(){
+  //  return m_parent;
+  return NULL;
+}
 
-std::shared_ptr<TreeNode> TreeNode::getChild(unsigned int i){
+//void TreeNode::setParent(shared_ptr<TreeNode> parent){
+  //  *m_parent = *parent;
+//}
+
+std::shared_ptr<TreeNode> TreeNode::getChild(unsigned int i){  
   stringstream ss;
-  ss << "Wrong child access. Size: " << m_children.size() << "; Requested index: " << i;
-  guard(ss.str(), i < m_children.size());
+  ss << "Wrong child access. Size: " << m_children.size() << "; Requested index: " << i << endl;
+  if (i >= m_children.size()) {
+    throw std::range_error(ss.str());  
+  }
+  //  guard(ss.str(), i < m_children.size());
+//   if (i >= m_children.size()) {
+//     cerr << "Wrong child access. Size: " << m_children.size() << "; Requested index: " << i << endl;
+//     return NULL;
+//   }
   //  DEBUG("Address of returned child: " << m_children[i]);
   //  DEBUG("Address of returned child2: " << &(*m_children[i]));
   return m_children[i];
@@ -225,31 +254,40 @@ std::shared_ptr<TreeNode> TreeNode::getChild(unsigned int i){
 
 
 bool TreeNode::appendChild(shared_ptr<NodeContent> node){
-  switch (m_node->getType()){
-  case NodeContentType::nil:
-    DEBUG("nil node");
-    m_node = node; break;
-    node->setNodeID("0");
+  //  DEBUG("appendChild entry point");
+   switch (m_node->getType()){
+   case NodeContentType::nil:
+     {
+       //       DEBUG("nil node");
+       setNodeID(initNodeID(node));
+       m_node = node;
+     }
+     break;
   case NodeContentType::leaf:
-    DEBUG("leaf node");
-    throw std::runtime_error("An attempt was made to append a child to a leaf node");
+    {
+      //      DEBUG("leaf node");
+      throw std::runtime_error("An attempt was made to append a child to a leaf node");
+      //cerr << "An attempt was made to append a child to a leaf node" << endl;
+      //return false;
+    }
     break;
-  case NodeContentType::inner:
-    //  DEBUG("Inner node");
-    if (m_children.size() == m_node->getArity()) return false;
+   case NodeContentType::inner:
+     {
+       //       DEBUG("Inner node");
+       if (m_children.size() == m_node->getArity()) return false;
 
-    //    TreeNode newNode(node);
-    shared_ptr<TreeNode> pNode = TreeNode::makeTree(node);
-    //    ENHDEBUG("Appending tree node: " << &newNode);
-    m_children.push_back(pNode);
-    int count = m_children.size()-1;
-    stringstream ss;
-    ss << m_node->getNodeID() << ":" << count;
-    node->setNodeID(ss.str());
-    break;
-  }
-  //  DEBUG("out of switch");
-  return true;
+       shared_ptr<TreeNode> pNode = TreeNode::makeTree(node);
+       m_children.push_back(pNode);
+       int count = m_children.size()-1;
+       
+       std::string newId = m_nodeID + ":" + convertIntToStr(count);
+       //       DEBUG("New ID: " << newId);
+       pNode->setNodeID(newId);
+     }
+     break;
+   }
+   //  DEBUG("out of switch");
+   return true;
 }
 
 bool TreeNode::appendTree(shared_ptr<TreeNode> pTree){
@@ -257,6 +295,7 @@ bool TreeNode::appendTree(shared_ptr<TreeNode> pTree){
   case NodeContentType::nil:
     m_node = pTree->m_node;
     m_children = pTree->m_children;
+    break;
   case NodeContentType::leaf:
     throw std::runtime_error("An attempt was made to append a tree to a leaf node");
     break;
@@ -269,7 +308,8 @@ bool TreeNode::appendTree(shared_ptr<TreeNode> pTree){
     //     ENHDEBUG("Address in vector: " << &storedNode);
     //     ENHDEBUG("Address in vector without &: " << storedNode);
     //     int count = m_children.size()-1;
-    pTree->updateID(m_node->getNodeID(), m_children.size()-1);
+    //    ENHDEBUG("updateID called. Parent: " << getNodeID() << " count: " << m_children.size()-1);
+    pTree->updateID(getNodeID(), m_children.size()-1);
     break;
   }
   return true;
@@ -277,18 +317,25 @@ bool TreeNode::appendTree(shared_ptr<TreeNode> pTree){
 
 
 void TreeNode::updateID(std::string parentID, int count){
-  std::string currentID = m_node->getNodeID();
-  int index = currentID.find(":");
-  std::string tailID;
-  if (index == -1) {
-    tailID = "";
-  } else {
-    tailID = currentID.substr(index);
+  std::string newID;
+  std::string currentID = getNodeID();
+  int index = currentID.find(":=");
+  if (index == 0) { // nodeID starts with :=, therefore it is a leaf detached from a tree. The new ID should not have a parent's no. of child count
+    newID = parentID + currentID;
+  } else { // we are attaching a tree with an inner node as root. This requires the parent's child no. count.
+    int index = currentID.find(":");
+    std::string tailID;
+    if (index == -1) {
+      tailID = "";
+    } else {
+      tailID = currentID.substr(index);
+    }
+    //    DEBUG("tailID: " << tailID);
+    newID = parentID + ":" + convertIntToStr(count) + tailID;
   }
+  //  DEBUG("Setting new ID: " << newID);
+  setNodeID(newID);
 
-  stringstream ss;
-  ss << parentID << ":" << count << tailID;
-  m_node->setNodeID(ss.str());
 
   for (unsigned int i = 0; i < getNumChildren(); i++) {
     getChild(i)->updateID(parentID, count);
@@ -297,13 +344,13 @@ void TreeNode::updateID(std::string parentID, int count){
 
 std::string TreeNode::to_string() {
   if (m_children.empty()) {
-    return m_node->to_string();
+    return "{" +  getNodeID() + " || " + m_node->to_string() + "}";
   }
 
   stringstream ss;
   ss << m_node->to_string() << "(";
   for (unsigned int i = 0; i < getNumChildren(); i++) {
-    ss << getChild(i)->to_string();
+    ss << "{" + getNodeID() + " || " + getChild(i)->to_string() + "}";
     if (i < m_children.size()-1) {
       ss << ", ";
     }
@@ -328,32 +375,51 @@ unsigned int TreeNode::getNumLeaves(){
 }
 
 
-// unsigned int TreeNode::getNumLeavesDEBUG(int level){
-//   ENHDEBUG("////////////////////////");
-//   ENHDEBUG("entry point. level: " << level);
-//   DEBUG("getNumLeaves for node: " << &m_node  << " || Level: " << level);
-//   if (m_node->getType() == NodeContentType::leaf) {
-//     DEBUG("Leaf: return 1");
-//     return 1;
-//   }
-//   DEBUG("Inner node. Num Children: " << m_children.size());
-//   int nleaves = 0;
-//   for (unsigned int i = 0; i < m_children.size(); i++) {
-//     DEBUG("CALLING AGAIN");
-//     int subleaves = getChild(i)->getNumLeavesDEBUG(level + 1);
-//     DEBUG("num leaves in child: " << i << " = " << subleaves);
-//     DEBUG("----------------");
-//     nleaves += subleaves;
-//   }
-//   ENHDEBUG("Total leaves in level: " << level << " = " << nleaves);
-//   DEBUG("================");
-//   return nleaves;
-// }
-
-
-
 unsigned int TreeNode::getNumChildren(){
   return m_children.size();
 }
 
+
+std::string TreeNode::getNodeID() const{
+  //  return m_nodeID;
+
+  //  ENHDEBUG("Get Node ID");
+  switch(m_node->getType()){
+  case NodeContentType::nil:
+    {
+      //      DEBUG("type nil");
+      return "";
+    }
+    break;
+  case NodeContentType::leaf:
+    {
+      //      ENHDEBUG("getNodeID() -- leaf");
+  //      if (!m_parent) {
+  //        return ":=" + convertIntToStr(m_node->getLeafValue());
+  //      } else {
+	std::string value = convertIntToStr(m_node->getLeafValue());
+	int n = m_nodeID.rfind(":");
+	std::string parentID = m_nodeID.substr(0,n+1);
+	std::string finalID = parentID + "=" + value;
+	//	DEBUG("m_nodeID: " << m_nodeID);
+	//	DEBUG("parentID: " << parentID);
+	//	DEBUG("finalID: " << finalID);
+
+	return finalID;
+	//  }
+    }
+    break;
+  case NodeContentType::inner:
+    {
+  return m_nodeID;
+  //return "";
+    }
+    break;
+  }
+  return ""; // should never get here, but -Wreturn-type gives a warning without this
+}
+
+void TreeNode::setNodeID(const std::string nodeID){
+  m_nodeID = nodeID;
+}
 

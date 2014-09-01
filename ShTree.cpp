@@ -60,21 +60,13 @@ unsigned int ShTreeAccessPolicy::getNumShares()  {
 // }
 
 bool ShTreeAccessPolicy::evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const{
-//   witnessSharesIndices.clear();
-// 
-//   vector<int> satisfyingSharesIndices;
-//   for (unsigned int i = 0; i < m_minimal_sets.size(); i++)
-//   {
-// 	  vector<int> minimalSet = m_minimal_sets[i]; 
-// 	  if (satisfyMinimalSet(i+1, minimalSet, shareIDs, satisfyingSharesIndices)){
-// 	    addVector(witnessSharesIndices, satisfyingSharesIndices);
-// 	    return true;
-// 	  }
-// 	  satisfyingSharesIndices.clear();
-//   }
-  return false;
-}
+  witnessSharesIndices.clear();
+  //  REPORT("Tree: " << m_treePolicy->to_string());
+  
+  bool success = satisfyNodeID(m_treePolicy, shareIDs, witnessSharesIndices);
 
+  return success;
+}
 
 bool ShTreeAccessPolicy::satisfyNode(shared_ptr<TreeNode> treeNode, vector<ShareTuple> shares, vector<ShareTuple> &satisfyingShares){ 
   // the logic gets very complicated if I pass the reference
@@ -88,7 +80,7 @@ bool ShTreeAccessPolicy::satisfyNode(shared_ptr<TreeNode> treeNode, vector<Share
   // invoked for each child until such a decision can be made. Each time it is invoked, it gives a new vector to be filled with the satisfying shares for this node.
   // This vector collects the shares of all satisfying subtrees and returns that for the next level if it is satisfied, and returns an empty vector if not.
 
-  
+  /*  
   vector<ShareTuple> goodShares;
   satisfyingShares.clear();
 
@@ -167,7 +159,120 @@ bool ShTreeAccessPolicy::satisfyNode(shared_ptr<TreeNode> treeNode, vector<Share
   //  DEBUG("Fail: Default case - not leaf, not inner node");
   satisfyingShares.clear();
   return false;
+
+*/
+
+  satisfyingShares.clear();
+
+  DEBUG("Creating ID vector");
+  
+  vector<std::string> shareIDs;
+  for (unsigned int i = 0; i < shares.size(); i++) {
+    shareIDs.push_back(shares[i].getShareIndex());
+  }
+
+  DEBUG("Calling evaluateIDs");
+  vector<int> satisfyingSharesIndices;
+  bool success = satisfyNodeID(treeNode, shareIDs, satisfyingSharesIndices);
+
+  for (unsigned int i = 0; i < satisfyingSharesIndices.size(); i++) {
+    satisfyingShares.push_back(shares[satisfyingSharesIndices[i]]);
+  }
+
+  return success;
 }
+
+
+bool ShTreeAccessPolicy::satisfyNodeID(shared_ptr<TreeNode> treeNode, vector<std::string> shareIDs, vector<int> &satisfyingSharesIndices){ 
+
+  ENHDEBUG("Satisfy Node ID");
+
+  debugVector("Received ShareIDs: ", shareIDs);
+
+  vector<int> goodShares;
+  satisfyingSharesIndices.clear();
+
+  shared_ptr<NodeContent> node = treeNode->getNode();
+  if (node->getType() == NodeContentType::nil) {
+    //    DEBUG("Fail: nilNode");
+    return false;
+  }
+
+  if (node->getType() == NodeContentType::leaf) {
+    DEBUG("Checking leaf");
+    std::string shareID = treeNode->getNodeID();
+    DEBUG("Tree ShareID: " << shareID);
+    for (unsigned int i = 0; i < shareIDs.size(); i++) {
+      std::string currentID = shareIDs[i];
+      if (shareID == currentID)  {
+	satisfyingSharesIndices.push_back(i);
+	return true;
+      }
+    }
+    //    DEBUG("Fail: wrong leaf id");
+    satisfyingSharesIndices.clear();
+    return false;
+  } else {
+    switch(node->getInnerNodeType()){
+    case InnerNodeType::AND:     
+      DEBUG("AND node");
+      for (unsigned int i = 0; i < treeNode->getNumChildren(); i++){
+	if (!satisfyNodeID(treeNode->getChild(i), shareIDs, goodShares)) {
+	  //	  DEBUG("Fail: AND Node with a non-satisfied child");
+	  satisfyingSharesIndices.clear();
+	  return false;
+	} else {
+	  addVector(satisfyingSharesIndices, goodShares);
+	}
+      }      
+      return true; 
+      break;
+    case InnerNodeType::OR:
+      DEBUG("OR node");
+      //      DEBUG("Or node verification");
+      for (unsigned int i = 0; i < treeNode->getNumChildren(); i++){
+	//	DEBUG("Checking child " << i);
+	if (satisfyNodeID(treeNode->getChild(i), shareIDs, goodShares)) {
+	  //	  DEBUG("child " << i << " passed");
+	  addVector(satisfyingSharesIndices, goodShares);
+	  return true;
+	}
+      }
+      //      DEBUG("Fail: OR: all nodes are unsatisfied");
+      satisfyingSharesIndices.clear();
+      return false;
+      break;
+    case InnerNodeType::THR:
+      DEBUG("THR node");
+      int nSat = 0;
+      int threshold = node->getThreshold();
+      unsigned int i = 0;
+      while ((nSat < threshold) && (i < treeNode->getNumChildren())){
+	ENHDEBUG("Threshold node. Checking child: " << i);
+	if (satisfyNodeID(treeNode->getChild(i), shareIDs, goodShares)) {	  
+	  //	  REPORT("Satisfied");
+	  nSat++;
+	  addVector(satisfyingSharesIndices, goodShares);
+	} else {
+	  //	  DEBUG("not Satisfied");
+	}
+	i++;
+      }
+      if (nSat >= threshold) {
+	DEBUG("Threshold satisfied");
+	return true;
+      }
+      DEBUG("Fail: Threshold - insufficient nodes satisfied");
+      satisfyingSharesIndices.clear();
+      return false; break;
+      //default: return false;break;
+    }
+  }
+  //  DEBUG("Fail: Default case - not leaf, not inner node");
+  satisfyingSharesIndices.clear();
+  return false;
+}
+
 
 // MAYBE I SHOULD CHANGE THIS
 // to accept participants specified as strings
@@ -180,7 +285,8 @@ shared_ptr<TreeNode> ShTreeAccessPolicy::parsePolicy() {
 }
 
 shared_ptr<TreeNode> ShTreeAccessPolicy::parseTreeFromExpression(std::string expr) {
-  ENHDEBUG("Expression: " << expr);
+  //  REPORT("Parse Tree From Expression");
+  //  ENHDEBUG("Expression: " << expr);
   // try to parse string as an int.   
   // this code can be changed in the future to something more general, if I decide to change the representation of participants to something else than integers
   if (expr == "") {
@@ -189,9 +295,11 @@ shared_ptr<TreeNode> ShTreeAccessPolicy::parseTreeFromExpression(std::string exp
   }
   try {
     int leafValue = convertStrToInt(expr);
+    //    DEBUG("Create Leaf node: " << leafValue);
     // If possible, create a leaf node with that value  
     shared_ptr<NodeContent> newNode = NodeContent::makeLeafNode(leafValue);
     shared_ptr<TreeNode> pTree = TreeNode::makeTree(newNode);
+    //    DEBUG("Leaf ID: " << pTree->getNodeID());
     return pTree;
   } catch (std::exception &e) {
     // if not possible, look for string until "("    
@@ -226,7 +334,7 @@ shared_ptr<TreeNode> ShTreeAccessPolicy::parseTreeFromExpression(std::string exp
     //string: 5 to 9
     //number chars: 9 - 5 + 1 = 5 = end-1-(start+1)+1 = end-1-start-1+1 = end - start - 1
     std::string sub_expr = expr.substr(start_index+1, end_index - start_index - 1);
-    ENHDEBUG("sub-expression to tokenize: " << sub_expr);
+    //ENHDEBUG("sub-expression to tokenize: " << sub_expr);
     // parse sub-expression into tokens, separated by ","
     vector<std::string> tokens;
     exprTokenize(sub_expr, tokens, ",","(",")");
@@ -249,17 +357,23 @@ shared_ptr<TreeNode> ShTreeAccessPolicy::parseTreeFromExpression(std::string exp
       newNode = NodeContent::makeThreshNode(arity - 1, threshold); // first element in the argument list is the threshold
     }    
     shared_ptr<TreeNode> pTree = TreeNode::makeTree(newNode);
+    //    DEBUG("create inner node: " << pTree->to_string());
+    //    DEBUG("nodeID: " << pTree->getNodeID());
     // obtain the corresponding tree for each token and append it to the children of the tree
 
     if (op != op_THR) {
       for (unsigned int i = 0; i < tokens.size(); i++) {
 	shared_ptr<TreeNode> child = parseTreeFromExpression(tokens[i]);
+	//	REPORT("Adding new child. Current version: " << pTree->to_string() << " -- child: " << child->to_string());
 	pTree->appendTree(child);
+	//	REPORT("Added new child. Current version: " << pTree->to_string());
       }
     } else {
       for (unsigned int i = 1; i < tokens.size(); i++) {
 	shared_ptr<TreeNode> child = parseTreeFromExpression(tokens[i]);
+	//	REPORT("Adding new child. Current version: " << pTree->to_string() << " -- child: " << child->to_string());
 	pTree->appendTree(child);
+	//	REPORT("Added new child. Current version: " << pTree->to_string());
       }
     }
     return pTree;
@@ -283,7 +397,7 @@ void ShTreeAccessPolicy::obtainCoveredFragsRec(int &count, shared_ptr<TreeNode> 
 
   if (node->getType() == NodeContentType::leaf) {
     int att_index = node->getLeafValue();
-    std::string shareID = node->getNodeID();
+    std::string shareID = tree->getNodeID();
     int n = contains(atts, att_index);
     if (n >= 0) {
       keyFragIndices.push_back(count);

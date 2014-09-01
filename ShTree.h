@@ -21,6 +21,7 @@ class ShTreeAccessPolicy : public AccessPolicy{
  protected:
   void obtainCoveredFragsRec(int &count, shared_ptr<TreeNode> tree, const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const;
  public:
+  static bool satisfyNodeID(shared_ptr<TreeNode> treeNode, vector<std::string> shareIDs, vector<int> &satisfyingSharesIndices);
   static bool satisfyNode(shared_ptr<TreeNode> node, vector<ShareTuple> shares, vector<ShareTuple> &satisfyingShares);
   shared_ptr<TreeNode> parsePolicy(); // takes the policy description and returns an equivalent parse tree
   shared_ptr<TreeNode> parseTreeFromExpression(std::string expr);

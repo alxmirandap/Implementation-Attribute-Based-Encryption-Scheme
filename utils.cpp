@@ -34,7 +34,7 @@ void print_test_result(int result, const string& name){
 
 void guard(string s, bool b){
   if (!b) {
-    DEBUG(s);
+    REPORT(s);
   }
   assert(b);
 }
@@ -62,9 +62,7 @@ int convertStrToInt(std::string s) {
 }
 
 std::string convertIntToStr(int n) {
-	std::stringstream ss("");
-	ss << n;
-	return ss.str();
+  return std::to_string(n);
 }
 
 void exprTokenize(const std::string &expr, vector<std::string> &tokens, const std::string delim, const std::string context_begin, const std::string context_end) {

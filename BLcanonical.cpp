@@ -107,7 +107,10 @@ bool BLAccessPolicy::satisfyMinimalSet(int setID, vector<int> set, vector<std::s
   return true;
 }
 
-
+std::string BLAccessPolicy::createShareIndex(std::string setID, std::string partID) const {
+  std::string id = setID + ":" + partID;
+  return id;
+}
 
 
 bool BLAccessPolicy::evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const{
@@ -293,7 +296,6 @@ std::vector<ShareTuple> BLSS::distribute_random(const Big& s){
   return distribute_determ(s, m_randomness);
 }
 
-
 std::vector<ShareTuple> BLSS::distribute_determ(const Big& s, const vector<Big>& randomness){
   int count = 0;
   vector<ShareTuple> shares;
@@ -304,8 +306,7 @@ std::vector<ShareTuple> BLSS::distribute_determ(const Big& s, const vector<Big>&
     Big currentSum = 0;
     for (unsigned int j = 0; j < set.size(); j++) {      
       int partIndex = set[j];
-      stringstream ss("");
-      ss << i+1 << ":" << partIndex;
+      std::string shareID = createShareIndex(convertIntToStr(i+1), convertIntToStr(partIndex));
       Big value;
       if (j < set.size()-1) {
     	  value = randomness[count];
@@ -314,7 +315,7 @@ std::vector<ShareTuple> BLSS::distribute_determ(const Big& s, const vector<Big>&
       } else {
 	value = (s - currentSum + m_order) % m_order;
       }
-      ShareTuple share(partIndex, value, ss.str());
+      ShareTuple share(partIndex, value, shareID);
       shares.push_back(share);
 
     }    

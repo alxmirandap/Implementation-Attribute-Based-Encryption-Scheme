@@ -265,20 +265,22 @@ int testSatisfyNode() {
   // AND: {}, {}, {}, {3,4,1,2}
   // THR: {}, {}, {4,1,3}, {2,4,1}
 
-  ShareTuple o1(1, 0, "0:0");
-  ShareTuple o2(2, 0, "0:1");
-  ShareTuple o3(3, 0, "0:2");
-  ShareTuple o4(4, 0, "0:3");
+  // Leaf Node labels: "<the Id of the parent> : <the participant>"
 
-  ShareTuple a3(3,0,"0:0");
-  ShareTuple a4(4,0,"0:1");
-  ShareTuple a1(1,0,"0:2");
-  ShareTuple a2(2,0,"0:3");
+  ShareTuple o1(1, 0, "0:=1");
+  ShareTuple o2(2, 0, "0:=2");
+  ShareTuple o3(3, 0, "0:=3");
+  ShareTuple o4(4, 0, "0:=4");
 
-  ShareTuple t2(2,0,"0:0");
-  ShareTuple t4(4,0,"0:1");
-  ShareTuple t1(1,0,"0:2");
-  ShareTuple t3(3,0,"0:3");
+  ShareTuple a3(3,0,"0:=3");
+  ShareTuple a4(4,0,"0:=4");
+  ShareTuple a1(1,0,"0:=1");
+  ShareTuple a2(2,0,"0:=2");
+
+  ShareTuple t2(2,0,"0:=2");
+  ShareTuple t4(4,0,"0:=4");
+  ShareTuple t1(1,0,"0:=1");
+  ShareTuple t3(3,0,"0:=3");
 
   vector<ShareTuple> orSet;
   vector<ShareTuple> andSet;
@@ -387,10 +389,219 @@ int testSatisfyNode() {
     errors += testSatisfyNodeDetail(thrTree, shareList, witnessList[i], "thrTree", i);
   }
 
+  return errors;
+}
 
+int testVectors(vector<vector<ShareTuple> > testRun, vector<vector<ShareTuple> > witnessRun, ShTreeAccessPolicy pol, std::string expr) {
+  int errors = 0;
+  ENHDEBUG("===============");
+  ENHOUT("Testing vectors");
+
+  vector<ShareTuple> witnessVector;
+  //  for (unsigned int i = 0; i < testRun.size(); i++) {
+  for (unsigned int i = 1; i < 2; i++) {
+    witnessVector.clear();
+
+    bool b = pol.evaluate(testRun[i], witnessVector);
+    DEBUG("Returned from evaluate: " << b);
+
+        debugVectorObj("---> witness list: ", witnessRun[i]);
+        debugVectorObj("---> real witnesses: ", witnessVector);
+
+    bool verif_b;
+    stringstream ss("");
+    ss << "testEvaluate [" << expr << "]: " << i;
+    if (witnessRun[i].empty()) {
+      verif_b = false;
+      DEBUG("Witness vector is empty. Target: " << verif_b);
+    } else {
+      verif_b = true;
+      DEBUG("Witness vector has elements. Target: " << verif_b);
+    }
+    test_diagnosis(ss.str(), b == verif_b, errors);
+    test_diagnosis(ss.str() + " - Witness vector", witnessVector == witnessRun[i], errors);
+  }
+  return errors;
+}
+
+int testExpr1() {
+  int errors = 0;
+
+  std::string expr = "";
+  ShTreeAccessPolicy pol(expr, 0);
+
+  ShareTuple s11(1,0,"1:1");
+  ShareTuple s12(2,0,"2:2");
+  ShareTuple s13(3,0,"3:3");
+  ShareTuple s14(4,0,"4:4");
+  ShareTuple s15(5,0,"5:5");
+
+  vector<ShareTuple> shareList;
+  shareList.push_back(s11);
+  shareList.push_back(s12);
+  shareList.push_back(s13);
+  shareList.push_back(s14);
+  shareList.push_back(s15);
+
+  vector<ShareTuple> emptyList;
+  vector<ShareTuple> currentList;
+  vector< vector<ShareTuple> > testRun;
+  vector< vector<ShareTuple> > witnessRun;
+
+  for (unsigned int i = 0; i < 5; i++) {  
+    currentList.push_back(shareList[i]);
+    testRun.push_back(currentList);
+    witnessRun.push_back(emptyList);
+  }
+  errors += testVectors(testRun, witnessRun, pol, expr);    
+  return errors;
+}
+
+
+int testExpr2() {
+  int errors = 0;
+
+  std::string expr = "4";
+  ShTreeAccessPolicy pol(expr, 0);
+
+  ShareTuple s11(1,0,":=1");
+  ShareTuple s12(2,0,":=2");
+  ShareTuple s13(3,0,":=3");
+  ShareTuple s14(4,0,":=4");
+  ShareTuple s15(5,0,":=5");
+
+  vector<ShareTuple> shareList;
+  shareList.push_back(s11);
+  shareList.push_back(s12);
+  shareList.push_back(s13);
+  shareList.push_back(s14);
+  shareList.push_back(s15);
+
+  vector<ShareTuple> witnessList;
+  vector<ShareTuple> currentList;
+  vector< vector<ShareTuple> > testRun;
+  vector< vector<ShareTuple> > witnessRun;
+
+  for (unsigned int i = 0; i < 5; i++) {  
+    currentList.push_back(shareList[i]);
+    testRun.push_back(currentList);
+    if (i == 3) {
+      witnessList.push_back(shareList[i]);
+    }
+    witnessRun.push_back(witnessList);
+  }
+  errors += testVectors(testRun, witnessRun, pol, expr);    
+  return errors;
+}
+
+int testExpr3() {
+  int errors = 0;
+
+  std::string expr = op_THR + "(2, 1, " + op_THR + "(1, 2, " + op_THR + "(2,5,2,3,4)), 4, " + op_THR + "(2,6,1))";
+  //  OUT("Expr3: " << expr);
+  ShTreeAccessPolicy pol(expr, 6);
+
+  ShareTuple s11(1,0,"0:=1");
+  ShareTuple s22(2,0,"0:1:=2");
+  ShareTuple s35(5,0,"0:1:1:=5");
+  ShareTuple s32(2,0,"0:1:1:=2");
+  ShareTuple s33(3,0,"0:1:1:=3");
+  ShareTuple s34(4,0,"0:1:1:=4");
+  ShareTuple s44(4,0,"0:=4");
+  ShareTuple s56(6,0,"0:3:=6");
+  ShareTuple s51(1,0,"0:3:=1");
+
+  vector<ShareTuple> sl;
+  sl.push_back(s11);
+  sl.push_back(s22);
+  sl.push_back(s35);
+  sl.push_back(s32);
+  sl.push_back(s33);
+  sl.push_back(s34);
+  sl.push_back(s44);
+  sl.push_back(s56);
+  sl.push_back(s51);
+
+  vector<ShareTuple> run1;
+  run1.push_back(sl[0]);
+  run1.push_back(sl[6]);
+
+  vector<ShareTuple> run2;
+  run2.push_back(sl[7]);
+  run2.push_back(sl[8]);
+  run2.push_back(sl[1]);
+  run2.push_back(sl[4]);
+  run2.push_back(sl[5]);
+
+  vector<ShareTuple> run3;
+  run3.push_back(sl[7]);
+  run3.push_back(sl[8]);
+  run3.push_back(sl[1]);
+  run3.push_back(sl[2]);
+  run3.push_back(sl[4]);
+
+  vector<ShareTuple> run4;
+  run4.push_back(sl[5]);
+  run4.push_back(sl[6]);
+  run4.push_back(sl[1]);
+
+  vector<ShareTuple> run5;
+  run5.push_back(sl[6]);
+  run5.push_back(sl[8]);
+  run5.push_back(sl[3]);
+
+  vector< vector<ShareTuple> > testRun;
+  testRun.push_back(run1);
+  testRun.push_back(run2);
+  testRun.push_back(run3);
+  testRun.push_back(run4);
+  testRun.push_back(run5);
+
+  vector< vector<ShareTuple> > witnessRun;
+  vector<ShareTuple> witnessList;
+  witnessList.push_back(sl[0]);
+  witnessList.push_back(sl[6]);
+  witnessRun.push_back(witnessList);
+  witnessList.clear();
+
+  witnessList.push_back(sl[1]);
+  witnessList.push_back(sl[7]);
+  witnessList.push_back(sl[8]);
+  witnessRun.push_back(witnessList);
+  witnessList.clear();
+
+  witnessList.push_back(sl[1]);
+  witnessList.push_back(sl[7]);
+  witnessList.push_back(sl[8]);
+  witnessRun.push_back(witnessList);
+  witnessList.clear();
+
+  witnessList.push_back(sl[1]);
+  witnessList.push_back(sl[6]);
+  witnessRun.push_back(witnessList);
+  witnessList.clear();
+
+  witnessRun.push_back(witnessList);
+  witnessList.clear();
+
+  errors += testVectors(testRun, witnessRun, pol, expr);    
+  return errors;
+}
+
+
+
+
+int testEvaluate() {
+  int errors = 0;
+
+  //  errors += testExpr1(); // nil tree
+  //  errors += testExpr2(); // leaf tree
+  errors += testExpr3(); // multi-level tree
 
   return errors;
 }
+
+
 
 int testGetNumShares() {
   int errors = 0;
@@ -442,11 +653,11 @@ int testObtainCoveredFrags() {
   shared_ptr<ShTreeAccessPolicy> policy = make_shared<ShTreeAccessPolicy>(expr, 5);
     
   vector<std::string> verifShareIDs;
-  verifShareIDs.push_back("0:1:0");
-  verifShareIDs.push_back("0:1:1:1");
-  verifShareIDs.push_back("0:1:1:2");
-  verifShareIDs.push_back("0:2");
-  verifShareIDs.push_back("0:3:1");
+  verifShareIDs.push_back("0:1:=2");
+  verifShareIDs.push_back("0:1:1:=2");
+  verifShareIDs.push_back("0:1:1:=3");
+  verifShareIDs.push_back("0:=4");
+  verifShareIDs.push_back("0:3:=2");
 
   vector<int> verifKeyFragIDs;
   verifKeyFragIDs.push_back(1);
@@ -463,6 +674,9 @@ int testObtainCoveredFrags() {
   verifAttFragIDs.push_back(2);
 
   policy->obtainCoveredFrags(atts, attFragIndices, keyFragIndices, coveredShareIDs); 
+
+  debugVector("coveredShareIDs: ", coveredShareIDs);
+  debugVector("verifShareIDs: ", verifShareIDs);
 
   test_diagnosis(base + "number of covered IDs", coveredShareIDs.size() == verifShareIDs.size(), errors);
   for (unsigned int i = 0; i < coveredShareIDs.size(); i++) {
@@ -489,12 +703,12 @@ int runTests(std::string &testName) {
 
   // Policy tests
   ENHOUT("Secret sharing policy tests");
-  errors += testParseTreeFromExpression();
-  errors += testSatisfyNode();
-//   errors += testEvaluate();
-  errors += testGetNumShares();
-  errors += testObtainCoveredFrags();
-//   
+  // errors += testParseTreeFromExpression();
+   errors += testSatisfyNode(); // 14
+  //  errors += testEvaluate();
+  //  errors += testGetNumShares();
+  //  errors += testObtainCoveredFrags(); 
+  
 //   // Secret Sharing tests
 //   ENHOUT("Secret sharing scheme tests");
 //   errors += testGetSharesForParticipants(pfc);

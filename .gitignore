@@ -19,3 +19,21 @@
 *.exe
 *.out
 *.app
+
+# Temporary source files
+*.cpp~
+*.h~
+*.tcc~
+*.txt~
+\#*.cpp*
+makefile~
+
+# Particular for this project
+Docs/
+OldCode/
+.cproject
+.directory
+.metadata/
+.project
+*-swp
+core

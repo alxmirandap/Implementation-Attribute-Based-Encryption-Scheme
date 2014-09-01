@@ -43,9 +43,11 @@
 #include <cmath>
 
 #define shRED "\x1b[1;31m"
+#define shLRED "\x1b[0;31m"
 #define shWHITE "\x1b[0;37m"
 #define shBWHITE "\x1b[1;37m"
 #define shYELLOW "\x1b[1;33m"
+#define shCYAN "\x1b[0;36m"
 #define shGREEN "\x1b[1;32m"
 
 #define NODEBUG
@@ -57,11 +59,12 @@
 
 #ifndef NODEBUG
 #  define DEBUG(x) cout << shRED "[DEBUG:] " shWHITE  <<  x << "\n"
-#  define ENHDEBUG(x) cout << shBWHITE "[DEBUG:] " shYELLOW  <<  x << "\n"
+#  define ENHDEBUG(x) cout << shBWHITE "[DEBUG:] " shYELLOW  <<  x << shWHITE "\n"
 #endif
 
 #define OUT(x) cout << shGREEN "[OUTPUT:] " shWHITE << x << "\n"
 #define ENHOUT(x) cout << shGREEN "[OUTPUT:] " shBWHITE << x << "\n"
+#define REPORT(x) cout << shLRED "[REPORT:] " shCYAN << x << shWHITE "\n"
 
 #define ERR_BAD_POLICY "BAD_POLICY"
 #define ERR_CONVERSION "ERR_CONV"
