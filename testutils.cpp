@@ -318,6 +318,22 @@ int testTrim() {
   return errors;
 }
 
+int testIsSuffix(){
+  int errors = 0;
+  std::string s1 = "abcdef";
+  std::string s2 = "abcdefghij";
+  std::string s3 = "abcdjklefghij";
+  std::string s4 = "xafd";
+
+  test_diagnosis("testIsSuffix: " + s1 + "; " + s2, isSuffix(s1, s2), errors);
+  test_diagnosis("testIsSuffix: " + s1 + "; " + s3, !isSuffix(s1, s3), errors);
+  test_diagnosis("testIsSuffix: " + s1 + "; " + s4, !isSuffix(s1, s4), errors);
+  test_diagnosis("testIsSuffix: " + s2 + "; " + s1, !isSuffix(s2, s1), errors);
+  test_diagnosis("testIsSuffix: " + s1 + "; " + s1, isSuffix(s1, s1), errors);
+
+  return errors;
+}
+
 int runTests(std::string &testName) {
   testName = "Test Utils";
   int errors = 0;
@@ -327,6 +343,7 @@ int runTests(std::string &testName) {
   errors += testConvertStrToInt();
   errors += testExprTokenize();
   errors += testTrim();
+  errors += testIsSuffix();
   return errors;
 }
 

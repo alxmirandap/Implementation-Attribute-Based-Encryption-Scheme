@@ -176,17 +176,17 @@ int testChildren(){  //append and get numbers
 
   //  test_diagnosis("testChildren - child1 ID", child1->getNodeID() == "0", errors);
   test_diagnosis("testChildren - child1 append", tree->appendChild(child1) == true, errors);
-  test_diagnosis("testChildren - child1 ID", tree->getChild(0)->getNodeID() == "0:=1", errors);
+  test_diagnosis("testChildren - child1 ID", tree->getChild(0)->getNodeID() == "0:0:=1", errors);
   test_diagnosis("testChildren - child1 numChildren", tree->getNumChildren() == 1, errors);
 
   //  test_diagnosis("testChildren - child2 ID", child2->getNodeID() == "0", errors);
   test_diagnosis("testChildren - child2 append", tree->appendChild(child2) == true, errors);
-  test_diagnosis("testChildren - child2 ID", tree->getChild(1)->getNodeID() == "0:=2", errors);
+  test_diagnosis("testChildren - child2 ID", tree->getChild(1)->getNodeID() == "0:1:=2", errors);
   test_diagnosis("testChildren - child2 numChildren", tree->getNumChildren() == 2, errors);
 
   //  test_diagnosis("testChildren - child3 ID", child3->getNodeID() == "0", errors);
   test_diagnosis("testChildren - child3 append", tree->appendChild(child3) == true, errors);
-  test_diagnosis("testChildren - child3 ID", tree->getChild(2)->getNodeID() == "0:=3", errors);
+  test_diagnosis("testChildren - child3 ID", tree->getChild(2)->getNodeID() == "0:2:=3", errors);
   test_diagnosis("testChildren - child3 numChildren", tree->getNumChildren() == 3, errors);
 
   //  test_diagnosis("testChildren - child4 ID", child4->getNodeID() == "0", errors);
@@ -276,7 +276,7 @@ int testTreeConstruction(){ // computing the number of leaves and checking the g
   shared_ptr<TreeNode> subtree1 = tree->getChild(0);
   shared_ptr<TreeNode> subtree2 = tree->getChild(1);
 
-  test_diagnosis("testConstruction - nodeID [node1]", subtree1->getNodeID() == "0:=12", errors);
+  test_diagnosis("testConstruction - nodeID [node1]", subtree1->getNodeID() == "0:0:=12", errors);
   test_diagnosis("testConstruction - nodeID [node2]", subtree2->getNodeID() == "0:1", errors);
   //  REPORT("Calling equals 1");
   ENHDEBUG("verifTree1: " << verifTree1->to_string());
@@ -302,7 +302,7 @@ int testTreeConstruction(){ // computing the number of leaves and checking the g
 
    shared_ptr<TreeNode> subtree21 = subtree2->getChild(0);
    test_diagnosis("testConstruction - getNode() - subtree21", node21 == subtree21->getNode(), errors);
-   test_diagnosis("testConstruction - nodeID [node21]", subtree21->getNodeID() == "0:1:=1", errors);
+   test_diagnosis("testConstruction - nodeID [node21]", subtree21->getNodeID() == "0:1:0:=1", errors);
    shared_ptr<TreeNode> subtree22 = subtree2->getChild(1); 
    test_diagnosis("testConstruction - getNode() - subtree22", node22 == subtree22->getNode(), errors);
    test_diagnosis("testConstruction - nodeID [node22]", subtree22->getNodeID() == "0:1:1", errors);
@@ -332,19 +332,19 @@ int testTreeConstruction(){ // computing the number of leaves and checking the g
  
    shared_ptr<TreeNode> subtree221 = subtree22->getChild(0);
    test_diagnosis("testConstruction - getNode() - subtree221", node221 == subtree221->getNode(), errors);
-   test_diagnosis("testConstruction - nodeID [node221]", subtree221->getNodeID() == "0:1:1:=1", errors);
+   test_diagnosis("testConstruction - nodeID [node221]", subtree221->getNodeID() == "0:1:1:0:=1", errors);
    shared_ptr<TreeNode> subtree222 = subtree22->getChild(1);
    test_diagnosis("testConstruction - getNode() - subtree222", node222 == subtree222->getNode(), errors);
-   test_diagnosis("testConstruction - nodeID [node222]", subtree222->getNodeID() == "0:1:1:=2", errors);
+   test_diagnosis("testConstruction - nodeID [node222]", subtree222->getNodeID() == "0:1:1:1:=2", errors);
    shared_ptr<TreeNode> subtree231 = subtree23->getChild(0);
    test_diagnosis("testConstruction - getNode() - subtree231", node231 == subtree231->getNode(), errors);
-   test_diagnosis("testConstruction - nodeID [node231]", subtree231->getNodeID() == "0:1:2:=1", errors);
+   test_diagnosis("testConstruction - nodeID [node231]", subtree231->getNodeID() == "0:1:2:0:=1", errors);
    shared_ptr<TreeNode> subtree232 = subtree23->getChild(1);
    test_diagnosis("testConstruction - getNode() - subtree232", node232 == subtree232->getNode(), errors);
-   test_diagnosis("testConstruction - nodeID [node232]", subtree232->getNodeID() == "0:1:2:=10", errors);
+   test_diagnosis("testConstruction - nodeID [node232]", subtree232->getNodeID() == "0:1:2:1:=10", errors);
    shared_ptr<TreeNode> subtree233 = subtree23->getChild(2);
    test_diagnosis("testConstruction - getNode() - subtree233", node233 == subtree233->getNode(), errors);
-   test_diagnosis("testConstruction - nodeID [node233]", subtree233->getNodeID() == "0:1:2:=100", errors);
+   test_diagnosis("testConstruction - nodeID [node233]", subtree233->getNodeID() == "0:1:2:2:=100", errors);
  
    DEBUG("====================");
  
@@ -455,8 +455,8 @@ int testAppendTree(){
   test_diagnosis("Test - appendTree: ID of tree11", tree11->getNodeID() == "0:1", errors);
   test_diagnosis("Test - appendTree: ID of tree2", tree2->getNodeID() == "0", errors);
   test_diagnosis("Test - appendTree: ID of tree2", tree21->getNodeID() == "0:1", errors);
-  test_diagnosis("Test - appendTree: ID of leaf4", tree21->getChild(0)->getNodeID() == "0:1:=4", errors);
-  test_diagnosis("Test - appendTree: ID of leaf6", tree21->getChild(2)->getNodeID() == "0:1:=6", errors);
+  test_diagnosis("Test - appendTree: ID of leaf4", tree21->getChild(0)->getNodeID() == "0:1:0:=4", errors);
+  test_diagnosis("Test - appendTree: ID of leaf6", tree21->getChild(2)->getNodeID() == "0:1:2:=6", errors);
 
   bool success = tree11->appendTree(tree2);
   test_diagnosis("Test - appendTree: appending tree", success, errors);
@@ -466,8 +466,8 @@ int testAppendTree(){
   test_diagnosis("Test - appendTree: ID of tree2", tree2->getNodeID() == "0:1:1", errors);
   test_diagnosis("Test - appendTree: sub-tree of tree2", tree2->getChild(1) == tree21, errors);
   test_diagnosis("Test - appendTree: ID of tree2", tree21->getNodeID() == "0:1:1:1", errors);
-  test_diagnosis("Test - appendTree: ID of leaf4", tree21->getChild(0)->getNodeID() == "0:1:1:1:=4", errors);
-  test_diagnosis("Test - appendTree: ID of leaf6", tree21->getChild(2)->getNodeID() == "0:1:1:1:=6", errors);
+  test_diagnosis("Test - appendTree: ID of leaf4", tree21->getChild(0)->getNodeID() == "0:1:1:1:0:=4", errors);
+  test_diagnosis("Test - appendTree: ID of leaf6", tree21->getChild(2)->getNodeID() == "0:1:1:1:2:=6", errors);
   
   return errors;
 }
@@ -486,8 +486,8 @@ int testNodeIDAfterAppends(){
   shared_ptr<TreeNode> treeLeaf11 = TreeNode::makeTree(nodeLeaf11);
   shared_ptr<TreeNode> treeAnd = TreeNode::makeTree(nodeAnd1);
 
-  test_diagnosis("testNodeIDAfterAppends - leaf7", treeLeaf7->getNodeID() == ":=7", errors);
-  test_diagnosis("testNodeIDAfterAppends - leaf11", treeLeaf11->getNodeID() == ":=11", errors);
+  test_diagnosis("testNodeIDAfterAppends - leaf7", treeLeaf7->getNodeID() == "0:=7", errors);
+  test_diagnosis("testNodeIDAfterAppends - leaf11", treeLeaf11->getNodeID() == "0:=11", errors);
   test_diagnosis("testNodeIDAfterAppends - andNode", treeAnd->getNodeID() == "0", errors);
 
   treeAnd->appendChild(nodeLeaf7);
@@ -496,8 +496,8 @@ int testNodeIDAfterAppends(){
   shared_ptr<TreeNode> subtree1 = treeAnd->getChild(0);
   shared_ptr<TreeNode> subtree2 = treeAnd->getChild(1);
 
-  test_diagnosis("testNodeIDAfterAppends - subtree1", subtree1->getNodeID() == "0:=7", errors);
-  test_diagnosis("testNodeIDAfterAppends - subtree2", subtree2->getNodeID() == "0:=11", errors);
+  test_diagnosis("testNodeIDAfterAppends - subtree1", subtree1->getNodeID() == "0:0:=7", errors);
+  test_diagnosis("testNodeIDAfterAppends - subtree2", subtree2->getNodeID() == "0:1:=11", errors);
 
   shared_ptr<NodeContent> nodeLeaf3 = NodeContent::makeLeafNode(3);
   shared_ptr<NodeContent> nodeLeaf5 = NodeContent::makeLeafNode(5);
@@ -510,12 +510,12 @@ int testNodeIDAfterAppends(){
   treeOr->appendChild(nodeLeaf3);
   treeOr->appendChild(nodeLeaf5);
 
-  test_diagnosis("testNodeIDAfterAppends - leaf3", treeLeaf3->getNodeID() == ":=3", errors);
-  test_diagnosis("testNodeIDAfterAppends - leaf5", treeLeaf5->getNodeID() == ":=5", errors);
+  test_diagnosis("testNodeIDAfterAppends - leaf3", treeLeaf3->getNodeID() == "0:=3", errors);
+  test_diagnosis("testNodeIDAfterAppends - leaf5", treeLeaf5->getNodeID() == "0:=5", errors);
   test_diagnosis("testNodeIDAfterAppends - orNode", treeOr->getNodeID() == "0", errors);
 
-  test_diagnosis("testNodeIDAfterAppends - or child 0", treeOr->getChild(0)->getNodeID() == "0:=3", errors);
-  test_diagnosis("testNodeIDAfterAppends - or child 1", treeOr->getChild(1)->getNodeID() == "0:=5", errors); 
+  test_diagnosis("testNodeIDAfterAppends - or child 0", treeOr->getChild(0)->getNodeID() == "0:0:=3", errors);
+  test_diagnosis("testNodeIDAfterAppends - or child 1", treeOr->getChild(1)->getNodeID() == "0:1:=5", errors); 
 
   treeAnd->appendTree(treeOr);
 
@@ -527,11 +527,11 @@ int testNodeIDAfterAppends(){
   DEBUG("big tree: path: 2,0: " << treeAnd->getChild(2)->getChild(0)->getNodeID() );
   DEBUG("big tree: path: 2,1: " << treeAnd->getChild(2)->getChild(1)->getNodeID() );
 
-  test_diagnosis("testNodeIDAfterAppends - big tree: path: 0: ", treeAnd->getChild(0)->getNodeID() == "0:=7", errors);
-  test_diagnosis("testNodeIDAfterAppends - big tree: path: 1: ", treeAnd->getChild(1)->getNodeID() == "0:=11", errors);
+  test_diagnosis("testNodeIDAfterAppends - big tree: path: 0: ", treeAnd->getChild(0)->getNodeID() == "0:0:=7", errors);
+  test_diagnosis("testNodeIDAfterAppends - big tree: path: 1: ", treeAnd->getChild(1)->getNodeID() == "0:1:=11", errors);
   test_diagnosis("testNodeIDAfterAppends - big tree: path: 2: ", treeAnd->getChild(2)->getNodeID() == "0:2", errors);
-  test_diagnosis("testNodeIDAfterAppends - big tree: path: 2,0: ", treeAnd->getChild(2)->getChild(0)->getNodeID() == "0:2:=3", errors);
-  test_diagnosis("testNodeIDAfterAppends - big tree: path: 2,1: ", treeAnd->getChild(2)->getChild(1)->getNodeID() == "0:2:=5", errors);
+  test_diagnosis("testNodeIDAfterAppends - big tree: path: 2,0: ", treeAnd->getChild(2)->getChild(0)->getNodeID() == "0:2:0:=3", errors);
+  test_diagnosis("testNodeIDAfterAppends - big tree: path: 2,1: ", treeAnd->getChild(2)->getChild(1)->getNodeID() == "0:2:1:=5", errors);
 
   shared_ptr<NodeContent> independentLeaf100 = NodeContent::makeLeafNode(100);
   shared_ptr<NodeContent> independentLeaf101 = NodeContent::makeLeafNode(101);
@@ -543,8 +543,8 @@ int testNodeIDAfterAppends(){
   DEBUG("independent 101: " << independentTree101->getNodeID() );
 
 
-  test_diagnosis("testNodeIDAfterAppends - independent 100", independentTree100->getNodeID() == ":=100", errors);
-  test_diagnosis("testNodeIDAfterAppends - independent 101", independentTree101->getNodeID() == ":=101", errors);
+  test_diagnosis("testNodeIDAfterAppends - independent 100", independentTree100->getNodeID() == "0:=100", errors);
+  test_diagnosis("testNodeIDAfterAppends - independent 101", independentTree101->getNodeID() == "0:=101", errors);
 
   treeAnd->appendTree(independentTree100);
   treeOr->appendTree(independentTree101);
@@ -555,10 +555,49 @@ DEBUG("independent 101 after append: " << independentTree101->getNodeID() );
 DEBUG("independent 101 after append from root: " << treeAnd->getChild(2)->getChild(2)->getNodeID() );
 
 
-  test_diagnosis("testNodeIDAfterAppends - independent 100 after append", independentTree100->getNodeID() == "0:=100", errors);  
-  test_diagnosis("testNodeIDAfterAppends - independent 100 after append from root", treeAnd->getChild(3)->getNodeID() == "0:=100", errors);  
-  test_diagnosis("testNodeIDAfterAppends - independent 101 after append", independentTree101->getNodeID() == "0:2:=101", errors);  
-  test_diagnosis("testNodeIDAfterAppends - independent 101 after append from root", treeAnd->getChild(2)->getChild(2)->getNodeID() == "0:2:=101", errors);
+  test_diagnosis("testNodeIDAfterAppends - independent 100 after append", independentTree100->getNodeID() == "0:3:=100", errors);  
+  test_diagnosis("testNodeIDAfterAppends - independent 100 after append from root", treeAnd->getChild(3)->getNodeID() == "0:3:=100", errors);  
+  test_diagnosis("testNodeIDAfterAppends - independent 101 after append", independentTree101->getNodeID() == "0:2:2:=101", errors);  
+  test_diagnosis("testNodeIDAfterAppends - independent 101 after append from root", treeAnd->getChild(2)->getChild(2)->getNodeID() == "0:2:2:=101", errors);
+  return errors;
+}
+
+int testUpdateID(){
+  int errors = 0;
+
+  shared_ptr<NodeContent> sololeaf = NodeContent::makeLeafNode(7);
+  shared_ptr<TreeNode> solotree = TreeNode::makeTree(sololeaf);
+
+  shared_ptr<NodeContent> orNode = NodeContent::makeOrNode(2);
+  shared_ptr<NodeContent> andNode = NodeContent::makeAndNode(2);
+  shared_ptr<NodeContent> leaf1 = NodeContent::makeLeafNode(8);
+  shared_ptr<NodeContent> leaf2 = NodeContent::makeLeafNode(6);
+  shared_ptr<NodeContent> leaf3 = NodeContent::makeLeafNode(2);
+
+  shared_ptr<TreeNode> root = TreeNode::makeTree(orNode);
+  shared_ptr<TreeNode> subtree = TreeNode::makeTree(andNode);
+  root->appendChild(leaf1);
+  root->appendTree(subtree);
+  subtree->appendChild(leaf2);
+  subtree->appendChild(leaf3);
+
+  test_diagnosis("testUpdateID [before] - sololeaf", solotree->getNodeID() == "0:=7", errors);
+  test_diagnosis("testUpdateID [before] - root", root->getNodeID() == "0", errors);
+  test_diagnosis("testUpdateID [before] - subtree", subtree->getNodeID() == "0:1", errors);
+  test_diagnosis("testUpdateID [before] - leaf1", root->getChild(0)->getNodeID() == "0:0:=8", errors);
+  test_diagnosis("testUpdateID [before] - leaf2", root->getChild(1)->getChild(0)->getNodeID() == "0:1:0:=6", errors);
+  test_diagnosis("testUpdateID [before] - leaf3", root->getChild(1)->getChild(1)->getNodeID() == "0:1:1:=2", errors);
+
+  solotree->updateID("0:1:3", 2);
+  test_diagnosis("testUpdateID [after] - sololeaf", solotree->getNodeID() == "0:1:3:2:=7", errors);
+
+  root->updateID("0:1:3", 2);
+  test_diagnosis("testUpdateID [after] - root", root->getNodeID() == "0:1:3:2", errors);
+  test_diagnosis("testUpdateID [after] - subtree", subtree->getNodeID() == "0:1:3:2:1", errors);
+  test_diagnosis("testUpdateID [after] - leaf1", root->getChild(0)->getNodeID() == "0:1:3:2:0:=8", errors);
+  test_diagnosis("testUpdateID [after] - leaf2", root->getChild(1)->getChild(0)->getNodeID() == "0:1:3:2:1:0:=6", errors);
+  test_diagnosis("testUpdateID [after] - leaf3", root->getChild(1)->getChild(1)->getNodeID() == "0:1:3:2:1:1:=2", errors);
+
   return errors;
 }
 
@@ -572,6 +611,7 @@ int runTests(std::string &testName) {
   errors += testTreeConstruction();
   errors += testAppendTree();
   errors += testNodeIDAfterAppends();
+  errors += testUpdateID();
   
   DEBUG("Returning from runTests");
 

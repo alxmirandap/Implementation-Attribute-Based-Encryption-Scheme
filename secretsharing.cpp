@@ -16,24 +16,24 @@
 
 
 ShareTuple::ShareTuple():
-  partIndex(0), share(0), shareIndex("")
+  partIndex(0), share(0), shareID("")
 {}
 
 ShareTuple::ShareTuple(const int pi, const Big s, const std::string si):
-  partIndex(pi), share(s), shareIndex(si)
+  partIndex(pi), share(s), shareID(si)
 {}
 
 ShareTuple::ShareTuple(const ShareTuple& other) :
   partIndex(other.partIndex),
   share(other.share),
-  shareIndex(other.shareIndex)
+  shareID(other.shareID)
 {}
 
 ShareTuple& ShareTuple::operator=(const ShareTuple& other)
 {
   partIndex = other.partIndex;
   share = other.share;
-  shareIndex = other.shareIndex;
+  shareID = other.shareID;
   return *this;
 }
 
@@ -41,20 +41,20 @@ void ShareTuple::setValues(const int pi, const Big s, const int si)
 {
   partIndex = pi;
   share = s;
-  shareIndex = si;
+  shareID = si;
 }
 
 
 bool ShareTuple::operator==(const ShareTuple& rhs) const {
   if (partIndex != rhs.partIndex) return false;
   if (share != rhs.share) return false;
-  if (shareIndex != rhs.shareIndex) return false;
+  if (shareID != rhs.shareID) return false;
   return true;
 }
 
 string ShareTuple::to_string() const {
   std::stringstream sstrm;
-  sstrm << "[" << partIndex << ";" << share << ";" << shareIndex << "] ";
+  sstrm << "[" << partIndex << ";" << share << ";" << shareID << "] ";
   return sstrm.str();
 }
 
@@ -66,12 +66,12 @@ Big ShareTuple::getShare() const {
     return share;
 }
 
-std::string ShareTuple::getShareIndex() const{
-  return shareIndex;
+std::string ShareTuple::getShareID() const{
+  return shareID;
 }
 
 std::ostream& operator<<(ostream& out, const ShareTuple &sp) {
-  return out << "[" << sp.getShareIndex() << ";" << sp.getPartIndex() << ";" << sp.getShare() << "] ";
+  return out << "[" << sp.getShareID() << ";" << sp.getPartIndex() << ";" << sp.getShare() << "] ";
 }
 
 //==================================================================
@@ -116,7 +116,7 @@ vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares, unsigned int k)
   unsigned int i = 0;
   while ( (i<k) && (i < shares.size())) {
     share = shares[i];
-    shareIndex = share.getShareIndex();
+    shareIndex = share.getShareID();
     n = contains(indices, shareIndex);
     if (n < 0){
       indices.push_back(shareIndex);
@@ -135,24 +135,18 @@ vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares)
 
 bool AccessPolicy::evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const{
   witnessShares.clear();
-
-  DEBUG("Creating ID vector");
-  
+ 
   vector<std::string> shareIDs;
   for (unsigned int i = 0; i < shares.size(); i++) {
-    shareIDs.push_back(shares[i].getShareIndex());
+    shareIDs.push_back(shares[i].getShareID());
   }
 
-  DEBUG("Calling evaluateIDs");
+  ENHDEBUG("calling evaluateIDs");
   vector<int> witnessSharesIndices;
   bool success = evaluateIDs(shareIDs, witnessSharesIndices);
 
-  DEBUG("evalute: list of indices found");
-  for (unsigned int i = 0; i < witnessSharesIndices.size(); i++) {
-    DEBUG("Index: " << witnessSharesIndices[i]);
-    //    DEBUG("Share: " << shares[witnessSharesIndices[i]].to_string());
-  }
-  DEBUG("evalute: end of index list");
+  ENHDEBUG("returned from evaluateIDs");
+  debugVector("evalute: list of indices found", witnessSharesIndices);
 
   for (unsigned int i = 0; i < witnessSharesIndices.size(); i++) {
     witnessShares.push_back(shares[witnessSharesIndices[i]]);
@@ -202,9 +196,7 @@ vector<ShareTuple> SecretSharing::getSharesForParticipants(vector<int> &parts, v
   for (unsigned int i = 0; i < shares.size(); i++) {
     share = shares[i];
     n = contains(parts, share.getPartIndex());
-    DEBUG("Share Participant: " << share.getPartIndex() << " --- Containment: " << n);
     if ( n >= 0) {
-      DEBUG("Adding share");
       outShares.push_back(share);
     }
   }

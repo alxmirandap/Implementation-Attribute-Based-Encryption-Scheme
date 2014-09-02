@@ -57,7 +57,11 @@ int convertStrToInt(std::string s) {
 
   bool b = convert >> n;
   b = b && !(convert >> rest); // this shows that the string still had a char element after it had exhausted the digits. Thus, it was not a number.
-  if (!b) throw std::runtime_error(ERR_CONVERSION);
+  if (!b) {
+    stringstream ss(ERR_CONVERSION);
+    ss << ": Could not convert string to int: " << s << std::endl;
+    throw std::runtime_error(ss.str());
+  }
   return n;
 }
 
@@ -142,3 +146,17 @@ std::string trim(std::string s) {
   return s.substr(start, end-start+1);
 }
 
+// tests if s2 is a suffix of s1
+bool isSuffix(std::string& s1, std::string& s2) {
+  if (s2.length() < s1.length()) {
+    DEBUG("Distction in sizes: " << s2 << " is shorter than " << s1);
+    return false;
+  }
+  for (unsigned int i = 0; i < s1.length(); i++) {
+    if (s1[i] != s2[i]) {
+      DEBUG("Distinction at position: " << i << ": " << s1[i] << "; " << s2[i]);
+      return false;
+    }
+  }
+  return true;
+}

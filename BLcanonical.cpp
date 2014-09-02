@@ -107,7 +107,7 @@ bool BLAccessPolicy::satisfyMinimalSet(int setID, vector<int> set, vector<std::s
   return true;
 }
 
-std::string BLAccessPolicy::createShareIndex(std::string setID, std::string partID){
+std::string BLAccessPolicy::createShareID(std::string setID, std::string partID){
   std::string id = setID + ":" + partID;
   return id;
 }
@@ -249,7 +249,7 @@ void BLSS::initPolicy(){
     
 void BLSS::init(){
   initPolicy();
-  initRandomness();
+  manageRandomness(RandomnessActions::init);
 }
   
 BLSS::BLSS(shared_ptr<BLAccessPolicy>  policy, PFC &pfc):
@@ -264,35 +264,33 @@ BLSS::BLSS(shared_ptr<BLAccessPolicy>  policy, const Big &order, PFC &pfc):
   init();
 }
  
+
+
+void BLSS::manageRandomness(RandomnessActions action) {  
+  int count = 0;
+  vector< vector<int> > &minimalSets = i_policy->getMinimalSets();
+  for (unsigned int i = 0; i < minimalSets.size(); i++) {
+    vector<int> set = minimalSets[i];
+    for (unsigned int j = 0; j < set.size()-1; j++) {
+      if (action == RandomnessActions::init) {
+	m_randomness.push_back(0);
+      } else if (action == RandomnessActions::randomize){
+	m_pfc.random(m_randomness[count]);
+	count++;
+      }
+    }
+  }
+}
+
 // virtual inherited methods:
 vector<Big> BLSS::getDistribRandomness() {  
   return m_randomness;
 }
 
-void BLSS::initRandomness() {  
-  vector< vector<int> > &minimalSets = i_policy->getMinimalSets();
-  for (unsigned int i = 0; i < minimalSets.size(); i++) {
-    vector<int> set = minimalSets[i];
-    for (unsigned int j = 0; j < set.size()-1; j++) {
-      m_randomness.push_back(0);
-    }
-  }
-}
 
 
 std::vector<ShareTuple> BLSS::distribute_random(const Big& s){
-  Big r;
-
-  vector< vector<int> > &minimalSets = i_policy->getMinimalSets();
-  
-  int count = 0;
-  for (unsigned int i = 0; i < minimalSets.size(); i++) {
-    vector<int> set = minimalSets[i];
-    for (unsigned int j = 0; j < set.size()-1; j++) {
-      m_pfc.random(m_randomness[count]);
-      count++;
-    }
-  }
+  manageRandomness(RandomnessActions::randomize);
   return distribute_determ(s, m_randomness);
 }
 
@@ -306,7 +304,7 @@ std::vector<ShareTuple> BLSS::distribute_determ(const Big& s, const vector<Big>&
     Big currentSum = 0;
     for (unsigned int j = 0; j < set.size(); j++) {      
       int partIndex = set[j];
-      std::string shareID = BLAccessPolicy::createShareIndex(convertIntToStr(i+1), convertIntToStr(partIndex));
+      std::string shareID = BLAccessPolicy::createShareID(convertIntToStr(i+1), convertIntToStr(partIndex));
       Big value;
       if (j < set.size()-1) {
     	  value = randomness[count];

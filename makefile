@@ -6,7 +6,7 @@ OPT=
 MIRACL=-DZZNS=4 -m64
 LIBS=-lbn -lpairs -lmiracl
 
-all: testutils testBLcanonical testkpabe
+all: testutils testtree testBLcanonical testShTree testkpabe
 
 utils.o: utils.cpp utils.h utils_impl.tcc
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c utils.cpp -o utils.o
@@ -17,6 +17,12 @@ testutils: utils.o testutils.cpp
 secretsharing.o: secretsharing.cpp secretsharing.h
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c secretsharing.cpp -o secretsharing.o
 
+tree.o:	tree.cpp tree.h utils.o
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c tree.cpp -o tree.o
+
+testtree: utils.o testtree.cpp tree.o tree.h tree.cpp
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testtree.cpp utils.o tree.o $(LIBS) -o testtree
+
 BLcanonical.o: BLcanonical.h BLcanonical.cpp utils.o secretsharing.o
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c BLcanonical.cpp -o BLcanonical.o
 
@@ -26,6 +32,15 @@ testBLcanonical: BLcanonical.o testBLcanonical.cpp
 BLCanonkpabe.o: BLCanonkpabe.cpp BLCanonkpabe.h 
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c BLCanonkpabe.cpp -o BLCanonkpabe.o 
 
+ShTree.o: ShTree.h ShTree.cpp utils.o tree.o secretsharing.o
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c ShTree.cpp -o ShTree.o
+
+testShTree: ShTree.o testShTree.cpp 
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testShTree.cpp ShTree.o tree.o utils.o secretsharing.o $(LIBS) -o testShTree
+
+ShTreekpabe.o: ShTreekpabe.cpp ShTreekpabe.h 
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c ShTreekpabe.cpp -o ShTreekpabe.o 
+
 kpabe.o: kpabe.cpp kpabe.h 
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c kpabe.cpp -o kpabe.o 
 
@@ -33,17 +48,6 @@ testkpabe: testkpabe.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe.o utils.o secretsharing.o BLcanonical.o $(LIBS) -o testkpabe 
 
 
-tree.o:	tree.cpp tree.h utils.o
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c tree.cpp -o tree.o
-
-testtree: utils.o testtree.cpp tree.o tree.h tree.cpp
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testtree.cpp utils.o tree.o $(LIBS) -o testtree
-
-ShTree.o: ShTree.h ShTree.cpp utils.o tree.o secretsharing.o
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c ShTree.cpp -o ShTree.o
-
-testShTree: ShTree.o testShTree.cpp 
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testShTree.cpp ShTree.o tree.o utils.o secretsharing.o $(LIBS) -o testShTree
 
 
 
@@ -55,11 +59,11 @@ benchmark: benchmark.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
 
 
 
-testBL: testBL.cpp utils.o tree.o BL.h BL.cpp BL.o secretsharing.o 
+#testBL: testBL.cpp utils.o tree.o BL.h BL.cpp BL.o secretsharing.o 
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testBL.cpp secretsharing.o utils.o tree.o BL.o $(LIBS) -o testBL
 
-BL.o: BL.cpp BL.h tree.o utils.o secretsharing.o
-	g++ -W -Wall -Wextra -pedantic -std=gnu++0x -c -O2 -DZZNS=4 -m64 BL.cpp -o BL.o 
+#BL.o: BL.cpp BL.h tree.o utils.o secretsharing.o
+#	g++ -W -Wall -Wextra -pedantic -std=gnu++0x -c -O2 -DZZNS=4 -m64 BL.cpp -o BL.o 
 
 
 
@@ -87,25 +91,35 @@ testbed:
 	g++ -O2 -DZZNS=4 -m64 testbed.cpp -lbn -lpairs -lmiracl -o testbed
 
 clean:
-	rm -f testbed
 	rm -f utils.o
-	rm -f shamir.o
-	rm -f shamir2.o
-	rm -f kpabe.o
-	rm -f tree.o
 	rm -f secretsharing.o
+	rm -f tree.o
 	rm -f BLcanonical.o
-	rm -f BL.o
+	rm -f BLCanonkpabe.o
+	rm -f ShTree.o
+	rm -f ShTreekpabe.o
+	rm -f kpabe.o
+#	rm -f shamir.o
+#	rm -f shamir2.o
 
-	rm -f testkpabe
-	rm -f testshamir
-	rm -f testshamir2
-	rm -f testBLcanonical
+
+
+
+#	rm -f BL.o
+
 	rm -f testutils
 	rm -f testtree
-	rm -f testBL
+	rm -f testBLcanonical
+	rm -f testShTree
+	rm -f testkpabe
+#	rm -f testshamir
+#	rm -f testshamir2
+#	rm -f testBL
 
+	rm -f testbed
+	rm -f bbench
+	rm -f benchmark
 
-fuzzy: 
-	g++ -O2 -DZZNS=4 -m64 fuzzy.cpp -lbn -lpairs -lmiracl -o fuzzy
+#fuzzy: 
+#	g++ -O2 -DZZNS=4 -m64 fuzzy.cpp -lbn -lpairs -lmiracl -o fuzzy
 

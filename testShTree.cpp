@@ -2,6 +2,8 @@
 #include "ShTree.h"
 
 
+
+
 // Shamir Tree can implement OR and AND nodes. Therefore, it should understand
 // all the expressions that BL canonical does, and translate those gates to
 // appropriate threshold versions. Therefore, most of the tests of BL canonical
@@ -104,21 +106,20 @@ int testParseTreeFromExpression() {
     test_diagnosis(base + expr + "]", false, errors);
   }
 
-
   expr = op_OR + "(1," + op_AND + "(2,3))";
   orNode = NodeContent::makeThreshNode(2,1);
   shared_ptr<NodeContent> andNode = NodeContent::makeThreshNode(2,2);
   leaf1 = NodeContent::makeLeafNode(1);
   leaf2 = NodeContent::makeLeafNode(2);
   leaf3 = NodeContent::makeLeafNode(3);
-  
+
   verifTree = TreeNode::makeTree(orNode);
   verifTree->appendChild(leaf1);
   verifTree->appendChild(andNode);
   shared_ptr<TreeNode> subTree = verifTree->getChild(1);
   subTree->appendChild(leaf2);
   subTree->appendChild(leaf3);
-
+  
   try {
     tree = testPolicy.parseTreeFromExpression(expr);
     test_diagnosis(base + expr + "]", (*verifTree == *tree), errors);
@@ -265,22 +266,22 @@ int testSatisfyNode() {
   // AND: {}, {}, {}, {3,4,1,2}
   // THR: {}, {}, {4,1,3}, {2,4,1}
 
-  // Leaf Node labels: "<the Id of the parent> : <the participant>"
+  // Leaf Node labels: "<the Id of the parent> := <the participant>"
 
-  ShareTuple o1(1, 0, "0:=1");
-  ShareTuple o2(2, 0, "0:=2");
-  ShareTuple o3(3, 0, "0:=3");
-  ShareTuple o4(4, 0, "0:=4");
+  ShareTuple o1(1, 0, "0:0:=1");
+  ShareTuple o2(2, 0, "0:1:=2");
+  ShareTuple o3(3, 0, "0:2:=3");
+  ShareTuple o4(4, 0, "0:3:=4");
 
-  ShareTuple a3(3,0,"0:=3");
-  ShareTuple a4(4,0,"0:=4");
-  ShareTuple a1(1,0,"0:=1");
-  ShareTuple a2(2,0,"0:=2");
+  ShareTuple a3(3,0,"0:0:=3");
+  ShareTuple a4(4,0,"0:1:=4");
+  ShareTuple a1(1,0,"0:2:=1");
+  ShareTuple a2(2,0,"0:3:=2");
 
-  ShareTuple t2(2,0,"0:=2");
-  ShareTuple t4(4,0,"0:=4");
-  ShareTuple t1(1,0,"0:=1");
-  ShareTuple t3(3,0,"0:=3");
+  ShareTuple t2(2,0,"0:0:=2");
+  ShareTuple t4(4,0,"0:1:=4");
+  ShareTuple t1(1,0,"0:2:=1");
+  ShareTuple t3(3,0,"0:3:=3");
 
   vector<ShareTuple> orSet;
   vector<ShareTuple> andSet;
@@ -353,7 +354,7 @@ int testSatisfyNode() {
       verifSet.push_back(a4);
       verifSet.push_back(a1);
       verifSet.push_back(a2);
-    }
+    } 
     errors += testSatisfyNodeDetail(andTree, shareList, verifSet, "andTree", i);
   }
 
@@ -464,11 +465,11 @@ int testExpr2() {
   std::string expr = "4";
   ShTreeAccessPolicy pol(expr, 0);
 
-  ShareTuple s11(1,0,":=1");
-  ShareTuple s12(2,0,":=2");
-  ShareTuple s13(3,0,":=3");
-  ShareTuple s14(4,0,":=4");
-  ShareTuple s15(5,0,":=5");
+  ShareTuple s11(1,0,"0:=1");
+  ShareTuple s12(2,0,"0:=2");
+  ShareTuple s13(3,0,"0:=3");
+  ShareTuple s14(4,0,"0:=4");
+  ShareTuple s15(5,0,"0:=5");
 
   vector<ShareTuple> shareList;
   shareList.push_back(s11);
@@ -501,15 +502,15 @@ int testExpr3() {
   //  OUT("Expr3: " << expr);
   ShTreeAccessPolicy pol(expr, 6);
 
-  ShareTuple s11(1,0,"0:=1");
-  ShareTuple s22(2,0,"0:1:=2");
-  ShareTuple s35(5,0,"0:1:1:=5");
-  ShareTuple s32(2,0,"0:1:1:=2");
-  ShareTuple s33(3,0,"0:1:1:=3");
-  ShareTuple s34(4,0,"0:1:1:=4");
-  ShareTuple s44(4,0,"0:=4");
-  ShareTuple s56(6,0,"0:3:=6");
-  ShareTuple s51(1,0,"0:3:=1");
+  ShareTuple s11(1,0,"0:0:=1");
+  ShareTuple s22(2,0,"0:1:0:=2");
+  ShareTuple s35(5,0,"0:1:1:0:=5");
+  ShareTuple s32(2,0,"0:1:1:1:=2");
+  ShareTuple s33(3,0,"0:1:1:2:=3");
+  ShareTuple s34(4,0,"0:1:1:3:=4");
+  ShareTuple s44(4,0,"0:2:=4");
+  ShareTuple s56(6,0,"0:3:0:=6");
+  ShareTuple s51(1,0,"0:3:1:=1");
 
   vector<ShareTuple> sl;
   sl.push_back(s11);
@@ -653,11 +654,11 @@ int testObtainCoveredFrags() {
   shared_ptr<ShTreeAccessPolicy> policy = make_shared<ShTreeAccessPolicy>(expr, 5);
     
   vector<std::string> verifShareIDs;
-  verifShareIDs.push_back("0:1:=2");
-  verifShareIDs.push_back("0:1:1:=2");
-  verifShareIDs.push_back("0:1:1:=3");
-  verifShareIDs.push_back("0:=4");
-  verifShareIDs.push_back("0:3:=2");
+  verifShareIDs.push_back("0:1:0:=2");
+  verifShareIDs.push_back("0:1:1:1:=2");
+  verifShareIDs.push_back("0:1:1:2:=3");
+  verifShareIDs.push_back("0:2:=4");
+  verifShareIDs.push_back("0:3:1:=2");
 
   vector<int> verifKeyFragIDs;
   verifKeyFragIDs.push_back(1);
@@ -696,23 +697,430 @@ int testObtainCoveredFrags() {
   return errors;
 }
 
+int testGetSharesForParticipants() {
+  int errors = 0;
 
-int runTests(std::string &testName) {
+  ENHDEBUG("Creating instances");
+  //  std::string expr = op_THR + "(1, 1, " + op_THR + "(3,2,3,4), " + op_THR + "(2,2,5, " + op_THR + "(1,4,5)))";
+  //  shared_ptr<ShTreeAccessPolicy> policy = make_shared<ShTreeAccessPolicy>(expr, 5);
+  //  ShTreeSS testScheme(policy, pfc.order(), pfc);
+
+  ENHDEBUG("Creating shares");
+  ShareTuple s1a(1, 0, "1a");
+  ShareTuple s1b(1, 0, "1b");
+  ShareTuple s2a(2, 0, "2a");
+  ShareTuple s3a(3, 0, "3a");
+  ShareTuple s3b(3, 0, "3b");
+  ShareTuple s3c(3, 0, "3c");
+  ShareTuple s4a(4, 0, "4a");
+  ShareTuple s5a(5, 0, "5a");
+
+  vector<ShareTuple> shares;
+
+  shares.push_back(s1a);
+  shares.push_back(s1b);
+  shares.push_back(s2a);
+  shares.push_back(s3a);
+  shares.push_back(s3b);
+  shares.push_back(s3c);
+  shares.push_back(s4a);
+  shares.push_back(s5a);
+
+  vector<int> parts313;
+  vector<int> parts276;
+  vector<int> parts45;
+
+  parts313.push_back(3);
+  parts313.push_back(1);
+  parts313.push_back(3);
+
+  parts276.push_back(2);
+  parts276.push_back(7);
+  parts276.push_back(6);
+
+  parts45.push_back(4);
+  parts45.push_back(5);
+
+  vector<ShareTuple> verif313;
+  vector<ShareTuple> verif276;
+  vector<ShareTuple> verif45;
+
+  verif313.push_back(s1a);
+  verif313.push_back(s1b);
+  verif313.push_back(s3a);
+  verif313.push_back(s3b);
+  verif313.push_back(s3c);
+
+  verif276.push_back(s2a);
+  
+  verif45.push_back(s4a);
+  verif45.push_back(s5a);
+  
+  std::string base = "testGetSharesForParticipants - ";
+
+  ENHDEBUG("Calling diagnosis");
+  DEBUG("call 1");
+  vector<ShareTuple> returnedShares = SecretSharing::getSharesForParticipants(parts313, shares);
+  test_diagnosis(base + "[313]", returnedShares == verif313, errors);
+
+  DEBUG("call 2");
+  returnedShares = SecretSharing::getSharesForParticipants(parts276, shares);
+  test_diagnosis(base + "[276]", returnedShares == verif276, errors);
+
+  DEBUG("call 3");
+  returnedShares = SecretSharing::getSharesForParticipants(parts45, shares);
+  test_diagnosis(base + "[45]", returnedShares == verif45, errors);
+
+  ENHDEBUG("Finished diagnosis");	
+  return errors;
+}
+
+int testReconFromShares(vector<int> party, std::string message,
+			ShTreeSS scheme, vector<ShareTuple> shares, bool goodParty,
+			unsigned int expectedNumberShares, Big orig_secret) {
+
+  int errors = 0;
+  ENHDEBUG("testReconFromShares");
+  debugVector("Party", party);
+  debugVectorObj("Shares", shares);
+  
+
+  vector<ShareTuple> partShares;
+  partShares = SecretSharing::getSharesForParticipants(party, shares);
+
+  debugVectorObj("Participant Shares", partShares);
+
+  vector<ShareTuple> witnessShares;
+  bool success = scheme.evaluate(partShares, witnessShares);
+  test_diagnosis(message + "evaluation", success == goodParty, errors);
+
+  debugVectorObj("Witness Shares", witnessShares);
+
+  test_diagnosis(message + "number of shares", witnessShares.size() == expectedNumberShares, errors);
+  DEBUG("number of witness shares: " << witnessShares.size());
+  DEBUG("expected number of shares: " << expectedNumberShares);
+  ENHDEBUG("Calling reconstruction");
+  Big reced_secret = scheme.reconstruct(witnessShares);
+  ENHDEBUG("Finished reconstruction");
+  if (goodParty) {
+    test_diagnosis(message + "reconstruction", reced_secret == orig_secret, errors);
+  } else {
+    test_diagnosis(message + "reconstruction", reced_secret != orig_secret, errors);
+  }
+
+  return errors;
+}
+
+
+int testDistributeAndReconstruct(PFC &pfc){
+  int errors = 0;
+  ENHDEBUG("testDistribute and Reconstruct");
+  int niter = 5;
+  
+  DEBUG("Initting s");
+  Big s;
+  DEBUG("Initting old_s");
+  Big old_s=0;
+  DEBUG("Obtaining order");
+  Big order = pfc.order();
+
+
+  DEBUG("Creating instances");
+  std::string expr = op_THR + "(1, 1, " + op_THR + "(3,2,3,4), " + op_THR + "(2,2,1, " + op_THR + "(1,4,5)))";
+  shared_ptr<ShTreeAccessPolicy> policy = make_shared<ShTreeAccessPolicy>(expr, 5);
+  ShTreeSS testScheme(policy, pfc.order(), pfc);
+
+  std::string base = "testDistributeAndReconstruct ";
+  
+  vector<int> party1; // should succeed
+  vector<int> party234; // should succeed
+  vector<int> party25; // should succeed
+  vector<int> party42; // should succeed
+  vector<int> badparty23; // should fail
+  vector<int> badparty53; // should fail
+
+  party1.push_back(1);
+  
+  party234.push_back(2);
+  party234.push_back(3);
+  party234.push_back(4);
+
+  party25.push_back(2);
+  party25.push_back(5);
+
+  party42.push_back(4);
+  party42.push_back(2);
+  
+  badparty23.push_back(2);
+  badparty23.push_back(3);
+
+  badparty53.push_back(5);
+  badparty53.push_back(3);
+  
+  
+  old_s = 0;
+  for (int j = 0; j < niter; j++){
+    OUT(base + "Iteration: " << j);
+    pfc.random(s);
+    s = s % order;
+    
+    DEBUG("s: " << s << "\t old s: " << old_s);
+    guard("s should be random, and different from the last value or 0", s != old_s); // the probability that s is 0 or the old value should be negligible
+    
+    vector<ShareTuple> shares = testScheme.distribute_random(s);
+    
+    test_diagnosis(base + "number of shares:", shares.size() == policy->getNumShares(), errors);
+    
+    errors += testReconFromShares(party1, base + "[1]: ", testScheme, shares, true, 1, s);
+    errors += testReconFromShares(party234, base + "[234]: ", testScheme, shares, true, 3, s);
+    errors += testReconFromShares(party25, base + "[25]: ", testScheme, shares, true, 2, s);
+    errors += testReconFromShares(party42, base + "[42]: ", testScheme, shares, true, 2, s);
+    errors += testReconFromShares(badparty23, base + "[23]: ", testScheme, shares, false, 0, s);
+    errors += testReconFromShares(badparty53, base + "[53]: ", testScheme, shares, false, 0, s);
+        
+    old_s = s;
+  }
+    return errors;
+}
+
+
+int testUpdateSet(){
+  int errors = 0;
+
+  std::map<std::string, vector<ShareTuple> > map;
+  std::string prefix1 = "prefix1"; 
+  std::string prefix2 = "prefix2"; 
+  ShareTuple s1(1,0,"a");
+  ShareTuple s2(2,0,"b");
+  ShareTuple s3(3,0,"c");
+
+  vector<ShareTuple> vec1;
+  vector<ShareTuple> vec2;
+  vec1.push_back(s1);
+  vec2.push_back(s2);
+
+  map[prefix1] = vec1;
+  map[prefix2] = vec2;
+
+  test_diagnosis("testUpdateSet - initial state size", map.size() == 2, errors);
+  test_diagnosis("testUpdateSet - initial state vec1 size", map.find(prefix1)->second.size() == 1, errors);
+  test_diagnosis("testUpdateSet - initial state vec2 size", map.find(prefix2)->second.size() == 1, errors);
+  ShTreeSS::updateSet(map, prefix2, s3);
+  test_diagnosis("testUpdateSet - after state size", map.size() == 2, errors);
+  test_diagnosis("testUpdateSet - initial state vec1 size", map.find(prefix1)->second.size() == 1, errors);
+  test_diagnosis("testUpdateSet - initial state vec2 size", map.find(prefix2)->second.size() == 2, errors);
+
+  std::map<std::string, vector<ShareTuple> >::iterator it;
+  it = map.find(prefix2);
+  
+  test_diagnosis("testUpdateSet - vec2 contents 0", it->second[0] == s2, errors);
+  test_diagnosis("testUpdateSet - vec2 contents 1", it->second[1] == s3, errors);
+    
+  return errors;
+}
+
+int testAddNewSet(){
+  int errors = 0;
+
+  std::map<std::string, vector<ShareTuple> > map;
+  std::string prefix1 = "prefix1"; 
+  std::string prefix2 = "prefix2"; 
+  ShareTuple s1(1,0,"a");
+  ShareTuple s2(2,0,"b");
+
+  vector<ShareTuple> vec1;
+  vector<ShareTuple> vec2;
+  vec1.push_back(s1);
+
+  map[prefix1] = vec1;
+
+  test_diagnosis("testAddNewSet - initial state size", map.size() == 1, errors);
+  test_diagnosis("testAddNewSet - initial state vec1 size", map.find(prefix1)->second.size() == 1, errors);
+  ShTreeSS::addNewSet(map, prefix2, s2);
+  test_diagnosis("testAddNewSet - after state size", map.size() == 2, errors);
+  test_diagnosis("testAddNewSet - initial state vec1 size", map.find(prefix1)->second.size() == 1, errors);
+  test_diagnosis("testAddNewSet - initial state vec2 size", map.find(prefix2)->second.size() == 1, errors);
+
+  std::map<std::string, vector<ShareTuple> >::iterator it;
+  it = map.find(prefix2);
+  
+  test_diagnosis("testUpdateSet - vec2 contents 0", it->second[0] == s2, errors);
+
+  return errors;
+}
+
+int testPutShareInSet(){
+  int errors = 0;
+
+  std::map<std::string, vector<ShareTuple> > map;
+  std::string prefix1 = "prefix1"; 
+  std::string prefix2 = "prefix2"; 
+  ShareTuple s1(1,0,"a");
+  ShareTuple s2(2,0,"b");
+  ShareTuple s3(3,0,"c");
+
+  ShTreeSS::putShareInSet(map, prefix1, s1);
+  ShTreeSS::putShareInSet(map, prefix2, s2);
+
+  test_diagnosis("testPutShareInSet - initial state size", map.size() == 2, errors);
+  test_diagnosis("testPutShareInSet - initial state vec1 size", map.find(prefix1)->second.size() == 1, errors);
+  test_diagnosis("testPutShareInSet - initial state vec2 size", map.find(prefix2)->second.size() == 1, errors);
+  ShTreeSS::putShareInSet(map, prefix2, s3);  
+  test_diagnosis("testPutShareInSet - after state size", map.size() == 2, errors);
+  test_diagnosis("testPutShareInSet - initial state vec1 size", map.find(prefix1)->second.size() == 1, errors);
+  test_diagnosis("testPutShareInSet - initial state vec2 size", map.find(prefix2)->second.size() == 2, errors);
+
+  std::map<std::string, vector<ShareTuple> >::iterator it;
+  it = map.find(prefix1);
+  test_diagnosis("testPutShareInSet - vec1 contents 0", it->second[0] == s1, errors);
+
+  it = map.find(prefix2);
+  test_diagnosis("testPutShareInSet - vec2 contents 0", it->second[0] == s2, errors);
+  test_diagnosis("testPutShareInSet - vec2 contents 1", it->second[1] == s3, errors);
+
+  return errors;
+}
+
+int testGetSetPrefix(){
+  int errors = 0;
+
+  std::string s1 = "0";
+  std::string s2 = "0:=7";
+  std::string s3 = "0:1:3";
+  std::string s4 = "0:1:3:=19";
+  std::string s5 = "0:1:3:9:7";
+  std::string s6 = "0:1:3:9:7:=21";
+
+
+  std::string vs1 = "";
+  std::string vs2 = "";
+  std::string vs3 = "0:1";
+  std::string vs4 = "0:1";
+  std::string vs5 = "0:1:3:9";
+  std::string vs6 = "0:1:3:9";
+
+
+  vector<std::string> testCases;
+  testCases.push_back(s1);
+  testCases.push_back(s2);
+  testCases.push_back(s3);
+  testCases.push_back(s4);
+  testCases.push_back(s5);
+  testCases.push_back(s6);
+
+  vector<std::string> verifCases;
+  verifCases.push_back(vs1);
+  verifCases.push_back(vs2);
+  verifCases.push_back(vs3);
+  verifCases.push_back(vs4);
+  verifCases.push_back(vs5);
+  verifCases.push_back(vs6);
+
+  for (unsigned int i = 0; i < testCases.size(); i++) {
+    test_diagnosis("testGetSetPrefix - " + convertIntToStr(i), ShTreeSS::getSetPrefix(testCases[i]) == verifCases[i], errors);
+  }
+
+  return errors;
+}
+
+int testLagrangeCoefficient(PFC &pfc) {
+  int errors = 0;
+
+  vector<ShareTuple> shares;
+  
+  
+  Big order = pfc.order();
+  
+  int x0 = 4;
+  int x1 = 13;
+  int x2 = 27;
+  int x3 = 8;
+
+  ShareTuple s1(1,0,"0:" + convertIntToStr(x0-1) + ":=x");
+  ShareTuple s2(2,0,"0:" + convertIntToStr(x1-1) + ":=y");
+  ShareTuple s3(3,0,"0:" + convertIntToStr(x2-1) + ":=z");
+  ShareTuple s4(4,0,"0:" + convertIntToStr(x3-1) + ":=w");
+
+  shares.push_back(s1);
+  shares.push_back(s2);
+  shares.push_back(s3);
+  shares.push_back(s4);
+
+  Big F01 = moddiv(order - x1,(Big)(order + x0 - x1),order);
+  Big F02 = moddiv(order - x2,(Big)(order + x0 - x2),order);
+  Big F03 = moddiv(order - x3,(Big)(order + x0 - x3),order);
+
+  Big F10 = moddiv(order - x0,(Big)(order + x1 - x0),order);
+  Big F12 = moddiv(order - x2,(Big)(order + x1 - x2),order);
+  Big F13 = moddiv(order - x3,(Big)(order + x1 - x3),order);
+
+  Big F20 = moddiv(order - x0,(Big)(order + x2 - x0),order);
+  Big F21 = moddiv(order - x1,(Big)(order + x2 - x1),order);
+  Big F23 = moddiv(order - x3,(Big)(order + x2 - x3),order);
+
+  Big F30 = moddiv(order - x0,(Big)(order + x3 - x0),order);
+  Big F31 = moddiv(order - x1,(Big)(order + x3 - x1),order);
+  Big F32 = moddiv(order - x2,(Big)(order + x3 - x2),order);
+
+  Big L0 = ShTreeSS::computeLagrangeCoefficient(0, shares, order);
+  test_diagnosis("testLagrangeCoefficient: L0", L0 == modmult( modmult(F01, F02, order), F03, order), errors);
+
+  Big L1 = ShTreeSS::computeLagrangeCoefficient(1, shares, order);
+  test_diagnosis("testLagrangeCoefficient: L1", L1 == modmult( modmult(F10, F12, order), F13, order), errors);
+
+  Big L2 = ShTreeSS::computeLagrangeCoefficient(2, shares, order);
+  test_diagnosis("testLagrangeCoefficient: L2", L2 == modmult( modmult(F20, F21, order), F23, order), errors);
+
+  Big L3 = ShTreeSS::computeLagrangeCoefficient(3, shares, order);
+  test_diagnosis("testLagrangeCoefficient: L3", L3 == modmult( modmult(F30, F31, order), F32, order), errors);
+
+  return errors;
+}
+
+int testExtractPublicInfoFromID() {
+  int errors = 0;
+
+  std::string s1 = "0:1:4";
+  std::string s2 = "0:1:4:=8";
+  std::string s3 = "0:=9";
+
+  test_diagnosis("testExtractPublicInfoFromID - " + s1, ShTreeSS::extractPublicInfoFromID(s1) == 5 , errors);
+  test_diagnosis("testExtractPublicInfoFromID - " + s2, ShTreeSS::extractPublicInfoFromID(s2) == 5 , errors);
+
+  try {
+    ShTreeSS::extractPublicInfoFromID(s3);
+    test_diagnosis("testExtractPublicInfoFromID - exception " + s3, false, errors);
+  } catch (std::runtime_error &e) {
+    test_diagnosis("testExtractPublicInfoFromID - exception " + s3, true, errors);
+  }
+
+
+  return errors;
+}
+
+int runTests(std::string &testName, PFC &pfc) {
   testName = "Test ShTreeAccessPolicy";
   int errors = 0;
 
   // Policy tests
   ENHOUT("Secret sharing policy tests");
-  // errors += testParseTreeFromExpression();
-   errors += testSatisfyNode(); // 14
-  //  errors += testEvaluate();
-  //  errors += testGetNumShares();
-  //  errors += testObtainCoveredFrags(); 
-  
-//   // Secret Sharing tests
-//   ENHOUT("Secret sharing scheme tests");
-//   errors += testGetSharesForParticipants(pfc);
-//   errors += testDistributeAndReconstruct(pfc);
+  errors += testParseTreeFromExpression();
+   errors += testSatisfyNode();
+   errors += testEvaluate();
+   errors += testGetNumShares();
+   errors += testObtainCoveredFrags(); 
+   
+  // Secret Sharing tests
+  ENHOUT("Secret sharing scheme tests");
+  errors += testUpdateSet();
+  errors += testAddNewSet();
+  errors += testPutShareInSet();
+  errors += testGetSetPrefix();
+  errors += testGetSharesForParticipants();
+  errors += testExtractPublicInfoFromID();
+  errors += testLagrangeCoefficient(pfc);
+  errors += testDistributeAndReconstruct(pfc);
+
 
   return errors;
 }
@@ -728,7 +1136,7 @@ int main() {
   irand((long)seed);
 
   std::string test_name;
-  int result = runTests(test_name);
+  int result = runTests(test_name, pfc);
   print_test_result(result,test_name);
 
   return 0;

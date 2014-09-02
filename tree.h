@@ -79,12 +79,18 @@ class TreeNode {
   TreeNode& operator=(const TreeNode& rhs);
   bool appendChild(std::shared_ptr<NodeContent> node);
   bool appendTree(std::shared_ptr<TreeNode> tree);
+  std::string full_to_string();
   std::string to_string();
   unsigned int getNumLeaves();
   unsigned int getNumChildren();
   void updateID(std::string parentID, int count);
   std::string getNodeID() const;
   void setNodeID(std::string nodeID);
+  bool isLeaf();
+  bool isInner();
+  bool isNil();
+  static std::string findIDForNode(const std::string& parent, int childno, shared_ptr<NodeContent> node);
+  static std::string findIDForNode(const std::string& parent, int childno, NodeContentType type, const std::string& value = "");
 };
 
 

@@ -37,6 +37,7 @@
 #include <assert.h>
 #include "pairing_3.h"
 #include <vector>
+#include <map>
 #include <typeinfo> // For std::bad_cast
 #include <stdexcept>
 #include <memory>
@@ -67,7 +68,9 @@
 #define REPORT(x) cout << shLRED "[REPORT:] " shCYAN << x << shWHITE "\n"
 
 #define ERR_BAD_POLICY "BAD_POLICY"
+#define ERR_BAD_TREE "BAD_TREE"
 #define ERR_CONVERSION "ERR_CONV"
+#define ERR_BAD_SHARE "BAD_SHARE"
 
 const std::string op_OR = "OR";
 const std::string op_AND = "AND";
@@ -76,6 +79,7 @@ const std::string op_THR = "THR";
 void print_test_result(int result, const string& name);
 void guard(string s, bool b);
 void test_diagnosis(const string& name, bool success, int& errors);
+
 
 template<typename T> int contains(const vector<T> &set, const T element);
 template<typename T> void addVector(vector<T> &storage, const vector<T> &data);
@@ -89,6 +93,6 @@ int convertStrToInt(std::string s);
 std::string convertIntToStr(int n);
 void exprTokenize(const std::string &expr, vector<std::string> &tokens, const std::string delim, const std::string context_begin, const std::string context_end);
 std::string trim(std::string s);
-
+bool isSuffix(std::string& s1, std::string& s2);
 
 #endif /* UTILS_H_ */

@@ -27,7 +27,7 @@ class BLAccessPolicy : public AccessPolicy{
   std::string getDescription() const;
   unsigned int getNumShares();
   //  bool evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const;
-  static std::string createShareIndex(std::string setID, std::string partID);
+  static std::string createShareID(std::string setID, std::string partID);
   bool evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const;
   Big findCoefficient(const std::string id,const vector<std::string> shareIDs) const;
   void obtainCoveredFrags(const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const;
@@ -42,7 +42,7 @@ class BLSS : public SecretSharing
  protected:
   void init();
   void initPolicy();
-  void initRandomness();
+  void manageRandomness(RandomnessActions action);
 
  public:
   BLSS(shared_ptr<BLAccessPolicy> policy, PFC &pfc);

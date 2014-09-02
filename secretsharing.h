@@ -9,7 +9,7 @@
 class ShareTuple{
   int partIndex;
   Big share;
-  std::string shareIndex;
+  std::string shareID;
 
  public:
   ShareTuple();
@@ -20,7 +20,7 @@ class ShareTuple{
   bool operator==(const ShareTuple& rhs) const;
   std::string to_string() const;
   int getPartIndex() const;
-  std::string getShareIndex() const;
+  std::string getShareID() const;
   Big getShare() const;
 };
 
@@ -59,6 +59,8 @@ vector<ShareTuple> getUniqueShares(const vector<ShareTuple> &shares, unsigned in
 class SecretSharing
 {
  protected:
+  enum RandomnessActions {init, randomize};
+
   shared_ptr<AccessPolicy> m_policy;
   Big m_order;	// the order of the base group
   PFC &m_pfc;   //not sure if this should go in the AccessPolicy as well.
