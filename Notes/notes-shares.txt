@@ -1,0 +1,24 @@
+Share Identifier in Secret Sharing schemes:
+
+
+Shamir: 
+- a share currently has three parts: a value that is the division of the secret, a participant and a share index
+- the value is important only during the share creation and reconstruction
+- the participant and the share index should be defined by the policy itself
+- the share index could be different from the participant, as every participant could have distinct shares. In shamir, the shares receives a number that guarantees all shares are different. This number is then used to compute the lagrange coefficient. IT MUST BE A NUMBER.
+
+BL:
+- this is very different from the previous one. In the simplest case, we have a series of minimal sets and each of them can have one occurrence of the same participant. 
+- Therefore, a share of participant A for the first minimal set is not interchangeable with a share of the same participant for the second minimal set
+- when determining if we have the right share, it would be enough to decide they have the right participant and are in the right minimal set. 
+- The minimal set can be identified by the Id of the parent node for all its leaves. 
+- Thus, a share should be identified by the Id of its parent and its own participant. This is fine in OR and AND trees, that are idempotent operations
+- It is not the case for Threshold operations, where 2 times the same share (for a participant A) should not be able to replace a share of another participant
+- But I think this should be solved by not allowing the policy to have repeated participants. 
+
+
+- I still maintain that I need a share identifier to decide policy satisfaction. On some cases (Shamir) it must be an integer. On others (BL), it only needs to be an identifier (can be a string). Currently, this ID in BL is distinct for every leaf, but children of the same node have an equal prefix (equal to the parent's ID). If all leaves shared the same ID of the owner, then all the inner nodes would have to have different IDs still (or else every share would be in the same group). This just changes the ID of shares to have a different logic from that of inner nodes, but I think it is not fruitful to change that now. So, satisfyNode should just extract the common prefix from the shares and go from there. Or opt for the very simples solution: just require shares to have the exact ID that is produced by the policy as it is now. Shares simply can not be moved around and that's fine. But the participant should still be checked.
+
+
+- The problem is just in the tests. Since I have different policy trees, I have to create different shares to test each tree, and I can not reuse them
+- But the problem arises because intuitively that would be a good thing to do. In utilization of the KP-ABE scheme, half-shares are issued in decryption keys. They are joined with the half-key contained in the cyphertext to produce full shares. These will even be lifted so they are not exactly the pure definition of a share. I think I am thinking too much into this. 

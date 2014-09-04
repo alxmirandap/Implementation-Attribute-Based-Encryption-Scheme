@@ -61,7 +61,7 @@ unsigned int ShTreeAccessPolicy::getNumShares()  {
 
 bool ShTreeAccessPolicy::evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const{
   witnessSharesIndices.clear();
-  //  REPORT("Tree: " << m_treePolicy->to_string());
+  //  ENHDEBUG("Tree: " << m_treePolicy->to_string());
   
   bool success = satisfyNodeID(m_treePolicy, shareIDs, witnessSharesIndices);
 
@@ -313,7 +313,7 @@ shared_ptr<TreeNode> ShTreeAccessPolicy::parseTreeFromExpression(std::string exp
     size_t start_index = expr.find("(");
     if (start_index == std::string::npos) {
       stringstream ss(ERR_BAD_POLICY);
-      ss << ": Could not parse policy: it is not a literal but does not have [ op( ] " << std::endl;
+      ss << ": Could not parse policy: it is not a literal but does not have [ op( ] " << "(" << expr << ")" << std::endl;
       throw std::runtime_error(ss.str());
     }
     std::string op = expr.substr(0,start_index);
@@ -321,19 +321,19 @@ shared_ptr<TreeNode> ShTreeAccessPolicy::parseTreeFromExpression(std::string exp
     // check it is an operator
     if (!( (op == op_OR) || (op == op_AND) || (op == op_THR))) { 
       stringstream ss(ERR_BAD_POLICY);
-      ss << ": Could not parse ShTreeAccessPolicy: operator not recognized: " << op << std::endl;
+      ss << ": Could not parse ShTreeAccessPolicy: operator not recognized: " << op  << "(" << expr << ")" << std::endl;
       throw std::runtime_error(ss.str());
     }
     // find the whole sub-expression of operator arguments
     size_t end_index = expr.rfind(")");
     if (end_index == std::string::npos) {
       stringstream ss(ERR_BAD_POLICY);
-      ss << ": Could not parse policy: it is not a literal but does not have a closing [ ) ]" << std::endl;
+      ss << ": Could not parse policy: it is not a literal but does not have a closing [ ) ]" << "(" << expr << ")" << std::endl;
       throw std::runtime_error(ss.str());
     }
     if (end_index != expr.length()-1) {
       stringstream ss;
-      ss << ": Could not parse policy: there is content beyond last [ ) ]" << std::endl;
+      ss << ": Could not parse policy: there is content beyond last [ ) ]" << "(" << expr << ")" << std::endl;
       throw std::runtime_error(ss.str());
     }
     //start: 4
@@ -423,14 +423,199 @@ shared_ptr<TreeNode>& ShTreeAccessPolicy::getPolicy(){
   return m_treePolicy;
 }
 
-Big ShTreeAccessPolicy::findCoefficient(std::string id,const vector<std::string> shareIDs) const {
-//   int n = contains<std::string>(shareIDs, id);
-//   if (n >= 0) {
-//     return 1; 
-//   } else {
-//     return 0;
-//   }
-  return 0;
+bool ShTreeAccessPolicy::extractPrefixAndNoFromID(std::string& shareID, std::string& prefix, int& childNo) {
+  int n = shareID.find(":");
+  if (n == -1) return false;
+  int m = shareID.find(":", n+1);
+  if (m == -1) return false;
+  int p = shareID.find(":=");
+  if (p < m) return false;
+  prefix = shareID.substr(0, n+1);
+  childNo = convertStrToInt(shareID.substr(n+1, m-n-1));
+  shareID = shareID.substr(n+1);
+  return true;
+}
+
+void ShTreeAccessPolicy::storeSharePrefixes(std::map<std::string, vector<int> >& setChildNos, std::string& shareID) {
+  std::string ID = shareID;
+  std::string prefix;
+  std::string oldprefix = "";
+  int childNo;
+  std::map<std::string, vector<int> >::iterator it;
+  //  ENHDEBUG("Before while. ID: " << ID);
+  while (extractPrefixAndNoFromID(ID, prefix, childNo)) {
+    //    ENHDEBUG("While: prefix=" << prefix);
+    prefix = oldprefix + prefix;
+//     ENHDEBUG("ID: " << ID);
+//     ENHDEBUG("prefix: " << prefix);
+//     ENHDEBUG("childNo: " << childNo);
+    it = setChildNos.find(prefix);
+    if (it == setChildNos.end()) { // prefix does not exist in map
+      vector<int> vec;
+      vec.push_back(childNo);     
+      //      ENHDEBUG("New Prefix " << prefix);
+      setChildNos[prefix] = vec;
+    } else { // see if childNo is already part of the prefix's vector. If not, add it
+      //      ENHDEBUG("Existing Prefix " << prefix);
+      vector<int> vec = it->second;
+      ENHDEBUG("current vector in " + prefix);
+      debugVector("vec", vec);
+      DEBUG("ChildNo: " << childNo);
+      int n = contains(vec, childNo);
+      if (n == -1) {
+	DEBUG("Adding a new element: " << childNo);
+	vec.push_back(childNo);
+      } else {
+	DEBUG("No change in vector: ");
+      }
+      setChildNos[prefix] = vec;
+      ENHDEBUG("current vector in " + prefix);
+      debugVector("vec", vec);
+    }      
+    oldprefix = prefix;
+  }  
+}
+
+Big ShTreeAccessPolicy::findFinalCoefficient(const std::string& shareID,  std::map<std::string,  vector<int> >& setChildNos, 
+				   std::map<std::string, vector<Big> >& setCoeffs, const Big& order) {
+  Big acc = 1;
+  std::string tempID = shareID;
+  std::string prefix;
+  int childNo;
+  std::string oldprefix = "";
+  ENHDEBUG("findFinalCoefficient. shareID: " << shareID);
+  while (extractPrefixAndNoFromID(tempID, prefix, childNo)) {
+    prefix = oldprefix + prefix;
+    ENHDEBUG("findFinalCoefficient. Prefix: " << prefix);
+    ENHDEBUG("findFinalCoefficient. tempID: " << tempID);
+    ENHDEBUG("findFinalCoefficient. childNo: " << childNo);
+    vector<int> childNos = setChildNos[prefix];
+    vector<Big> coeffs = setCoeffs[prefix];
+    debugVector("childNos", childNos);
+    debugVector("coeffs", coeffs);
+
+    int n = contains(childNos, childNo);
+    DEBUG("n: " << n);
+    guard("findFinalCoefficient: all prefixes found should be in map. " + prefix + "[" + prefix + "]", n >= 0);
+    Big coeff = coeffs[n];
+    DEBUG("coeff to multiply: " << coeff);
+    acc = modmult(acc, coeff, order);
+    oldprefix = prefix;
+  }
+  return acc;
+}
+
+/*
+Simple approach:
+- place all shares in the map, organized by prefix. Instead of storing the share, store its child number. 
+- everytime a new prefix is stored, also create an entry for its predecessors that are not yet in the map, with the position it occupies in it.
+
+Example shares:
+
+0:1:0:=2
+0:1:1:=3
+0:1:2:=4
+
+0:2:1:=2
+
+0:2:2:1:=4
+
+This leads to the following map:
+
+0:1:0:=2:
+	"0:1" ---> {0}
+	"0" ---> {1}
+0:1:1:=3
+	"0:1" ---> {0,1}
+	"0" ---> {1} (no change)
+0:1:2:=4
+	"0:1" ---> {0,1,2}
+	"0" ---> {1} (no change)
+0:2:1:=2
+	"0:1" ---> {0,1,2} (no change)
+	"0" ---> {1,2} 
+	"0:2" ---> {1}
+0:2:2:1:=4
+	"0:2:2" ---> {1}
+	"0:1" ---> {0,1,2} (no change)
+	"0" ---> {1,2} (no change)
+	"0:2" ---> {1,2}
+
+Now, we can traverse the map and compute the coefficients as we go.
+For future expansion, it is better to create a different map that has prefixes as keys and vectors of coefficients as values. For each prefix, we compute the corresponding vector of coefficients and store it in the new map.
+Finally, we look at each share and proceed from the beginning, each time extracting a prefix and its position in it to obtain a coefficient, then multiplying that with an accumulator.
+
+Example:
+
+map of coefficients:
+
+"0" ---> [c1_1, c1_2]
+"0:1" ---> [c2_1, c2_2, c2_3]
+"0:2" ---> [c3_1, c3_2]
+"0:2:2" ---> [c4_1]
+
+0:2:2:1:=4
+
+Prefix "0" ---> {1,2} / [c1_1, c1_2] 
+Position 2 ---> find index (1) in set, retrieve coefficient (1): c1_2
+
+Prefix "0:2" ---> {1,2} / [c3_1, c3_2]
+Position 2 ---> find index (1) in set, retrieve coefficient (1): c3_2
+
+Prefix "0:2:2" ---> {1} / [c4_1]
+Position 1 ---> find index (0) in set, retrieve coefficient (1): c4_1
+
+*/
+vector<Big> ShTreeAccessPolicy::findCoefficients(const vector<std::string> shareIDs, const Big& order) const {
+  vector<Big> coeffs;
+
+  std::map<std::string, vector<int> > setChildNos;
+  std::map<std::string, vector<Big> > setCoeffs;
+
+  for (unsigned int i = 0; i < shareIDs.size(); i++) {
+    std::string shareID = shareIDs[i];
+    ShTreeAccessPolicy::storeSharePrefixes(setChildNos, shareID);
+  }
+
+  Big coeff;
+  vector<Big> vec_coeffs;
+  for (std::map<std::string, vector<int> >::iterator it=setChildNos.begin(); !(it==setChildNos.end()); ++it) {
+    vector<int> childNos = it->second;
+    DEBUG("computing lagrange coefficients for childNos");
+    debugVector("childNos", childNos);
+    vec_coeffs.clear();
+    for (unsigned int i = 0; i < childNos.size(); i++) {
+      coeff = ShTreeAccessPolicy::computeLagrangeCoefficientChildNos(i, childNos, order);
+      DEBUG("lagrange coeff for " << i << ": " << coeff);
+      vec_coeffs.push_back(coeff);
+    }
+    guard("coefficients vector should have the same size as childNos", vec_coeffs.size() == childNos.size());
+    setCoeffs[it->first] = vec_coeffs;
+  }
+  ENHDEBUG("===================================");
+
+  ENHDEBUG("findCoefficients");
+  debugVector("shareIDs", shareIDs);
+  DEBUG("...");
+
+
+  ENHDEBUG("findCoefficients: contents of maps");
+  for (std::map<std::string, vector<int> >::iterator it=setChildNos.begin(); !(it==setChildNos.end()); ++it) {
+    DEBUG("childNos: " << it->first);
+  }
+   for (std::map<std::string, vector<Big> >::iterator it=setCoeffs.begin(); !(it==setCoeffs.end()); ++it) {
+     DEBUG("coeffs: " << it->first);
+   }
+  for (unsigned int i = 0; i < shareIDs.size(); i++) {
+    std::string shareID = shareIDs[i];
+    Big coeff = ShTreeAccessPolicy::findFinalCoefficient(shareID, setChildNos, setCoeffs, order);
+    coeffs.push_back(coeff);
+  }
+
+  ENHDEBUG("Returning coeffs");
+  debugVector("coeffs to return", coeffs);
+  ENHDEBUG("Printed coeffs to return");
+  return coeffs;
 }
 
 
@@ -661,11 +846,11 @@ std::string ShTreeSS::getSetPrefix(std::string& shareID) {
   }
 }
 
-int ShTreeSS::extractPublicInfoFromID(std::string& shareID) {
-  return extractChildNoFromID(shareID) + 1;
-}
+// int ShTreeSS::extractPublicInfoFromID(std::string& shareID) {
+//   return extractChildNoFromID(shareID) + 1;
+// }
 
-int ShTreeSS::extractChildNoFromID(std::string& shareID) {
+int ShTreeAccessPolicy::extractChildNoFromID(std::string& shareID) {
   int n0 = shareID.rfind(":=");
   int n1 = shareID.rfind(":", n0-1);
   if (n1 == -1) {
@@ -677,23 +862,36 @@ int ShTreeSS::extractChildNoFromID(std::string& shareID) {
   return index;
 }
 
-Big ShTreeSS::computeLagrangeCoefficient(unsigned int shareIndex, vector<ShareTuple>& witnessShares, const Big& order) 
-{
+Big ShTreeAccessPolicy::computeLagrangeCoefficient(unsigned int shareIndex, vector<ShareTuple>& witnessShares, const Big& order) {
+  vector<int> childNos;
+  for (unsigned int i = 0; i < witnessShares.size(); i++) {
+    std::string shareID = witnessShares[i].getShareID();
+    int index = extractChildNoFromID(shareID);
+    childNos.push_back(index);
+  }
+  return computeLagrangeCoefficientChildNos(shareIndex, childNos, order);
+}
+
+Big ShTreeAccessPolicy::computeLagrangeCoefficientChildNos(unsigned int shareIndex, vector<int>& witnessChildNos, const Big& order) {
   Big z=1;
   Big shareCoef;
 
-  std::string shareID = witnessShares[shareIndex].getShareID();
-  int index = extractPublicInfoFromID(shareID);
+  ENHDEBUG("Lagrange coefficient");
+  debugVector("childNos", witnessChildNos);
+  int childNo = witnessChildNos[shareIndex];
+  int index = ShTreeAccessPolicy::extractPublicInfoFromChildNo(childNo);
   DEBUG("anchor share: " << index);
   guard("Participant index must be positive", index > 0);
 
-  for (unsigned int k=0;k<witnessShares.size();k++) {      
+  for (unsigned int k=0;k<witnessChildNos.size();k++) {      
     if (k == shareIndex) continue;
-    std::string tempshareID = witnessShares[k].getShareID();
-    int tempIndex = extractPublicInfoFromID(tempshareID);
+    int tempChildNo =  witnessChildNos[k];
+    int tempIndex = ShTreeAccessPolicy::extractPublicInfoFromChildNo(tempChildNo);
+    
     DEBUG("varying share: " << tempIndex);
     
     shareCoef = moddiv(order - tempIndex,(Big)(order + index - tempIndex),order);
+    DEBUG("Multiplying term: " << shareCoef);
     z=modmult(z,shareCoef,order);
   }
   return z;
@@ -702,13 +900,13 @@ Big ShTreeSS::computeLagrangeCoefficient(unsigned int shareIndex, vector<ShareTu
 ShareTuple ShTreeSS::detailedReconstruction(vector<ShareTuple>& minimalShares, std::string& prefix, const Big& order){
   Big sum = 0;
   for (unsigned int i = 0; i < minimalShares.size(); i++) {
-    Big coeff = computeLagrangeCoefficient(i, minimalShares, order);
+    Big coeff = ShTreeAccessPolicy::computeLagrangeCoefficient(i, minimalShares, order);
     Big term = modmult(minimalShares[i].getShare(),coeff,order);
     sum = (sum + term); 
   }
   sum = ((sum + order) % order);
 
-  std::string newShareID = TreeNode::findIDForNode(getSetPrefix(prefix), extractChildNoFromID(prefix), NodeContentType::leaf, "?");
+  std::string newShareID = TreeNode::findIDForNode(getSetPrefix(prefix), ShTreeAccessPolicy::extractChildNoFromID(prefix), NodeContentType::leaf, "?");
   ShareTuple newShare(0, sum, newShareID);
   return newShare;
 }
@@ -842,9 +1040,32 @@ Big ShTreeSS::reconstruct(const vector<ShareTuple> shares){
       ENHDEBUG("Shortcut returning");
       return witnessShares[0].getShare();
     }
-    DEBUG("CALLING REDUCE");
-    ShareTuple share = reduceLowestShares(shares, m_order);
-    ENHDEBUG("FINISHED REDUCE");
+//     DEBUG("CALLING REDUCE");
+//     debugVectorObj("shares", shares);
+//     debugVectorObj("witnessShares", witnessShares);
+//     DEBUG("====");
+    vector<std::string> shareIDs;
+    for (unsigned int i = 0; i < shares.size(); i++) {
+      //      DEBUG("adding shareID: " << shares[i].getShareID());
+      shareIDs.push_back(shares[i].getShareID());
+    }
+    //    debugVector("shareIDs", shareIDs);
 
-    return share.getShare();
+    vector<Big> coeffs = i_policy->findCoefficients(shareIDs, getOrder());
+    
+    ENHDEBUG("Reconstruct:");
+    debugVector("coeffs", coeffs);
+    ENHDEBUG("Coeffs printed");
+    Big sum = 0;
+    for (unsigned int i = 0; i < shares.size(); i++) {
+      ENHDEBUG("i " << i);
+      Big term = modmult(coeffs[i], shares[i].getShare(), m_order);
+      sum = (sum + term) % m_order;
+    }
+    return sum;
+
+    //    ShareTuple share = reduceLowestShares(shares, m_order);
+    //    ENHDEBUG("FINISHED REDUCE");
+    //    return share.getShare();
+    
 }

@@ -27,7 +27,11 @@
 #include "BLcanonical.h"
 #endif
 
-#ifndef DEF_DEF_KPABE
+#ifndef DEF_SH_TREE
+#include "ShTree.h"
+#endif
+
+#ifndef DEF_KPABE
 #include "kpabe.h"
 #endif
 
@@ -99,7 +103,7 @@ int test2(int errors, KPABE& testClass, PFC& m_pfc, G1 &P, G2 &Q){
 }
 
 
-int test3(int errors, KPABE& testClass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q){
+int test3(int errors, KPABE& testClass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q, vector<int>& CTAtts, vector<int>& badCTAtts){
   //------------------ Test 3: Encryption ------------------------
   OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
   OUT("Beginning of test 3");
@@ -112,23 +116,6 @@ int test3(int errors, KPABE& testClass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q){
 #ifdef AttOnG2_KeyOnG1
   vector<G2> &publicKeyAtts = testClass.getPublicAttributes();
 #endif
-
-
-  vector<int> BadCTatts;  // one invalid attribute index
-  BadCTatts.push_back(4);
-  BadCTatts.push_back(2);
-  BadCTatts.push_back(17);
-  BadCTatts.push_back(6);
-  BadCTatts.push_back(20);
-  BadCTatts.push_back(5);
-
-  vector<int> CTatts; // all valid attribute indices
-  CTatts.push_back(4);
-  CTatts.push_back(2);
-  CTatts.push_back(17);
-  CTatts.push_back(6);
-  CTatts.push_back(12);
-  CTatts.push_back(5);
 
   GT CT;
   Big sCT;
@@ -157,24 +144,24 @@ int test3(int errors, KPABE& testClass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q){
   const Big sM = (char *)"test message"; 
   mip->IOBASE=16;
 
-  bool success = testClass.encryptS(BadCTatts, sM, sCT, AttFrags);
+  bool success = testClass.encryptS(badCTAtts, sM, sCT, AttFrags);
 
   test_diagnosis("Test 3 - hash encrypt: bad attributes, return fail", !success, errors);
     
-  success = testClass.encryptS(CTatts, sM, sCT, AttFrags);
-  test_diagnosis("Test 3 - hash encrypt: size of attribute frags", AttFrags.size() == CTatts.size(), errors);
+  success = testClass.encryptS(CTAtts, sM, sCT, AttFrags);
+  test_diagnosis("Test 3 - hash encrypt: size of attribute frags", AttFrags.size() == CTAtts.size(), errors);
   CTrand = testClass.getLastEncryptionRandomness();
   test_diagnosis("Test 3 - hash encrypt: good attributes, succeed", success, errors);
   aux = m_pfc.power(publicCTBlinder, CTrand);
   test_diagnosis("Test 3 - hash encrypt: CT well-formedness", lxor(sM,m_pfc.hash_to_aes_key(aux)) == sCT, errors);
 
 
-  success = testClass.encrypt(BadCTatts, M, CT, AttFrags);
+  success = testClass.encrypt(badCTAtts, M, CT, AttFrags);
 
   test_diagnosis("Test 3 - mult encrypt: bad attributes, return fail", !success, errors);
     
-  success = testClass.encrypt(CTatts, M, CT, AttFrags);
-  test_diagnosis("Test 3 - mult encrypt: size of attribute frags", AttFrags.size() == CTatts.size(), errors);
+  success = testClass.encrypt(CTAtts, M, CT, AttFrags);
+  test_diagnosis("Test 3 - mult encrypt: size of attribute frags", AttFrags.size() == CTAtts.size(), errors);
   CTrand = testClass.getLastEncryptionRandomness();
   test_diagnosis("Test 3 - mult encrypt: good attributes, succeed", success, errors);
   aux = m_pfc.power(publicCTBlinder, CTrand);
@@ -185,15 +172,15 @@ int test3(int errors, KPABE& testClass, PFC& m_pfc, miracl *mip, G1 &P, G2 &Q){
   //  CT=lxor(M,m_pfc.hash_to_aes_key(blinder));
 
 
-  for (unsigned int i = 0; i < CTatts.size(); i++){
+  for (unsigned int i = 0; i < CTAtts.size(); i++){
     ss << "Test 3 - " << i << ": attribute fragments well-formedness";
 
 #ifdef AttOnG1_KeyOnG2
-    G1 temp1 = m_pfc.mult(publicKeyAtts[CTatts[i]], CTrand);
+    G1 temp1 = m_pfc.mult(publicKeyAtts[CTAtts[i]], CTrand);
     test_diagnosis(ss.str(), temp1 == AttFrags[i], errors);
 #endif
 #ifdef AttOnG2_KeyOnG1
-    G2 temp2 = m_pfc.mult(publicKeyAtts[CTatts[i]], CTrand);
+    G2 temp2 = m_pfc.mult(publicKeyAtts[CTAtts[i]], CTrand);
     test_diagnosis(ss.str(), temp2 == AttFrags[i], errors);
 #endif
 
@@ -267,7 +254,7 @@ int test4(int errors, KPABE& testClass, PFC& m_pfc, G1 &P, G2 &Q, Big order){
 }
 
 
-int test5(int errors, KPABE& testClass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, vector<int> authCTatts, vector<int> badCTatts, vector<int> unauthCTatts){
+int test5(int errors, KPABE& testClass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, vector<int> authCTAtts, vector<int> unauthCTAtts){
   //------------------ Test 5: Decryption ------------------------
   OUT("==============================<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>==============================");
   OUT("Beginning of test 5");
@@ -306,10 +293,10 @@ int test5(int errors, KPABE& testClass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
   Big sCT;
   Big sPT;
   bool success;
-  success = testClass.encryptS(authCTatts, sM, sCT, AttFrags);
+  success = testClass.encryptS(authCTAtts, sM, sCT, AttFrags);
   test_diagnosis("Test 5: string encryption with authorized attributes", success, errors);
 
-  success = testClass.decryptS(keyFrags, authCTatts, sCT, AttFrags, sPT);
+  success = testClass.decryptS(keyFrags, authCTAtts, sCT, AttFrags, sPT);
 
   mip->IOBASE=256;
   DEBUG("[TEST5] found plaintext : " << sPT);
@@ -319,10 +306,10 @@ int test5(int errors, KPABE& testClass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
   test_diagnosis("Test 5: string decryption with authorized attributes success", success, errors);
   test_diagnosis("Test 5: string decryption with authorized attributes equality", sPT == sM, errors);
     
-  success = testClass.encryptS(unauthCTatts, sM, sCT, BadAttFrags);
+  success = testClass.encryptS(unauthCTAtts, sM, sCT, BadAttFrags);
   test_diagnosis("Test 5: string encryption with unauthorized attributes", success, errors);
     
-  success = testClass.decryptS( keyFrags, unauthCTatts, sCT, BadAttFrags, sPT);
+  success = testClass.decryptS( keyFrags, unauthCTAtts, sCT, BadAttFrags, sPT);
   test_diagnosis("Test 5: string decryption with unauthorized attributes", !success, errors);
 
 
@@ -337,10 +324,10 @@ int test5(int errors, KPABE& testClass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
 
   DEBUG("[TEST5] plaintext to be encrypted : " << m_pfc.hash_to_aes_key(GroupM));
 
-  success = testClass.encrypt(authCTatts, GroupM, GroupCT, AttFrags);
+  success = testClass.encrypt(authCTAtts, GroupM, GroupCT, AttFrags);
   test_diagnosis("Test 5: algebraic encryption with authorized attributes", success, errors);
 
-  success = testClass.decrypt( keyFrags, authCTatts, GroupCT, AttFrags, GroupPT);
+  success = testClass.decrypt( keyFrags, authCTAtts, GroupCT, AttFrags, GroupPT);
 
   DEBUG("[TEST5] found plaintext : " << m_pfc.hash_to_aes_key(GroupPT));
 
@@ -348,10 +335,10 @@ int test5(int errors, KPABE& testClass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
   test_diagnosis("Test 5: algebraic decryption with authorized attributes success", success, errors);
   test_diagnosis("Test 5: algebraic decryption with authorized attributes equality", GroupPT == GroupM, errors);
     
-  success = testClass.encrypt(unauthCTatts, GroupM, GroupCT, BadAttFrags);
+  success = testClass.encrypt(unauthCTAtts, GroupM, GroupCT, BadAttFrags);
   test_diagnosis("Test 5: algebraic encryption with unauthorized attributes", success, errors);
     
-  success = testClass.decrypt( keyFrags, unauthCTatts, GroupCT, BadAttFrags, GroupPT);
+  success = testClass.decrypt( keyFrags, unauthCTAtts, GroupCT, BadAttFrags, GroupPT);
   test_diagnosis("Test 5: algebraic decryption with unauthorized attributes", !success, errors);
 
 
@@ -361,7 +348,7 @@ int test5(int errors, KPABE& testClass, PFC& m_pfc, miracl* mip, G1 &P, G2 &Q, v
   
 void debugVectorBig(string s, vector<Big> vec){    
   for (unsigned int i = 0; i < vec.size(); i++) {
-    DEBUG(s << "(" << i << ") = " << vec[i]);
+    DEBUG( s << "(" << i << ") = " << vec[i]);
   }
 }
   
@@ -388,11 +375,11 @@ int runTests(std::string &testName, KPABE testClass, PFC &pfc, miracl *mip, G1 &
   testName = "Test KPABE: " + testName;
   int errors = 0;
 
-  //  errors += test1(errors, testClass, pfc, P, Q, order);
-  // errors += test2(errors, testClass, pfc, P, Q);
-  // errors += test3(errors, testClass, pfc, mip, P, Q);
-  // errors += test4(errors, testClass, pfc, P, Q, order);
-  errors += test5(errors, testClass, pfc, mip, P, Q, authCTAtts, badCTAtts, unauthCTAtts);
+  errors += test1(errors, testClass, pfc, P, Q, order);
+  errors += test2(errors, testClass, pfc, P, Q);
+  errors += test3(errors, testClass, pfc, mip, P, Q, authCTAtts, badCTAtts);
+  errors += test4(errors, testClass, pfc, P, Q, order);
+  errors += test5(errors, testClass, pfc, mip, P, Q, authCTAtts, unauthCTAtts);
 
   return errors;
 }
@@ -431,13 +418,14 @@ int main() {
   //  DEBUG("Finished rand setup");
 
 
+  REPORT("Tests for KPABE scheme based on Canonical Benaloh-Leichter");
   std::string expr = op_OR + "(1, " + op_AND + "(2,3,4), " + op_AND + "(2,5), " + op_AND + "(4,5))";
   shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, polNAttr);
-  shared_ptr<BLSS> testScheme = make_shared<BLSS>(policy, pfc);
+  shared_ptr<BLSS> testSchemeBL = make_shared<BLSS>(policy, pfc);
   
   //  DEBUG("Created BL");
 
-  KPABE testClass(testScheme, pfc, nattr);
+  KPABE testClass(testSchemeBL, pfc, nattr);
 
   //  DEBUG("Created KPABE");
 
@@ -456,34 +444,83 @@ int main() {
   // the scheme has 20 attributes
   // the policy has 5 attributes. 
 
-  vector<int> authCTatts; // all valid attribute indices, authorized set
-  authCTatts.push_back(7);
-  authCTatts.push_back(8);
-  authCTatts.push_back(2);
-  authCTatts.push_back(4);
-  authCTatts.push_back(19);
-  authCTatts.push_back(3);
+  vector<int> authCTAtts; // all valid attribute indices, authorized set
+  authCTAtts.push_back(7);
+  authCTAtts.push_back(8);
+  authCTAtts.push_back(2);
+  authCTAtts.push_back(4);
+  authCTAtts.push_back(19);
+  authCTAtts.push_back(3);
 
-  vector<int> badCTatts;  // one invalid attribute index
-  badCTatts.push_back(7);
-  badCTatts.push_back(8);
-  badCTatts.push_back(2);
-  badCTatts.push_back(4);
-  badCTatts.push_back(29);
-  badCTatts.push_back(3);
+  vector<int> badCTAtts;  // one invalid attribute index
+  badCTAtts.push_back(7);
+  badCTAtts.push_back(8);
+  badCTAtts.push_back(2);
+  badCTAtts.push_back(4);
+  badCTAtts.push_back(29);
+  badCTAtts.push_back(3);
 
-  vector<int> unauthCTatts; // all valid attributes, unauthorized set
-  unauthCTatts.push_back(3);
-  unauthCTatts.push_back(11);
-  unauthCTatts.push_back(17);
-  unauthCTatts.push_back(9);
-  unauthCTatts.push_back(12);
-  unauthCTatts.push_back(5);
-  unauthCTatts.push_back(15);
-  unauthCTatts.push_back(11);
+  vector<int> unauthCTAtts; // all valid attributes, unauthorized set
+  unauthCTAtts.push_back(3);
+  unauthCTAtts.push_back(11);
+  unauthCTAtts.push_back(17);
+  unauthCTAtts.push_back(9);
+  unauthCTAtts.push_back(12);
+  unauthCTAtts.push_back(5);
+  unauthCTAtts.push_back(15);
+  unauthCTAtts.push_back(11);
 
-
-  int result = runTests(test_name, testClass, pfc, mip, P, Q, order, authCTatts, badCTatts, unauthCTatts);
+  int result = 0;
+  result += runTests(test_name, testClass, pfc, mip, P, Q, order, authCTAtts, badCTAtts, unauthCTAtts);
   print_test_result(result, test_name);
+
+  //==============================================================================================================
+
+  REPORT("Tests for KPABE scheme based on Tree of Shamir schemes");
+
+  std::string exprSH = op_THR + "(2, 1, " + op_AND + "(2,3,4), " + op_THR + "(2,2,5, " + op_OR + "(1,4,5)))";
+  shared_ptr<ShTreeAccessPolicy> policySH = make_shared<ShTreeAccessPolicy>(exprSH, polNAttr);
+  shared_ptr<ShTreeSS> testSchemeShTree = make_shared<ShTreeSS>(policySH, pfc);
+  
+  //  DEBUG("Created ShTree");
+
+  KPABE testClassSH(testSchemeShTree, pfc, nattr);
+
+  
+  classSetup(testClassSH, P, Q, order, nattr);
+  std::string test_nameSH = "Shamir Tree";
+
+
+  vector<int> authCTAttsSH; // all valid attribute indices, authorized set
+  authCTAttsSH.push_back(7);
+  authCTAttsSH.push_back(8);
+  authCTAttsSH.push_back(2);
+  authCTAttsSH.push_back(4);
+  authCTAttsSH.push_back(19);
+  authCTAttsSH.push_back(3);
+
+  vector<int> badCTAttsSH;  // one invalid attribute index
+  badCTAttsSH.push_back(7);
+  badCTAttsSH.push_back(8);
+  badCTAttsSH.push_back(2);
+  badCTAttsSH.push_back(4);
+  badCTAttsSH.push_back(29);
+  badCTAttsSH.push_back(3);
+
+  vector<int> unauthCTAttsSH; // all valid attributes, unauthorized set
+  unauthCTAttsSH.push_back(3);
+  unauthCTAttsSH.push_back(11);
+  unauthCTAttsSH.push_back(17);
+  unauthCTAttsSH.push_back(9);
+  unauthCTAttsSH.push_back(12);
+  unauthCTAttsSH.push_back(5);
+  unauthCTAttsSH.push_back(15);
+  unauthCTAttsSH.push_back(11);
+
+
+  result += runTests(test_nameSH, testClassSH, pfc, mip, P, Q, order, authCTAttsSH, badCTAttsSH, unauthCTAttsSH);
+  print_test_result(result, test_nameSH);
+
+
   return 0;
 }

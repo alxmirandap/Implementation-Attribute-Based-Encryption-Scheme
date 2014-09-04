@@ -317,8 +317,9 @@ bool KPABE::decrypt_main_body(vector<G2> keyFrags, const vector<int>& atts, vect
   G2 bufferArray[countAtts]; // this is a temporary placeholder so that computed fragments can have an address that can be used by g1 or g2
 #endif
 
+  vector<Big> coeffs = m_policy->findCoefficients(minimalShareIDs, m_order);
   for (int i = 0; i < countAtts; i++) {    
-    Big coeff = m_policy->findCoefficient(minimalShareIDs[i], minimalShareIDs);
+    Big coeff = coeffs[i];
     int keyFragIndex = keyFragIndices[witnessSharesIndices[i]];
     int attFragIndex = attFragIndices[witnessSharesIndices[i]];
 

@@ -29,7 +29,7 @@ class BLAccessPolicy : public AccessPolicy{
   //  bool evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const;
   static std::string createShareID(std::string setID, std::string partID);
   bool evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const;
-  Big findCoefficient(const std::string id,const vector<std::string> shareIDs) const;
+  vector<Big> findCoefficients(const vector<std::string> shareIDs, const Big& order) const;
   void obtainCoveredFrags(const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const;
 };
 

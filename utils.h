@@ -51,7 +51,7 @@
 #define shCYAN "\x1b[0;36m"
 #define shGREEN "\x1b[1;32m"
 
-#define NODEBUG
+ #define NODEBUG
 
 #ifdef NODEBUG
 #  define DEBUG(x) do {} while (0)

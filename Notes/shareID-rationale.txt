@@ -1,0 +1,22 @@
+  // example:
+  // "0", "0:=1", "0:1:0:=3", "0:1:0:=7", "0:1:=4
+  // first, join "0:1:0:=3" "0:1:0:=7" to obtain the value for 0:1:0
+  // then, join with 0:1:=4 that is the remaining value for the branch 0:1. 
+  // With this value, join with 0:=1 and obtain the value for "0"
+  // This illustrates how bad my decision to name shares with := partIndex has been in this case. 
+  // I would be better off with shares having the same scheme exactly as inner nodes. 
+  // Did I gain anything by having shares named like this? The idea was to make them free from their order. 
+
+  // In the KP scheme, the shares are independent of participants (attributes). These are only important for the creation of fragments. The participants are 
+  // identified with their order in the tree.
+  // But in a pure secret sharing scheme, we have to include participants public values. 
+  // However, in a simple situation, every participant can be numbered from 1 to n, at least in a simple Shamir SS.
+  // Does it matter, now that we have a tree? Must shares in different nodes have distinct or matching public information?
+  // It shouldn't matter. Since each node has a different random polynomial, the public information can be as trivial as can be, as long as it respects the
+  // rules of the scheme.
+  // The whole point is that I should be able to extract the public information from the share itself, and with the current scheme that does not happen
+  // The rationale was to make shares valid for a scheme even if they appeared in the wrong position, but that is pointless. Their value does depend on the position.
+  // While this logic works well for BL, it is flawed for Shamir. 
+  // The main reason for this scheme might have been the willingness to test the validity of a share from its ID only. 
+  // Then, the ID must include the participant in it. But it makes sense that it includes also the position of the share. 
+  // This is a minor change from the current scheme, and I will change to that.

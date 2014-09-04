@@ -1,0 +1,46 @@
+basic-benchmark.cpp	performance measurement for the basic operations, excluding the computation of Lagrange coefficients
+current_testkpabe.cpp	old version of tests for the KPABE construction. Not too different from the current one
+fuzzy.cpp		original/official implementation of SW05's Fuzzy IBE
+kpabe.cpp		implementation of a KP-ABE scheme using a pure ShamirAccessPolicy (FuzzyIBE). Ready to be abstracted into a general construction.
+kpabe.h			header file for kpabe.cpp
+old_testkpabe.cpp	older version of tests for the KPABE construction
+shamir.cpp		implementation for the Shamir secret sharing scheme. Includes a class for representing shares as pairs (value,attribute); another for represnting a simple threshold access policy, and another for the mechanics of the Secret Sharing Scheme itself
+shamir.h		header file for shamir.cpp
+testbed.cpp		unfinished file for early experiments, based on fuzzy.cpp
+testkpabe.cpp		file with tests for the kpabe construction. Completely tied to the current Shamir implementation
+testshamir.cpp		file with tests for the shamir secret sharing construction
+utils.cpp		generic functions useful essentially for communicating with the users and reporting tests' results
+utils.h			header file for utils.cpp
+
+
+
+New tasks:
+
+- the objective is to implement GPSW06, KPABE_BL and KPABE_LSSS, and eventually KPABE_MSP.
+- the general architecture planned was to decouple the secret sharing scheme from the rest of the construction
+- this defines the next tasks to do
+  - create an abstract class of secret sharing scheme, and make the present shamir implementation a descendant of that class
+  - abstract the KP-ABE construction to use a generic secret sharing scheme
+  - transform the current tests so that they use the abstract version instantiated with shamir
+  - create implementations for the other secret sharing schemes
+  - adapt the tests so that they can also work with the new schemes. Ideally, the same tests should be simply modified to run with different constructions
+- once the architecture is complete, we need to measure efficiency. This defines another smaller set of tasks:
+  - design appropriate tests and relevant access policies
+  - perform time measurements for the several policies and schemes
+
+
+================================================================
+
+Changing Shamir and making it derived from Secret Sharing:
+
+- there are a few things I want to correct
+- first, a secret sharing scheme has a set of participants that is not necessarily equal to the set of shares. 
+- This just allows us to give a number, or "name", to participants. 
+- However, the number of shares may be different, if some participant receives more than one share
+- This changes the notion of share: now it includes the index of the share (the public value), the participant it corresponds to, and its value proper
+- It also changes the secret sharing scheme itself, to also give a number of shares and decouple both ideas. The set of participants should not have repetitions
+- The set of shares should also not have repetitions but only of the index part. It almost feels like we could make shares into a hashtable, instead of a vector. 
+- But I think it is not worth the trouble
+
+
+

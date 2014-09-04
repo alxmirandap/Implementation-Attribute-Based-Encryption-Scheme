@@ -1,0 +1,160 @@
+Example shares:
+
+0:1:0:=2
+0:1:1:=3
+0:1:2:=4
+
+0:2:1:=2
+
+0:2:2:1:=4
+
+
+Prefix sets:
+
+0:1: ---> {0,1,2}
+   0:1:0:=2
+   0:1:1:=3
+   0:1:2:=4
+
+0:2: ---> {1}
+   0:2:1:=2
+
+0:2:2 ---> {1}
+   0:2:2:1:=4
+
+
+
+
+==========================
+
+I can use the same structure of reduceLowestShares, but there are differences: I need to keep track of the coefficients for all shares.
+I could either keep coefficients in a tree-like map or in a separate vector
+One share is introduced in the map per iteration of the outer loop.
+
+The point in order to compute coefficients is to find what are the other elements in the minimal set, that is, all the elements with the same prefix.
+That is what the complex reduceLowestShares does, but then it removes computed shares from the map until only one remains. If I can tie a share in the map to its position in the input vector, then I can use this to update the coefficients accordingly. On the other hand, I don't need to compute shares themselves, and I shouldn't do it.
+
+Presently, each time I find a complete set I solve it. that is done by reduceMapShare.
+
+reduceMapShare calls solveSet to find a new share from a complete set of shares, and then stores it in the right place
+solveSet removes the complete set of shares from the map and calls detailedReconstruction to find the resulting share.
+detailedReconstruction computes the lagrange coefficients for each share and combines them.
+
+
+
+So, several steps here and I may be able to use some.
+Clearly, I want to compute the Lagrange coefficients, but I don't want to combine them into a new share. Instead, I can return a vector with the coefficients I found.
+when solveSet receives these coefficients, they are aligned with the set of shares it received.
+But then I lose the connection to the original position of these shares in the input vector.
+
+Maybe I can try something simpler.
+Start with the above example. Put in a map a list of prefixes and for each prefix a vector of the corresponding indices. That gives us a map with the following:
+0:1: ---> {0,1,2}
+0:2: ---> {1}
+0:2:2 ---> {1}
+
+solve the lowest prefix, in this case 0:2:2. 
+
+This returns a list of coefficients for each share in the set: c3_1.
+This also returns a new prefix and a list of positions. State of the map now:
+
+0:1: ---> {0,1,2}
+0:2: ---> {1,2} [-, c3_1]
+
+Now, each set can be solved alone:
+
+for prefix 0:1, I obtain a list of 3 coefficients: [c1_1, c1_2, c1_3]
+for prefix 0:2, I obtain a list of 2 coefficients: [c2_1, c2_2], but since there was already one coefficient for position 2, this is multiplied, and we get:
+    [c2_1, c2_2 * c3_1]
+
+
+
+Simple approach:
+- place all shares in the map, organized by prefix. Instead of storing the share, store its child number. 
+- everytime a new prefix is stored, also create an entry for its predecessors that are not yet in the map, with the position it occupies in it.
+
+
+For the previous example, this leads to the following map:
+
+
+0:1:0:=2:
+	"0:1" ---> {0}
+	"0" ---> {1}
+0:1:1:=3
+	"0:1" ---> {0,1}
+	"0" ---> {1} (no change)
+0:1:2:=4
+	"0:1" ---> {0,1,2}
+	"0" ---> {1} (no change)
+0:2:1:=2
+	"0:1" ---> {0,1,2} (no change)
+	"0" ---> {1,2} 
+	"0:2" ---> {1}
+0:2:2:1:=4
+	"0:2:2" ---> {1}
+	"0:1" ---> {0,1,2} (no change)
+	"0" ---> {1,2} (no change)
+	"0:2" ---> {1,2}
+
+For the previous example, but putting the last share in the first place, this leads to the following map:
+
+0:2:2:1:=4
+	"0:2:2" ---> {1}
+	"0:2" ---> {2}
+	"0" ---> {2}
+0:1:0:=2:
+	"0:2:2" ---> {1} (no change)
+	"0:2" ---> {2} (no change)
+	"0:1" ---> {0}
+	"0" ---> {2,1}
+0:1:1:=3
+	"0:2:2" ---> {1} (no change)
+	"0:2" ---> {2} (no change)
+	"0:1" ---> {0,1}
+	"0" ---> {2,1} (no change)
+0:1:2:=4
+	"0:2:2" ---> {1} (no change)
+	"0:2" ---> {2} (no change)
+	"0:1" ---> {0,1,2}
+	"0" ---> {2,1} (no change)
+0:2:1:=2
+	"0:2:2" ---> {1} (no change)
+	"0:2" ---> {2,1}
+	"0:1" ---> {0,1,2} (no change)
+	"0" ---> {2,1} (no change)
+
+In a different order, this gives the same contents.
+
+Now, we can traverse the map and compute the coefficients as we go.
+For future expansion, it is better to create a different map that has prefixes as keys and vectors of coefficients as values. For each prefix, we compute the corresponding vector of coefficients and store it in the new map.
+Finally, we look at each share and proceed from the beginning, each time extracting a prefix and its position in it to obtain a coefficient, then multiplying that with an accumulator.
+
+Example:
+
+map of coefficients:
+
+"0" ---> [c1_1, c1_2]
+"0:1" ---> [c2_1, c2_2, c2_3]
+"0:2" ---> [c3_1, c3_2]
+"0:2:2" ---> [c4_1]
+
+0:2:2:1:=4
+
+Prefix "0" ---> {1,2} / [c1_1, c1_2] 
+Position 2 ---> find index (1) in set, retrieve coefficient (1): c1_2
+
+Prefix "0:2" ---> {1,2} / [c3_1, c3_2]
+Position 2 ---> find index (1) in set, retrieve coefficient (1): c3_2
+
+Prefix "0:2:2" ---> {1} / [c4_1]
+Position 1 ---> find index (0) in set, retrieve coefficient (1): c4_1
+
+Altogether, this multiplies the right coefficients.
+
+This at least should be easier to understand than the convoluted reduceLowestShares.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+It would be much much easier to proceed in a top down manner, from the policy, but that would have to look at the shares to identify only the necessary paths and not all of them.
+
+

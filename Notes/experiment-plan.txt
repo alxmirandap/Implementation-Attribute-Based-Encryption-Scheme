@@ -1,0 +1,43 @@
+Experiments for encryption:
+
+- time to setup
+- time to generate keys
+- time to encrypt
+- time to decrypt
+
+
+
+- variables:
+  - encryption with hash or multiplication
+  - Key on G1 / Key on G2
+  - number of attributes in the ciphertext
+  - number of attributes in the universe
+  - number of leaves in the policy
+  - max size of a minimal set
+
+
+
+Number of attributes in the universe:
+- 5, 10, 100, 500, 1000
+
+Number of attributes in the ciphertext:
+- 5, 10, 100, 500, 1000
+
+Types of policy:
+- uniformly distributed per each set: n leaves, accept from 1 set to a number of sets equal to the number of leaves; try all powers of 2 between these two limits
+- linearly increasing sets: one set with one literal, the next one with 2, then 3, and so on
+- exponentially increasing sets, doubling each time
+
+
+Setup: only depends on number of attributes in the universe
+
+Encryption: only depends on number of attributes in ciphertext
+
+Key Generation: only depends on total number of leaves in tree (it might be different for more complex schemes)
+
+Decryption: depends on format of the policy and on number of attributes in ciphertext
+
+
+
+
+

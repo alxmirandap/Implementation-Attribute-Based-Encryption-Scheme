@@ -815,7 +815,8 @@ int testReconFromShares(vector<int> party, std::string message,
 int testDistributeAndReconstruct(PFC &pfc){
   int errors = 0;
   ENHDEBUG("testDistribute and Reconstruct");
-  int niter = 5;
+  //  int niter = 5;
+  int niter = 1;
   
   DEBUG("Initting s");
   Big s;
@@ -1062,16 +1063,16 @@ int testLagrangeCoefficient(PFC &pfc) {
   Big F31 = moddiv(order - x1,(Big)(order + x3 - x1),order);
   Big F32 = moddiv(order - x2,(Big)(order + x3 - x2),order);
 
-  Big L0 = ShTreeSS::computeLagrangeCoefficient(0, shares, order);
+  Big L0 =   ShTreeAccessPolicy::computeLagrangeCoefficient(0, shares, order);
   test_diagnosis("testLagrangeCoefficient: L0", L0 == modmult( modmult(F01, F02, order), F03, order), errors);
 
-  Big L1 = ShTreeSS::computeLagrangeCoefficient(1, shares, order);
+  Big L1 =   ShTreeAccessPolicy::computeLagrangeCoefficient(1, shares, order);
   test_diagnosis("testLagrangeCoefficient: L1", L1 == modmult( modmult(F10, F12, order), F13, order), errors);
 
-  Big L2 = ShTreeSS::computeLagrangeCoefficient(2, shares, order);
+  Big L2 =   ShTreeAccessPolicy::computeLagrangeCoefficient(2, shares, order);
   test_diagnosis("testLagrangeCoefficient: L2", L2 == modmult( modmult(F20, F21, order), F23, order), errors);
 
-  Big L3 = ShTreeSS::computeLagrangeCoefficient(3, shares, order);
+  Big L3 =   ShTreeAccessPolicy::computeLagrangeCoefficient(3, shares, order);
   test_diagnosis("testLagrangeCoefficient: L3", L3 == modmult( modmult(F30, F31, order), F32, order), errors);
 
   return errors;
@@ -1084,16 +1085,145 @@ int testExtractPublicInfoFromID() {
   std::string s2 = "0:1:4:=8";
   std::string s3 = "0:=9";
 
-  test_diagnosis("testExtractPublicInfoFromID - " + s1, ShTreeSS::extractPublicInfoFromID(s1) == 5 , errors);
-  test_diagnosis("testExtractPublicInfoFromID - " + s2, ShTreeSS::extractPublicInfoFromID(s2) == 5 , errors);
+  test_diagnosis("testExtractPublicInfoFromID - " + s1, 
+		 ShTreeAccessPolicy::extractPublicInfoFromChildNo(ShTreeAccessPolicy::extractChildNoFromID(s1)) == 5 , errors);
+  test_diagnosis("testExtractPublicInfoFromID - " + s2, 
+		 ShTreeAccessPolicy::extractPublicInfoFromChildNo(ShTreeAccessPolicy::extractChildNoFromID(s2)) == 5 , errors);
 
   try {
-    ShTreeSS::extractPublicInfoFromID(s3);
+    ShTreeAccessPolicy::extractPublicInfoFromChildNo(ShTreeAccessPolicy::extractChildNoFromID(s3));
     test_diagnosis("testExtractPublicInfoFromID - exception " + s3, false, errors);
   } catch (std::runtime_error &e) {
     test_diagnosis("testExtractPublicInfoFromID - exception " + s3, true, errors);
   }
 
+
+  return errors;
+}
+
+int testextractPrefixAndNoFromID() {
+  int errors = 0;
+
+  std::string s1 = "0:1:7:4:=3";
+  std::string s2 = "1:7:4:=3";
+  std::string s3 = "7:4:=3";
+  std::string s4 = "4:=3";
+  std::string s5 = "4:=3:";
+
+  std::string prefix;
+  int childNo;
+
+  bool success = ShTreeAccessPolicy::extractPrefixAndNoFromID(s1, prefix, childNo);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s1 + " [success]", success, errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s1 + " [s1]", s1 == "1:7:4:=3", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s1 + " [prefix]", prefix == "0:", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s1 + " [childNo]", childNo == 1, errors);
+
+  success = ShTreeAccessPolicy::extractPrefixAndNoFromID(s2, prefix, childNo);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s2 + " [success]", success, errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s2 + " [s2]", s2 == "7:4:=3", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s2 + " [prefix]", prefix == "1:", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s2 + " [childNo]", childNo == 7, errors);
+
+  success = ShTreeAccessPolicy::extractPrefixAndNoFromID(s3, prefix, childNo);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s3 + " [success]", success, errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s3 + " [s3]", s3 == "4:=3", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s3 + " [prefix]", prefix == "7:", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s3 + " [childNo]", childNo == 4, errors);
+
+  success = ShTreeAccessPolicy::extractPrefixAndNoFromID(s4, prefix, childNo);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s4 + " [success]", !success, errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s4 + " [s4]", s4 == "4:=3", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s4 + " [prefix]", prefix == "7:", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s4 + " [childNo]", childNo == 4, errors);
+
+  success = ShTreeAccessPolicy::extractPrefixAndNoFromID(s5, prefix, childNo);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s5 + " [success]", !success, errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s5 + " [s5]", s5 == "4:=3:", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s5 + " [prefix]", prefix == "7:", errors);
+  test_diagnosis("testextractPrefixAndNoFromID: " + s5 + " [childNo]", childNo == 4, errors);
+
+  return errors;
+}
+
+int testStoreSharePrefixes() {
+  int errors = 0;
+
+  std::string s1 = "0:1:0:=2";
+  std::string s2 = "0:1:1:=3";
+  std::string s3 = "0:1:2:=4";
+  std::string s5 = "0:2:2:1:=4";
+  std::string s4 = "0:2:1:=2";
+
+
+  std::map<std::string, vector<int> > setChildNos;
+
+  ShTreeAccessPolicy::storeSharePrefixes(setChildNos, s1);
+
+  //  REPORT("s1");
+  vector<int> vec = setChildNos["0:"];
+  vector<int> verif0;
+  verif0.push_back(1);
+  debugVector("vec [0:]", vec);
+  debugVector("verif0", verif0);
+  test_diagnosis("testStoreSharePrefixes: " + s1 + "[0:]", verif0 == vec, errors);
+
+  vec = setChildNos["0:1:"];
+  vector<int> verif01;
+  verif01.clear();
+  verif01.push_back(0);
+  debugVector("vec [0:1:]", vec);
+  debugVector("verif01", verif01);
+  test_diagnosis("testStoreSharePrefixes: " + s1 + "[0:1:]", verif01 == vec, errors);
+
+  //  REPORT("s2");
+  ShTreeAccessPolicy::storeSharePrefixes(setChildNos, s2);
+  vec = setChildNos["0:"];
+  debugVector("vec [0:]", vec);
+  debugVector("verif0", verif0);
+  test_diagnosis("testStoreSharePrefixes: " + s2 + "[0:]", verif0 == vec, errors);
+
+  vec = setChildNos["0:1:"];
+  verif01.push_back(1);
+  debugVector("vec  [0:1:]", vec);
+  debugVector("verif01", verif01);
+  test_diagnosis("testStoreSharePrefixes: " + s2 + "[0:1:]", verif01 == vec, errors);
+
+  //   REPORT("s3");
+  ShTreeAccessPolicy::storeSharePrefixes(setChildNos, s3);
+  vec = setChildNos["0:"];
+  test_diagnosis("testStoreSharePrefixes: " + s3 + "[0:]", verif0 == vec, errors);
+  vec = setChildNos["0:1:"];
+  verif01.push_back(2);
+  test_diagnosis("testStoreSharePrefixes: " + s3 + "[0:1:]", verif01 == vec, errors);
+
+  //   REPORT("s4");
+   ShTreeAccessPolicy::storeSharePrefixes(setChildNos, s4);
+   vec = setChildNos["0:"];
+   verif0.push_back(2);
+   test_diagnosis("testStoreSharePrefixes: " + s4 + "[0:]", verif0 == vec, errors);
+   vec = setChildNos["0:1:"];
+   test_diagnosis("testStoreSharePrefixes: " + s4 + "[0:1:]", verif01 == vec, errors);
+   debugVector("vec [0:1:]", vec);
+   debugVector("verif01", verif01);
+   vector<int> verif02;
+   vec = setChildNos["0:2:"];
+   verif02.push_back(1);
+   test_diagnosis("testStoreSharePrefixes: " + s4 + "[0:2:]", verif02 == vec, errors);
+
+   //   REPORT("s5");
+  ShTreeAccessPolicy::storeSharePrefixes(setChildNos, s5);
+  vec = setChildNos["0:"];
+  test_diagnosis("testStoreSharePrefixes: " + s5 + "[0:]", verif0 == vec, errors);
+  vec = setChildNos["0:1:"];
+  test_diagnosis("testStoreSharePrefixes: " + s5 + "[0:1:]", verif01 == vec, errors);
+  vec = setChildNos["0:2:"];
+  verif02.push_back(2);
+  test_diagnosis("testStoreSharePrefixes: " + s4 + "[0:2:]", verif02 == vec, errors);
+  vector<int> verif022;
+  vec = setChildNos["0:2:2:"];
+  verif022.push_back(1);
+  test_diagnosis("testStoreSharePrefixes: " + s5 + "[0:2:2:]", verif022 == vec, errors);
 
   return errors;
 }
@@ -1105,22 +1235,25 @@ int runTests(std::string &testName, PFC &pfc) {
   // Policy tests
   ENHOUT("Secret sharing policy tests");
   errors += testParseTreeFromExpression();
-   errors += testSatisfyNode();
-   errors += testEvaluate();
-   errors += testGetNumShares();
-   errors += testObtainCoveredFrags(); 
-   
-  // Secret Sharing tests
-  ENHOUT("Secret sharing scheme tests");
+  errors += testSatisfyNode();
+  errors += testEvaluate();
+  errors += testGetNumShares();
+  errors += testObtainCoveredFrags(); 
+
+  ENHOUT("Secret sharing static utils tests");
+  errors += testextractPrefixAndNoFromID();
+  errors += testStoreSharePrefixes();
   errors += testUpdateSet();
   errors += testAddNewSet();
   errors += testPutShareInSet();
   errors += testGetSetPrefix();
   errors += testGetSharesForParticipants();
   errors += testExtractPublicInfoFromID();
+   
+  // Secret Sharing tests
+  ENHOUT("Secret sharing scheme tests");
   errors += testLagrangeCoefficient(pfc);
   errors += testDistributeAndReconstruct(pfc);
-
 
   return errors;
 }

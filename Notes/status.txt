@@ -1,0 +1,75 @@
+# On branch master
+# Changes not staged for commit:
+#   (use "git add/rm <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   BLcanonical.cpp
+#	deleted:    README.md
+#	modified:   kpabe.cpp
+#	modified:   kpabe.h
+#	modified:   makefile
+#	modified:   testBLcanonical.cpp
+#	deleted:    testbed.cpp
+#	modified:   testkpabe.cpp
+#	modified:   utils.h
+#	modified:   utils_impl.tcc
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	.cproject
+#	.directory
+#	.metadata/
+#	.project
+#	.testshamir2.cpp.kate-swp
+#	BL.cpp~
+#	BL.h~
+#	BLCanonkpabe.cpp~
+#	BLCanonkpabe.h~
+#	BLcanonical.cpp~
+#	BLcanonical.h~
+#	Docs/
+#	OldCode/
+#	a.cpp
+#	a.cpp~
+#	actual.txt
+#	b.cpp
+#	b.cpp~
+#	bbench
+#	core
+#	er.txt
+#	example_shared_ptr.cpp~
+#	kpabe.cpp~
+#	kpabe.h~
+#	kpabe_template.cpp
+#	kpabe_template.cpp~
+#	kpabe_template.h
+#	kpabe_template.h~
+#	list.txt
+#	makefile~
+#	notes-shares.txt
+#	notes-shares.txt~
+#	rationale-abstraction.txt~
+#	secret_sharing.cpp~
+#	secret_sharing.h~
+#	secretsharing.cpp~
+#	secretsharing.h_current
+#	secretsharing.h~
+#	shamir2.cpp~
+#	shamir2.h~
+#	status.txt
+#	test.txt
+#	testBL.cpp~
+#	testBLcanonical
+#	testBLcanonical.cpp~
+#	testkpabe
+#	testkpabe.cpp~
+#	testshamir2.cpp~
+#	testtree.cpp~
+#	testutils
+#	testutils.cpp~
+#	tree.cpp~
+#	tree.h~
+#	utils.h~
+#	utils_impl.tcc~
+no changes added to commit (use "git add" and/or "git commit -a")

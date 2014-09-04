@@ -1,0 +1,197 @@
+
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:24 2014
+Ending measurement at: Wed Aug 27 16:08:24 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 4 --- Number of minimal sets: 2 --- Number of set size increment: 2
+Number of repetitions: 1
+Number of Leaf: 4
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:24 2014
+Ending measurement at: Wed Aug 27 16:08:24 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 7 --- Number of minimal sets: 2 --- Number of set size increment: 5
+Number of repetitions: 1
+Number of Leaf: 7
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:24 2014
+Ending measurement at: Wed Aug 27 16:08:24 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 1 --- Number of minimal sets: 1 --- Number of set size increment: 8
+Number of repetitions: 1
+Number of Leaf: 1
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:24 2014
+Ending measurement at: Wed Aug 27 16:08:24 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 25 --- Number of minimal sets: 5 --- Number of set size increment: 2
+Number of repetitions: 1
+Number of Leaf: 25
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:24 2014
+Ending measurement at: Wed Aug 27 16:08:24 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 18 --- Number of minimal sets: 3 --- Number of set size increment: 5
+Number of repetitions: 1
+Number of Leaf: 18
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:24 2014
+Ending measurement at: Wed Aug 27 16:08:24 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 27 --- Number of minimal sets: 3 --- Number of set size increment: 8
+Number of repetitions: 1
+Number of Leaf: 27
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:25 2014
+Ending measurement at: Wed Aug 27 16:08:25 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 121 --- Number of minimal sets: 11 --- Number of set size increment: 2
+Number of repetitions: 1
+Number of Leaf: 121
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:26 2014
+Ending measurement at: Wed Aug 27 16:08:26 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 112 --- Number of minimal sets: 7 --- Number of set size increment: 5
+Number of repetitions: 1
+Number of Leaf: 112
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:27 2014
+Ending measurement at: Wed Aug 27 16:08:27 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 126 --- Number of minimal sets: 6 --- Number of set size increment: 8
+Number of repetitions: 1
+Number of Leaf: 126
+Total time in seconds: 0
+Average execution time per repetition: 0 seconds
+Average execution time per Leaf: 0 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:29 2014
+Ending measurement at: Wed Aug 27 16:08:30 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 484 --- Number of minimal sets: 22 --- Number of set size increment: 2
+Number of repetitions: 1
+Number of Leaf: 484
+Total time in seconds: 1
+Average execution time per repetition: 1 seconds
+Average execution time per Leaf: 0.00206612 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:33 2014
+Ending measurement at: Wed Aug 27 16:08:34 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 469 --- Number of minimal sets: 14 --- Number of set size increment: 5
+Number of repetitions: 1
+Number of Leaf: 469
+Total time in seconds: 1
+Average execution time per repetition: 1 seconds
+Average execution time per Leaf: 0.0021322 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:36 2014
+Ending measurement at: Wed Aug 27 16:08:37 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 451 --- Number of minimal sets: 11 --- Number of set size increment: 8
+Number of repetitions: 1
+Number of Leaf: 451
+Total time in seconds: 1
+Average execution time per repetition: 1 seconds
+Average execution time per Leaf: 0.00221729 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:43 2014
+Ending measurement at: Wed Aug 27 16:08:45 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 1024 --- Number of minimal sets: 32 --- Number of set size increment: 2
+Number of repetitions: 1
+Number of Leaf: 1024
+Total time in seconds: 2
+Average execution time per repetition: 2 seconds
+Average execution time per Leaf: 1.95312 milliseconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:50 2014
+Ending measurement at: Wed Aug 27 16:08:52 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 970 --- Number of minimal sets: 20 --- Number of set size increment: 5
+Number of repetitions: 1
+Number of Leaf: 970
+Total time in seconds: 2
+Average execution time per repetition: 2 seconds
+Average execution time per Leaf: 0.00206186 seconds
+--------------------------------------------------------------
+[1;32m[OUTPUT:] [0;37mSetting up scheme
+[1;32m[OUTPUT:] [0;37mScheme set up
+Starting measurement at: Wed Aug 27 16:08:57 2014
+Ending measurement at: Wed Aug 27 16:08:59 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 976 --- Number of minimal sets: 16 --- Number of set size increment: 8
+Number of repetitions: 1
+Number of Leaf: 976
+Total time in seconds: 2
+Average execution time per repetition: 2 seconds
+Average execution time per Leaf: 0.00204918 seconds
+--------------------------------------------------------------
+Nothing left to do

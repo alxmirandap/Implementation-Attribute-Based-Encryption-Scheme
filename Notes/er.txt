@@ -1,0 +1,31 @@
+secret_sharing.cpp: In constructor ‘ShareTuple::ShareTuple()’:
+secret_sharing.cpp:16:40: error: expected ‘{’ before ‘;’ token
+secret_sharing.cpp: At global scope:
+secret_sharing.cpp:17:1: error: expected unqualified-id before ‘{’ token
+secret_sharing.cpp: In constructor ‘ShareTuple::ShareTuple(int, Big, int)’:
+secret_sharing.cpp:20:42: error: expected ‘{’ before ‘;’ token
+secret_sharing.cpp: At global scope:
+secret_sharing.cpp:21:1: error: expected unqualified-id before ‘{’ token
+secret_sharing.cpp:37:6: error: prototype for ‘void ShareTuple::setValues(int, Big, int)’ does not match any in class ‘ShareTuple’
+secret_sharing.h:12:8: error: candidate is: void ShareTuple::setValues(int, Big, int) const
+secret_sharing.cpp:52:8: error: prototype for ‘std::string ShareTuple::to_string()’ does not match any in class ‘ShareTuple’
+secret_sharing.h:14:10: error: candidate is: std::string ShareTuple::to_string() const
+secret_sharing.cpp: In constructor ‘AccessPolicy::AccessPolicy()’:
+secret_sharing.cpp:77:1: error: expected identifier before ‘{’ token
+secret_sharing.cpp: In constructor ‘AccessPolicy::AccessPolicy(int)’:
+secret_sharing.cpp:82:1: error: expected identifier before ‘{’ token
+secret_sharing.cpp: In function ‘std::vector<ShareTuple> getUniqueShares(std::vector<ShareTuple>, int)’:
+secret_sharing.cpp:119:15: error: ‘class std::vector<int>’ has no member named ‘pushback’
+secret_sharing.cpp:120:14: error: ‘class std::vector<ShareTuple>’ has no member named ‘pushback’
+secret_sharing.cpp: At global scope:
+secret_sharing.cpp:130:49: error: cannot declare parameter ‘policy’ to be of abstract type ‘AccessPolicy’
+secret_sharing.h:22:7: note:   because the following virtual functions are pure within ‘AccessPolicy’:
+secret_sharing.h:36:15: note: 	virtual int AccessPolicy::getNumShares()
+secret_sharing.h:37:16: note: 	virtual bool AccessPolicy::evaluate(std::vector<ShareTuple>)
+secret_sharing.cpp:130:1: error: prototype for ‘SecretSharing::SecretSharing(AccessPolicy, PFC&, Big)’ does not match any in class ‘SecretSharing’
+secret_sharing.h:42:7: error: candidates are: SecretSharing::SecretSharing(const SecretSharing&)
+secret_sharing.h:56:3: error:                 SecretSharing::SecretSharing(const AccessPolicy&, PFC&, Big)
+secret_sharing.cpp:134:1: error: ‘Big’ in ‘class SecretSharing’ does not name a type
+secret_sharing.cpp:138:16: error: expected unqualified-id before ‘int’
+secret_sharing.cpp:142:1: error: ‘vector’ in ‘class SecretSharing’ does not name a type
+make: *** [secretsharing.o] Error 1

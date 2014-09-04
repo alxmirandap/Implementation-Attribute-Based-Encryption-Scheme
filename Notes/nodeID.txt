@@ -1,0 +1,11 @@
+- each node in a tree has a label
+- individual nodes don't have labels, it is a property of the tree specifying a node's position in it
+- trees are only built once, and nodes are not exchanged around
+- the ID encodes the position in the tree: this means that it can only be affected by append operations. Indeed, this is the only time it can change
+- therefore, the append operation can determine the Id of a node and set it 
+
+- nil nodes have an ID ""
+- root non-nil node has an ID "0"
+- inner nodes have the ID of their parent followed by ":" and their index among the parent's children
+- leaf nodes have the ID of their parent followed by ":=" and their value
+

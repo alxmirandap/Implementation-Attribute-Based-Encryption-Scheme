@@ -55,13 +55,18 @@ vector<vector<int> >& BLAccessPolicy::getMinimalSets() {
   return m_minimal_sets;
 }
 
-Big BLAccessPolicy::findCoefficient(std::string id,const vector<std::string> shareIDs) const {
-  int n = contains<std::string>(shareIDs, id);
-  if (n >= 0) {
-    return 1; 
-  } else {
-    return 0;
+vector<Big> BLAccessPolicy::findCoefficients(const vector<std::string> shareIDs, const Big& order) const {
+  vector<Big> coeffs;
+  for (unsigned int i = 0; i < shareIDs.size(); i++) {
+    std::string id = shareIDs[i];
+    int n = contains<std::string>(shareIDs, id);
+    if (n >= 0) {
+      coeffs.push_back(1); 
+    } else {
+      coeffs.push_back(0); 
+    }
   }
+  return coeffs;
 }
 
 unsigned int BLAccessPolicy::getNumShares()  {

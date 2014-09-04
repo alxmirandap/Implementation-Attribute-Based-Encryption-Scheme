@@ -29,24 +29,17 @@ BLcanonical.o: BLcanonical.h BLcanonical.cpp utils.o secretsharing.o
 testBLcanonical: BLcanonical.o testBLcanonical.cpp
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testBLcanonical.cpp BLcanonical.o utils.o secretsharing.o $(LIBS) -o testBLcanonical
 
-BLCanonkpabe.o: BLCanonkpabe.cpp BLCanonkpabe.h 
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c BLCanonkpabe.cpp -o BLCanonkpabe.o 
-
 ShTree.o: ShTree.h ShTree.cpp utils.o tree.o secretsharing.o
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c ShTree.cpp -o ShTree.o
 
 testShTree: ShTree.o testShTree.cpp 
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testShTree.cpp ShTree.o tree.o utils.o secretsharing.o $(LIBS) -o testShTree
 
-ShTreekpabe.o: ShTreekpabe.cpp ShTreekpabe.h 
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c ShTreekpabe.cpp -o ShTreekpabe.o 
-
 kpabe.o: kpabe.cpp kpabe.h 
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c kpabe.cpp -o kpabe.o 
 
-testkpabe: testkpabe.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe.o utils.o secretsharing.o BLcanonical.o $(LIBS) -o testkpabe 
-
+testkpabe: testkpabe.cpp utils.o kpabe.o secretsharing.o BLcanonical.o ShTree.o tree.o
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe.o utils.o secretsharing.o BLcanonical.o ShTree.o tree.o $(LIBS) -o testkpabe 
 
 
 
@@ -58,9 +51,14 @@ benchmark: benchmark.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
 	g++ $(WARNINGS) $(CVERS) $(MIRACL) benchmark.cpp kpabe.o utils.o secretsharing.o BLcanonical.o $(LIBS) -o benchmark # no optimization!!!
 
 
+#BLCanonkpabe.o: BLCanonkpabe.cpp BLCanonkpabe.h 
+#	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c BLCanonkpabe.cpp -o BLCanonkpabe.o 
 
 #testBL: testBL.cpp utils.o tree.o BL.h BL.cpp BL.o secretsharing.o 
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testBL.cpp secretsharing.o utils.o tree.o BL.o $(LIBS) -o testBL
+
+#ShTreekpabe.o: ShTreekpabe.cpp ShTreekpabe.h 
+#	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c ShTreekpabe.cpp -o ShTreekpabe.o 
 
 #BL.o: BL.cpp BL.h tree.o utils.o secretsharing.o
 #	g++ -W -Wall -Wextra -pedantic -std=gnu++0x -c -O2 -DZZNS=4 -m64 BL.cpp -o BL.o 
@@ -95,9 +93,9 @@ clean:
 	rm -f secretsharing.o
 	rm -f tree.o
 	rm -f BLcanonical.o
-	rm -f BLCanonkpabe.o
+#	rm -f BLCanonkpabe.o
 	rm -f ShTree.o
-	rm -f ShTreekpabe.o
+#	rm -f ShTreekpabe.o
 	rm -f kpabe.o
 #	rm -f shamir.o
 #	rm -f shamir2.o

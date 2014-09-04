@@ -36,8 +36,26 @@ class ShTreeAccessPolicy : public AccessPolicy
   unsigned int getNumShares();
   //  bool evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const;
   bool evaluateIDs(const vector<std::string> shareIDs, vector<int> &witnessSharesIndices) const;
-  Big findCoefficient(const std::string id,const vector<std::string> shareIDs) const;
+  vector<Big> findCoefficients(const vector<std::string> shareIDs, const Big& order) const;
   void obtainCoveredFrags(const vector<int> &atts, vector<int> &attFragIndices, vector<int> &keyFragIndices, vector<std::string> &coveredShareIDs) const;
+
+  static void storeSharePrefixes(std::map<std::string, vector<int> >& setChildNos, std::string& shareID);
+  static bool extractPrefixAndNoFromID(std::string& shareID, std::string& prefix, int& childNo);
+  static Big findFinalCoefficient(const std::string& shareID,  std::map<std::string,  vector<int> >& setChildNos, 
+			   std::map<std::string, vector<Big> >& setCoeffs, const Big& order);
+  static Big computeLagrangeCoefficient(unsigned int shareIndex, vector<ShareTuple>& witnessShares, const Big& order);
+  static Big computeLagrangeCoefficientChildNos(unsigned int shareIndex, vector<int>& witnessChildNos, const Big& order);
+  static int extractChildNoFromID(std::string& shareID);
+
+  inline static int extractPublicInfoFromChildNo(int childNo) {
+    return childNo + 1;
+  }
+
+  inline static int extractPublicInfoFromID(std::string ID) {
+    int childNo = extractChildNoFromID(ID);
+    return extractPublicInfoFromChildNo(childNo);
+  }
+
 };
 
 class ShTreeSS : public SecretSharing
@@ -68,12 +86,12 @@ class ShTreeSS : public SecretSharing
   static void addNewSet(std::map<std::string, vector<ShareTuple> >& setShares, const std::string& prefix, ShareTuple& share);
   static void putShareInSet(std::map<std::string, vector<ShareTuple> >& setShares, const std::string& prefix, ShareTuple& share);
   static std::string getSetPrefix(std::string &shareID);
-  static Big computeLagrangeCoefficient(unsigned int shareIndex, vector<ShareTuple>& witnessShares, const Big& order);
-  static int extractPublicInfoFromID(std::string& shareID);
-  static int extractChildNoFromID(std::string& shareID);
+
   static ShareTuple detailedReconstruction(vector<ShareTuple>& minimalShares, std::string& prefix, const Big& order);
   static ShareTuple solveSet(std::map<std::string, vector<ShareTuple> >& setShares, std::string& prefix, const Big& order);
   static ShareTuple reduceLowestShares(const vector<ShareTuple>& shares, Big order);
   static ShareTuple reduceMapShares(std::string& prefix, const std::string& target, 
 				    std::map<std::string, vector<ShareTuple> >& setShares, const Big& order);
+
+
 };
