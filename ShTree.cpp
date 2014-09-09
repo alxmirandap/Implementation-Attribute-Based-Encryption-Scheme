@@ -648,8 +648,19 @@ ShTreeSS::ShTreeSS(shared_ptr<ShTreeAccessPolicy>  policy, const Big &order, PFC
 }
 
 void ShTreeSS::manageRandomness(RandomnessActions action, shared_ptr<TreeNode> root, int count) {  
-  shared_ptr<NodeContent> node = root->getNode();
+  //  ENHDEBUG("inside manageRandomness.");
 
+//   if (action == RandomnessActions::init) {
+//     DEBUG("Operation: init");
+//   }
+// 
+//   if (action == RandomnessActions::randomize) {
+//     DEBUG("Operation: randomize");
+//     ENHDEBUG("randomness size: " << m_randomness.size());
+//   }
+
+  shared_ptr<NodeContent> node = root->getNode();
+  
   if (root->isNil() || root->isLeaf()) {
     return;
   }
@@ -685,10 +696,14 @@ void ShTreeSS::manageRandomness(RandomnessActions action, shared_ptr<TreeNode> r
     }
     
     if (child->isInner()) {
+      DEBUG("calling manageRandomness for child");
       manageRandomness(action, child, count);
       continue;
     }
   }
+//   DEBUG("manageRandomness over");
+//   ENHDEBUG("m_randomness count: " << count);
+//   ENHDEBUG("m_randomness size: " << m_randomness.size());
 }
 
 void ShTreeSS::manageRandomness(RandomnessActions action) {  
@@ -719,16 +734,21 @@ vector<Big> ShTreeSS::getDistribRandomness() {
 }
 
 std::vector<ShareTuple> ShTreeSS::distribute_random(const Big& s){
+  ENHDEBUG("Inside distribute_random");
+  DEBUG("Calling manageRandomness to randomize");
   manageRandomness(RandomnessActions::randomize);
+  DEBUG("Calling distribute determ");
   return distribute_determ(s, m_randomness);
 }
 
 
 std::vector<ShareTuple> ShTreeSS::distribute_determ(shared_ptr<TreeNode> root, const Big& s, const vector<Big>& randomness, int count){
-  
+  ENHDEBUG("Inside distribute_determ");
   vector<ShareTuple> shares;
 
   shared_ptr<NodeContent> node = root->getNode();
+
+  DEBUG("got node");
 
   if (root->isNil()) {
     return shares;
@@ -746,6 +766,7 @@ std::vector<ShareTuple> ShTreeSS::distribute_determ(shared_ptr<TreeNode> root, c
     throw std::runtime_error(ss.str());
   }
 
+  DEBUG("getting arity and threshold");
   int arity = node->getArity();
   unsigned int threshold = node->getThreshold();
 
@@ -753,26 +774,44 @@ std::vector<ShareTuple> ShTreeSS::distribute_determ(shared_ptr<TreeNode> root, c
   Big accX; // cummulative value for the variable power (x^i)
   Big temp; // individual term a*x^i
   int point;
+
   vector<Big> poly(threshold);
   poly[0]=s;
+  unsigned int base = count;
   for (unsigned int i = 1; i < threshold; i++){
-    poly[i] = randomness[count+i-1];
+    unsigned int index = base + i - 1;
+    guard("tried to access poly vector out of bounds", i < poly.size());
+    guard("tried to access randomness vector out of bounds", index < randomness.size());
+    poly[i] = randomness[index];
     count++;
   }
 
+//   debugVector("Poly", poly);
+//   debugVector("Randomness vector", randomness);
+//   DEBUG("threshold: " << threshold);
+//   DEBUG("arity: " << arity);
+//   DEBUG("order: " << m_order);
+
   for (int j=0;j<arity;j++) {   
+    //    DEBUG("child: " << j);
     point = j+1; // take notice: we should not have a point 0, because that would reveal the secret immediately as the share. 
     // Reconstruction has to remember to include this +1 in its calculations
     acc=poly[0]; accX=point;
+    DEBUG("computing powers for point: " << point);
     for (unsigned int k=1;k<threshold;k++) { 
       // evaluate polynomial a0+a1*x+a2*x^2... for x=point;
+      //      DEBUG("making mult");
       temp = modmult(poly[k],(Big)accX,m_order); 
-      //      DEBUG("a * x^" << k << ": " << temp);
-      acc+=temp;
-      accX*=point;
-      acc = (acc + m_order) % m_order;
+      DEBUG("a" << k << ": " << poly[k]);
+      DEBUG("x^" << k << ": " << accX);
+      DEBUG("a" << k << " * x^" << k << ": " << temp);
+      //      DEBUG("adding term");
+      acc = (acc + temp + m_order) % m_order;
+      accX = modmult((Big) accX, point, m_order);
     }
+    DEBUG("final acc: " << acc);
     
+
     shared_ptr<TreeNode> child = root->getChild(j);
     if (child->isNil()) {
       continue;
@@ -790,6 +829,7 @@ std::vector<ShareTuple> ShTreeSS::distribute_determ(shared_ptr<TreeNode> root, c
       continue;
     }
   }
+  ENHDEBUG("returning shares");
   return shares;
 }
   
@@ -1030,6 +1070,25 @@ ShareTuple ShTreeSS::reduceLowestShares(const vector<ShareTuple>& shares, Big or
   return computedShare;
 }
 
+/*
+Big ShTreeSS::reconstruct(const vector<ShareTuple> shares){
+    vector<ShareTuple> witnessShares;
+    DEBUG("CALLING EVALUATE");
+    if (!i_policy->evaluate(shares, witnessShares)) return -1;
+    ENHDEBUG("FINISHED EVALUATE");
+
+    if (witnessShares.size() == 1) {
+      ENHDEBUG("Shortcut returning");
+      return witnessShares[0].getShare();
+    }
+
+    ShareTuple share = reduceLowestShares(shares, m_order);
+    ENHDEBUG("FINISHED REDUCE");
+    return share.getShare();
+    
+}
+*/
+
 Big ShTreeSS::reconstruct(const vector<ShareTuple> shares){
     vector<ShareTuple> witnessShares;
     DEBUG("CALLING EVALUATE");
@@ -1063,9 +1122,6 @@ Big ShTreeSS::reconstruct(const vector<ShareTuple> shares){
       sum = (sum + term) % m_order;
     }
     return sum;
-
-    //    ShareTuple share = reduceLowestShares(shares, m_order);
-    //    ENHDEBUG("FINISHED REDUCE");
-    //    return share.getShare();
     
 }
+

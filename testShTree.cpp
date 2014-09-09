@@ -811,13 +811,47 @@ int testReconFromShares(vector<int> party, std::string message,
   return errors;
 }
 
+int testSmallDistributeAndReconstruct(PFC &pfc){
+  int errors = 0;
+
+  Big s = 7;
+  Big order = 11;
+
+  std::string expr = op_THR + "(3, 1,2,3,4,5)";
+  shared_ptr<ShTreeAccessPolicy> policy = make_shared<ShTreeAccessPolicy>(expr, 5);
+  ShTreeSS testScheme(policy, order, pfc);
+
+  std::string base = "testSmallDistributeAndReconstruct ";
+  
+  vector<int> party; 
+  party.push_back(3);
+  party.push_back(5);
+  party.push_back(1);
+
+   
+  vector<Big> randomness;
+  randomness.push_back(3);
+  randomness.push_back(4);
+
+  REPORT("Calling distribute_determ");
+  vector<ShareTuple> shares = testScheme.distribute_determ(s, randomness);
+
+  debugVectorObj("returned shares", shares);
+  
+  test_diagnosis(base + "number of shares:", shares.size() == policy->getNumShares(), errors);
+    
+  
+  errors += testReconFromShares(party, base + ": ", testScheme, shares, true, 3, s); 
+
+  return errors;
+}
+
 
 int testDistributeAndReconstruct(PFC &pfc){
   int errors = 0;
-  ENHDEBUG("testDistribute and Reconstruct");
-  //  int niter = 5;
-  int niter = 1;
-  
+  REPORT("testDistribute and Reconstruct");
+  int niter = 5;
+    
   DEBUG("Initting s");
   Big s;
   DEBUG("Initting old_s");
@@ -867,7 +901,8 @@ int testDistributeAndReconstruct(PFC &pfc){
     
     DEBUG("s: " << s << "\t old s: " << old_s);
     guard("s should be random, and different from the last value or 0", s != old_s); // the probability that s is 0 or the old value should be negligible
-    
+
+    REPORT("Calling distribute_random");
     vector<ShareTuple> shares = testScheme.distribute_random(s);
     
     test_diagnosis(base + "number of shares:", shares.size() == policy->getNumShares(), errors);
@@ -1239,7 +1274,7 @@ int runTests(std::string &testName, PFC &pfc) {
   errors += testEvaluate();
   errors += testGetNumShares();
   errors += testObtainCoveredFrags(); 
-
+  
   ENHOUT("Secret sharing static utils tests");
   errors += testextractPrefixAndNoFromID();
   errors += testStoreSharePrefixes();
@@ -1249,10 +1284,11 @@ int runTests(std::string &testName, PFC &pfc) {
   errors += testGetSetPrefix();
   errors += testGetSharesForParticipants();
   errors += testExtractPublicInfoFromID();
-   
+  
   // Secret Sharing tests
   ENHOUT("Secret sharing scheme tests");
   errors += testLagrangeCoefficient(pfc);
+  errors += testSmallDistributeAndReconstruct(pfc);
   errors += testDistributeAndReconstruct(pfc);
 
   return errors;

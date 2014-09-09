@@ -124,7 +124,16 @@ vector<G1> KPABE::genKey()
 #endif
 {
   //  SecretSharing ssscheme(policy, m_pfc);
+  ENHDEBUG("Inside genKey()");
+  DEBUG("privateKeyrand: " << m_privateKeyRand);
+  if (m_scheme == 0) {
+    DEBUG("is scheme null? " << "YES");
+  } else {
+    DEBUG("is scheme null? " << "NO");
+  }
+  DEBUG("calling distribute_random");
   std::vector<ShareTuple> shares = m_scheme->distribute_random(m_privateKeyRand);
+  DEBUG("distribute_random returned");
   
   DEBUG("[GENKEY] Distributed secret: " << m_privateKeyRand);
 
@@ -138,6 +147,7 @@ vector<G2> KPABE::genKey(vector<Big> randomness)
 vector<G1> KPABE::genKey(vector<Big> randomness)
 #endif
 {
+  ENHDEBUG("Inside genKey(randomness)");
   // SecretSharing ssscheme(policy, m_pfc);
   std::vector<ShareTuple> shares = m_scheme->distribute_determ(m_privateKeyRand, randomness);
   DEBUG("[keyGen] private randomness used for the key generation: " << m_privateKeyRand);

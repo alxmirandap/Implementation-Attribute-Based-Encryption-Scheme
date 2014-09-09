@@ -1,0 +1,958 @@
+
+Starting measurement at: Thu Sep  4 11:51:07 2014
+Ending measurement at: Thu Sep  4 11:51:41 2014
+--------------------------------------------------------------
+Task: #1 Setup times: Number of attributes in universe: 5
+Number of repetitions: 1000
+Number of Attribute: 5
+Total time in seconds: 34
+Average execution time per repetition: 34 milliseconds
+Average execution time per Attribute: 6.8 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 11:51:41 2014
+Ending measurement at: Thu Sep  4 11:52:40 2014
+--------------------------------------------------------------
+Task: #1 Setup times: Number of attributes in universe: 10
+Number of repetitions: 1000
+Number of Attribute: 10
+Total time in seconds: 59
+Average execution time per repetition: 59 milliseconds
+Average execution time per Attribute: 5.9 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 11:52:40 2014
+Ending measurement at: Thu Sep  4 11:54:25 2014
+--------------------------------------------------------------
+Task: #1 Setup times: Number of attributes in universe: 100
+Number of repetitions: 200
+Number of Attribute: 100
+Total time in seconds: 105
+Average execution time per repetition: 0.525 seconds
+Average execution time per Attribute: 5.25 milliseconds
+--------------------------------------------------------------
+
+Starting measurement at: Thu Sep  4 12:01:28 2014
+Ending measurement at: Thu Sep  4 12:01:49 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Algebraic): Number of attributes in ciphertext: 5
+Number of repetitions: 2000
+Number of Attribute: 5
+Total time in seconds: 21
+Average execution time per repetition: 10.5 milliseconds
+Average execution time per Attribute: 2.1 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:01:49 2014
+Ending measurement at: Thu Sep  4 12:02:10 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Hash): Number of attributes in ciphertext: 5
+Number of repetitions: 2000
+Number of Attribute: 5
+Total time in seconds: 21
+Average execution time per repetition: 10.5 milliseconds
+Average execution time per Attribute: 2.1 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:02:10 2014
+Ending measurement at: Thu Sep  4 12:02:32 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Algebraic): Number of attributes in ciphertext: 10
+Number of repetitions: 2000
+Number of Attribute: 10
+Total time in seconds: 22
+Average execution time per repetition: 11 milliseconds
+Average execution time per Attribute: 1.1 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:02:32 2014
+Ending measurement at: Thu Sep  4 12:02:54 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Hash): Number of attributes in ciphertext: 10
+Number of repetitions: 2000
+Number of Attribute: 10
+Total time in seconds: 22
+Average execution time per repetition: 11 milliseconds
+Average execution time per Attribute: 1.1 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:02:54 2014
+Ending measurement at: Thu Sep  4 12:03:19 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Algebraic): Number of attributes in ciphertext: 100
+Number of repetitions: 1000
+Number of Attribute: 100
+Total time in seconds: 25
+Average execution time per repetition: 25 milliseconds
+Average execution time per Attribute: 0.25 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:03:19 2014
+Ending measurement at: Thu Sep  4 12:03:45 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Hash): Number of attributes in ciphertext: 100
+Number of repetitions: 1000
+Number of Attribute: 100
+Total time in seconds: 26
+Average execution time per repetition: 26 milliseconds
+Average execution time per Attribute: 0.26 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:03:45 2014
+Ending measurement at: Thu Sep  4 12:04:03 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Algebraic): Number of attributes in ciphertext: 500
+Number of repetitions: 200
+Number of Attribute: 500
+Total time in seconds: 18
+Average execution time per repetition: 0.09 seconds
+Average execution time per Attribute: 0.18 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:04:03 2014
+Ending measurement at: Thu Sep  4 12:04:20 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Hash): Number of attributes in ciphertext: 500
+Number of repetitions: 200
+Number of Attribute: 500
+Total time in seconds: 17
+Average execution time per repetition: 0.085 seconds
+Average execution time per Attribute: 0.17 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:04:20 2014
+Ending measurement at: Thu Sep  4 12:04:38 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Algebraic): Number of attributes in ciphertext: 1000
+Number of repetitions: 100
+Number of Attribute: 1000
+Total time in seconds: 18
+Average execution time per repetition: 0.18 seconds
+Average execution time per Attribute: 0.18 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:04:38 2014
+Ending measurement at: Thu Sep  4 12:04:56 2014
+--------------------------------------------------------------
+Task: #2 Encryption times (Hash): Number of attributes in ciphertext: 1000
+Number of repetitions: 100
+Number of Attribute: 1000
+Total time in seconds: 18
+Average execution time per repetition: 0.18 seconds
+Average execution time per Attribute: 0.18 milliseconds
+--------------------------------------------------------------
+Nothing left to do
+
+Starting measurement at: Thu Sep  4 12:05:53 2014
+Ending measurement at: Thu Sep  4 12:06:09 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Uniform policy:
+Number of leaves in policy: 8 --- Number of minimal sets: 1
+Number of repetitions: 1000
+Number of Leaf: 8
+Total time in seconds: 16
+Average execution time per repetition: 16 milliseconds
+Average execution time per Leaf: 2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:06:09 2014
+Ending measurement at: Thu Sep  4 12:06:40 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Uniform policy:
+Number of leaves in policy: 32 --- Number of minimal sets: 1
+Number of repetitions: 500
+Number of Leaf: 32
+Total time in seconds: 31
+Average execution time per repetition: 0.062 seconds
+Average execution time per Leaf: 1.9375 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:06:40 2014
+Ending measurement at: Thu Sep  4 12:07:11 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Uniform policy:
+Number of leaves in policy: 32 --- Number of minimal sets: 8
+Number of repetitions: 500
+Number of Leaf: 32
+Total time in seconds: 31
+Average execution time per repetition: 0.062 seconds
+Average execution time per Leaf: 1.9375 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:07:12 2014
+Ending measurement at: Thu Sep  4 12:08:01 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Uniform policy:
+Number of leaves in policy: 128 --- Number of minimal sets: 1
+Number of repetitions: 200
+Number of Leaf: 128
+Total time in seconds: 49
+Average execution time per repetition: 0.245 seconds
+Average execution time per Leaf: 1.91406 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:08:02 2014
+Ending measurement at: Thu Sep  4 12:08:51 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Uniform policy:
+Number of leaves in policy: 128 --- Number of minimal sets: 8
+Number of repetitions: 200
+Number of Leaf: 128
+Total time in seconds: 49
+Average execution time per repetition: 0.245 seconds
+Average execution time per Leaf: 1.91406 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 12:08:52 2014
+Ending measurement at: Thu Sep  4 12:09:42 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Uniform policy:
+Number of leaves in policy: 128 --- Number of minimal sets: 64
+Number of repetitions: 200
+Number of Leaf: 128
+Total time in seconds: 50
+Average execution time per repetition: 0.25 seconds
+Average execution time per Leaf: 1.95312 milliseconds
+--------------------------------------------------------------
+Nothing left to do
+
+Starting measurement at: Thu Sep  4 13:52:53 2014
+Ending measurement at: Thu Sep  4 13:53:01 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 4 --- Number of minimal sets: 2 --- Number of set size increment: 2
+Number of repetitions: 1000
+Number of Leaf: 4
+Total time in seconds: 8
+Average execution time per repetition: 8 milliseconds
+Average execution time per Leaf: 2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:53:01 2014
+Ending measurement at: Thu Sep  4 13:53:14 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 7 --- Number of minimal sets: 2 --- Number of set size increment: 5
+Number of repetitions: 1000
+Number of Leaf: 7
+Total time in seconds: 13
+Average execution time per repetition: 13 milliseconds
+Average execution time per Leaf: 1.85714 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:53:15 2014
+Ending measurement at: Thu Sep  4 13:53:16 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 1 --- Number of minimal sets: 1 --- Number of set size increment: 8
+Number of repetitions: 1000
+Number of Leaf: 1
+Total time in seconds: 1
+Average execution time per repetition: 1 milliseconds
+Average execution time per Leaf: 1 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:53:17 2014
+Ending measurement at: Thu Sep  4 13:53:41 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 25 --- Number of minimal sets: 5 --- Number of set size increment: 2
+Number of repetitions: 500
+Number of Leaf: 25
+Total time in seconds: 24
+Average execution time per repetition: 0.048 seconds
+Average execution time per Leaf: 1.92 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:53:41 2014
+Ending measurement at: Thu Sep  4 13:53:59 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 18 --- Number of minimal sets: 3 --- Number of set size increment: 5
+Number of repetitions: 500
+Number of Leaf: 18
+Total time in seconds: 18
+Average execution time per repetition: 0.036 seconds
+Average execution time per Leaf: 2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:53:59 2014
+Ending measurement at: Thu Sep  4 13:54:26 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 27 --- Number of minimal sets: 3 --- Number of set size increment: 8
+Number of repetitions: 500
+Number of Leaf: 27
+Total time in seconds: 27
+Average execution time per repetition: 0.054 seconds
+Average execution time per Leaf: 2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:54:26 2014
+Ending measurement at: Thu Sep  4 13:55:14 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 121 --- Number of minimal sets: 11 --- Number of set size increment: 2
+Number of repetitions: 200
+Number of Leaf: 121
+Total time in seconds: 48
+Average execution time per repetition: 0.24 seconds
+Average execution time per Leaf: 1.98347 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:55:15 2014
+Ending measurement at: Thu Sep  4 13:55:59 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 112 --- Number of minimal sets: 7 --- Number of set size increment: 5
+Number of repetitions: 200
+Number of Leaf: 112
+Total time in seconds: 44
+Average execution time per repetition: 0.22 seconds
+Average execution time per Leaf: 1.96429 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:55:59 2014
+Ending measurement at: Thu Sep  4 13:56:48 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 126 --- Number of minimal sets: 6 --- Number of set size increment: 8
+Number of repetitions: 200
+Number of Leaf: 126
+Total time in seconds: 49
+Average execution time per repetition: 0.245 seconds
+Average execution time per Leaf: 1.94444 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:56:51 2014
+Ending measurement at: Thu Sep  4 13:58:25 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 484 --- Number of minimal sets: 22 --- Number of set size increment: 2
+Number of repetitions: 100
+Number of Leaf: 484
+Total time in seconds: 94
+Average execution time per repetition: 0.94 seconds
+Average execution time per Leaf: 1.94215 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 13:58:28 2014
+Ending measurement at: Thu Sep  4 13:59:59 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 469 --- Number of minimal sets: 14 --- Number of set size increment: 5
+Number of repetitions: 100
+Number of Leaf: 469
+Total time in seconds: 91
+Average execution time per repetition: 0.91 seconds
+Average execution time per Leaf: 1.9403 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 14:00:02 2014
+Ending measurement at: Thu Sep  4 14:01:30 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 451 --- Number of minimal sets: 11 --- Number of set size increment: 8
+Number of repetitions: 100
+Number of Leaf: 451
+Total time in seconds: 88
+Average execution time per repetition: 0.88 seconds
+Average execution time per Leaf: 1.95122 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 14:01:36 2014
+Ending measurement at: Thu Sep  4 14:05:01 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 1024 --- Number of minimal sets: 32 --- Number of set size increment: 2
+Number of repetitions: 100
+Number of Leaf: 1024
+Total time in seconds: 205
+Average execution time per repetition: 2.05 seconds
+Average execution time per Leaf: 2.00195 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 14:05:07 2014
+Ending measurement at: Thu Sep  4 14:08:26 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 970 --- Number of minimal sets: 20 --- Number of set size increment: 5
+Number of repetitions: 100
+Number of Leaf: 970
+Total time in seconds: 199
+Average execution time per repetition: 1.99 seconds
+Average execution time per Leaf: 2.05155 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 14:08:32 2014
+Ending measurement at: Thu Sep  4 14:11:51 2014
+--------------------------------------------------------------
+Task: #3 Key Generation with Linear policy:
+Number of leaves in policy: 976 --- Number of minimal sets: 16 --- Number of set size increment: 8
+Number of repetitions: 100
+Number of Leaf: 976
+Total time in seconds: 199
+Average execution time per repetition: 1.99 seconds
+Average execution time per Leaf: 2.03893 milliseconds
+--------------------------------------------------------------
+Nothing left to do
+
+Starting measurement at: Thu Sep  4 15:12:28 2014
+Ending measurement at: Thu Sep  4 15:12:47 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 8
+Number of minimal sets: 1 --- Number of CT attributes: 10
+Number of repetitions: 1000
+Number of Leaves in minimal set: 8
+Total time in seconds: 19
+Average execution time per repetition: 19 milliseconds
+Average execution time per Leaves in minimal set: 2.375 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:12:47 2014
+Ending measurement at: Thu Sep  4 15:13:06 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 8
+Number of minimal sets: 1 --- Number of CT attributes: 50
+Number of repetitions: 1000
+Number of Leaves in minimal set: 8
+Total time in seconds: 19
+Average execution time per repetition: 19 milliseconds
+Average execution time per Leaves in minimal set: 2.375 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:13:06 2014
+Ending measurement at: Thu Sep  4 15:13:25 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 8
+Number of minimal sets: 1 --- Number of CT attributes: 150
+Number of repetitions: 1000
+Number of Leaves in minimal set: 8
+Total time in seconds: 19
+Average execution time per repetition: 19 milliseconds
+Average execution time per Leaves in minimal set: 2.375 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:13:25 2014
+Ending measurement at: Thu Sep  4 15:13:44 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 8
+Number of minimal sets: 1 --- Number of CT attributes: 600
+Number of repetitions: 1000
+Number of Leaves in minimal set: 8
+Total time in seconds: 19
+Average execution time per repetition: 19 milliseconds
+Average execution time per Leaves in minimal set: 2.375 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:13:44 2014
+Ending measurement at: Thu Sep  4 15:14:03 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 8
+Number of minimal sets: 1 --- Number of CT attributes: 1024
+Number of repetitions: 1000
+Number of Leaves in minimal set: 8
+Total time in seconds: 19
+Average execution time per repetition: 19 milliseconds
+Average execution time per Leaves in minimal set: 2.375 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:14:08 2014
+Ending measurement at: Thu Sep  4 15:14:40 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 1 --- Number of CT attributes: 50
+Number of repetitions: 500
+Number of Leaves in minimal set: 32
+Total time in seconds: 32
+Average execution time per repetition: 0.064 seconds
+Average execution time per Leaves in minimal set: 2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:14:40 2014
+Ending measurement at: Thu Sep  4 15:15:12 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 1 --- Number of CT attributes: 150
+Number of repetitions: 500
+Number of Leaves in minimal set: 32
+Total time in seconds: 32
+Average execution time per repetition: 0.064 seconds
+Average execution time per Leaves in minimal set: 2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:15:12 2014
+Ending measurement at: Thu Sep  4 15:15:44 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 1 --- Number of CT attributes: 600
+Number of repetitions: 500
+Number of Leaves in minimal set: 32
+Total time in seconds: 32
+Average execution time per repetition: 0.064 seconds
+Average execution time per Leaves in minimal set: 2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:15:44 2014
+Ending measurement at: Thu Sep  4 15:16:16 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 1 --- Number of CT attributes: 1024
+Number of repetitions: 500
+Number of Leaves in minimal set: 32
+Total time in seconds: 32
+Average execution time per repetition: 0.064 seconds
+Average execution time per Leaves in minimal set: 2 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:16:22 2014
+Ending measurement at: Thu Sep  4 15:16:27 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 8 --- Number of CT attributes: 10
+Number of repetitions: 500
+Number of Leaves in minimal set: 4
+Total time in seconds: 5
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 2.5 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:16:27 2014
+Ending measurement at: Thu Sep  4 15:16:33 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 8 --- Number of CT attributes: 50
+Number of repetitions: 500
+Number of Leaves in minimal set: 4
+Total time in seconds: 6
+Average execution time per repetition: 0.012 seconds
+Average execution time per Leaves in minimal set: 3 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:16:33 2014
+Ending measurement at: Thu Sep  4 15:16:38 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 8 --- Number of CT attributes: 150
+Number of repetitions: 500
+Number of Leaves in minimal set: 4
+Total time in seconds: 5
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 2.5 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:16:38 2014
+Ending measurement at: Thu Sep  4 15:16:44 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 8 --- Number of CT attributes: 600
+Number of repetitions: 500
+Number of Leaves in minimal set: 4
+Total time in seconds: 6
+Average execution time per repetition: 0.012 seconds
+Average execution time per Leaves in minimal set: 3 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:16:45 2014
+Ending measurement at: Thu Sep  4 15:16:50 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 32
+Number of minimal sets: 8 --- Number of CT attributes: 1024
+Number of repetitions: 500
+Number of Leaves in minimal set: 4
+Total time in seconds: 5
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 2.5 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:16:56 2014
+Ending measurement at: Thu Sep  4 15:17:46 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 1 --- Number of CT attributes: 150
+Number of repetitions: 200
+Number of Leaves in minimal set: 128
+Total time in seconds: 50
+Average execution time per repetition: 0.25 seconds
+Average execution time per Leaves in minimal set: 1.95312 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:17:46 2014
+Ending measurement at: Thu Sep  4 15:18:35 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 1 --- Number of CT attributes: 600
+Number of repetitions: 200
+Number of Leaves in minimal set: 128
+Total time in seconds: 49
+Average execution time per repetition: 0.245 seconds
+Average execution time per Leaves in minimal set: 1.91406 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:18:35 2014
+Ending measurement at: Thu Sep  4 15:19:22 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 1 --- Number of CT attributes: 1024
+Number of repetitions: 200
+Number of Leaves in minimal set: 128
+Total time in seconds: 47
+Average execution time per repetition: 0.235 seconds
+Average execution time per Leaves in minimal set: 1.83594 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:19:28 2014
+Ending measurement at: Thu Sep  4 15:19:34 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 8 --- Number of CT attributes: 50
+Number of repetitions: 200
+Number of Leaves in minimal set: 16
+Total time in seconds: 6
+Average execution time per repetition: 0.03 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:19:35 2014
+Ending measurement at: Thu Sep  4 15:19:41 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 8 --- Number of CT attributes: 150
+Number of repetitions: 200
+Number of Leaves in minimal set: 16
+Total time in seconds: 6
+Average execution time per repetition: 0.03 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:19:41 2014
+Ending measurement at: Thu Sep  4 15:19:48 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 8 --- Number of CT attributes: 600
+Number of repetitions: 200
+Number of Leaves in minimal set: 16
+Total time in seconds: 7
+Average execution time per repetition: 0.035 seconds
+Average execution time per Leaves in minimal set: 2.1875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:19:48 2014
+Ending measurement at: Thu Sep  4 15:19:55 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 8 --- Number of CT attributes: 1024
+Number of repetitions: 200
+Number of Leaves in minimal set: 16
+Total time in seconds: 7
+Average execution time per repetition: 0.035 seconds
+Average execution time per Leaves in minimal set: 2.1875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:20:00 2014
+Ending measurement at: Thu Sep  4 15:20:02 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 64 --- Number of CT attributes: 10
+Number of repetitions: 200
+Number of Leaves in minimal set: 2
+Total time in seconds: 2
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 0.005 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:20:02 2014
+Ending measurement at: Thu Sep  4 15:20:03 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 64 --- Number of CT attributes: 50
+Number of repetitions: 200
+Number of Leaves in minimal set: 2
+Total time in seconds: 1
+Average execution time per repetition: 0.005 seconds
+Average execution time per Leaves in minimal set: 0.0025 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:20:03 2014
+Ending measurement at: Thu Sep  4 15:20:05 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 64 --- Number of CT attributes: 150
+Number of repetitions: 200
+Number of Leaves in minimal set: 2
+Total time in seconds: 2
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 0.005 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:20:05 2014
+Ending measurement at: Thu Sep  4 15:20:06 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 64 --- Number of CT attributes: 600
+Number of repetitions: 200
+Number of Leaves in minimal set: 2
+Total time in seconds: 1
+Average execution time per repetition: 0.005 seconds
+Average execution time per Leaves in minimal set: 0.0025 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:20:06 2014
+Ending measurement at: Thu Sep  4 15:20:08 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 128
+Number of minimal sets: 64 --- Number of CT attributes: 1024
+Number of repetitions: 200
+Number of Leaves in minimal set: 2
+Total time in seconds: 2
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 0.005 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:20:14 2014
+Ending measurement at: Thu Sep  4 15:21:47 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 1 --- Number of CT attributes: 600
+Number of repetitions: 100
+Number of Leaves in minimal set: 512
+Total time in seconds: 93
+Average execution time per repetition: 0.93 seconds
+Average execution time per Leaves in minimal set: 1.81641 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:21:48 2014
+Ending measurement at: Thu Sep  4 15:23:21 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 1 --- Number of CT attributes: 1024
+Number of repetitions: 100
+Number of Leaves in minimal set: 512
+Total time in seconds: 93
+Average execution time per repetition: 0.93 seconds
+Average execution time per Leaves in minimal set: 1.81641 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:23:27 2014
+Ending measurement at: Thu Sep  4 15:23:39 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 8 --- Number of CT attributes: 150
+Number of repetitions: 100
+Number of Leaves in minimal set: 64
+Total time in seconds: 12
+Average execution time per repetition: 0.12 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:23:39 2014
+Ending measurement at: Thu Sep  4 15:23:51 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 8 --- Number of CT attributes: 600
+Number of repetitions: 100
+Number of Leaves in minimal set: 64
+Total time in seconds: 12
+Average execution time per repetition: 0.12 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:23:52 2014
+Ending measurement at: Thu Sep  4 15:24:04 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 8 --- Number of CT attributes: 1024
+Number of repetitions: 100
+Number of Leaves in minimal set: 64
+Total time in seconds: 12
+Average execution time per repetition: 0.12 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:24:10 2014
+Ending measurement at: Thu Sep  4 15:24:12 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 64 --- Number of CT attributes: 10
+Number of repetitions: 100
+Number of Leaves in minimal set: 8
+Total time in seconds: 2
+Average execution time per repetition: 0.02 seconds
+Average execution time per Leaves in minimal set: 0.0025 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:24:12 2014
+Ending measurement at: Thu Sep  4 15:24:14 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 64 --- Number of CT attributes: 50
+Number of repetitions: 100
+Number of Leaves in minimal set: 8
+Total time in seconds: 2
+Average execution time per repetition: 0.02 seconds
+Average execution time per Leaves in minimal set: 0.0025 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:24:14 2014
+Ending measurement at: Thu Sep  4 15:24:16 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 64 --- Number of CT attributes: 150
+Number of repetitions: 100
+Number of Leaves in minimal set: 8
+Total time in seconds: 2
+Average execution time per repetition: 0.02 seconds
+Average execution time per Leaves in minimal set: 0.0025 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:24:16 2014
+Ending measurement at: Thu Sep  4 15:24:18 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 64 --- Number of CT attributes: 600
+Number of repetitions: 100
+Number of Leaves in minimal set: 8
+Total time in seconds: 2
+Average execution time per repetition: 0.02 seconds
+Average execution time per Leaves in minimal set: 0.0025 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:24:18 2014
+Ending measurement at: Thu Sep  4 15:24:20 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 512
+Number of minimal sets: 64 --- Number of CT attributes: 1024
+Number of repetitions: 100
+Number of Leaves in minimal set: 8
+Total time in seconds: 2
+Average execution time per repetition: 0.02 seconds
+Average execution time per Leaves in minimal set: 0.0025 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:24:28 2014
+Ending measurement at: Thu Sep  4 15:27:34 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 1 --- Number of CT attributes: 1024
+Number of repetitions: 100
+Number of Leaves in minimal set: 1024
+Total time in seconds: 186
+Average execution time per repetition: 1.86 seconds
+Average execution time per Leaves in minimal set: 1.81641 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:27:41 2014
+Ending measurement at: Thu Sep  4 15:28:05 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 8 --- Number of CT attributes: 150
+Number of repetitions: 100
+Number of Leaves in minimal set: 128
+Total time in seconds: 24
+Average execution time per repetition: 0.24 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:28:05 2014
+Ending measurement at: Thu Sep  4 15:28:29 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 8 --- Number of CT attributes: 600
+Number of repetitions: 100
+Number of Leaves in minimal set: 128
+Total time in seconds: 24
+Average execution time per repetition: 0.24 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:28:29 2014
+Ending measurement at: Thu Sep  4 15:28:53 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 8 --- Number of CT attributes: 1024
+Number of repetitions: 100
+Number of Leaves in minimal set: 128
+Total time in seconds: 24
+Average execution time per repetition: 0.24 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:00 2014
+Ending measurement at: Thu Sep  4 15:29:03 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 64 --- Number of CT attributes: 50
+Number of repetitions: 100
+Number of Leaves in minimal set: 16
+Total time in seconds: 3
+Average execution time per repetition: 0.03 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:03 2014
+Ending measurement at: Thu Sep  4 15:29:07 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 64 --- Number of CT attributes: 150
+Number of repetitions: 100
+Number of Leaves in minimal set: 16
+Total time in seconds: 4
+Average execution time per repetition: 0.04 seconds
+Average execution time per Leaves in minimal set: 2.5 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:07 2014
+Ending measurement at: Thu Sep  4 15:29:10 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 64 --- Number of CT attributes: 600
+Number of repetitions: 100
+Number of Leaves in minimal set: 16
+Total time in seconds: 3
+Average execution time per repetition: 0.03 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:11 2014
+Ending measurement at: Thu Sep  4 15:29:14 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 64 --- Number of CT attributes: 1024
+Number of repetitions: 100
+Number of Leaves in minimal set: 16
+Total time in seconds: 3
+Average execution time per repetition: 0.03 seconds
+Average execution time per Leaves in minimal set: 1.875 milliseconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:21 2014
+Ending measurement at: Thu Sep  4 15:29:22 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 512 --- Number of CT attributes: 10
+Number of repetitions: 100
+Number of Leaves in minimal set: 2
+Total time in seconds: 1
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 0.005 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:22 2014
+Ending measurement at: Thu Sep  4 15:29:23 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 512 --- Number of CT attributes: 50
+Number of repetitions: 100
+Number of Leaves in minimal set: 2
+Total time in seconds: 1
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 0.005 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:23 2014
+Ending measurement at: Thu Sep  4 15:29:24 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 512 --- Number of CT attributes: 150
+Number of repetitions: 100
+Number of Leaves in minimal set: 2
+Total time in seconds: 1
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 0.005 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:24 2014
+Ending measurement at: Thu Sep  4 15:29:25 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 512 --- Number of CT attributes: 600
+Number of repetitions: 100
+Number of Leaves in minimal set: 2
+Total time in seconds: 1
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 0.005 seconds
+--------------------------------------------------------------
+Starting measurement at: Thu Sep  4 15:29:25 2014
+Ending measurement at: Thu Sep  4 15:29:26 2014
+--------------------------------------------------------------
+Task: #4 Decryption with Uniform policy:
+Number of leaves in policy: 1024
+Number of minimal sets: 512 --- Number of CT attributes: 1024
+Number of repetitions: 100
+Number of Leaves in minimal set: 2
+Total time in seconds: 1
+Average execution time per repetition: 0.01 seconds
+Average execution time per Leaves in minimal set: 0.005 seconds
+--------------------------------------------------------------
+Nothing left to do

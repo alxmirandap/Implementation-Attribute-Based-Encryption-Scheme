@@ -12,9 +12,7 @@
 
 #define DEF_KPABE
 
-#define AttOnG1_KeyOnG2
-//#define AttOnG2_KeyOnG1
-
+#include "atts.h"
 
 class KPABE {
   shared_ptr<SecretSharing> m_scheme;

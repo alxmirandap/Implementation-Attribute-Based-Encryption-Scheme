@@ -33,13 +33,12 @@
 #include "secretsharing.h"
 #endif
 
-#ifndef DEF_BL_CANON
-#include "BLcanonical.h"
-#endif
+#include "benchmark_defs.h"
 
-#ifndef DEF_DEF_KPABE
+#ifndef DEF_KPABE
 #include "kpabe.h"
 #endif
+
 
 
 void report_time(const string& description, const string& parameter, long repeats, long nparams, time_t initial, time_t final) {
@@ -90,10 +89,16 @@ void report_time(const string& description, const string& parameter, long repeat
   cout << "--------------------------------------------------------------" << endl;
 }
 
+void get_time(time_t *t) {
+  time(t);
+}
+
 void report_action(const string& action, time_t *t){
-  time_t now = time(t);
-  char* dt = ctime(&now);
-  cout << action << dt; 
+  get_time(t);
+
+//   time_t now = time(t);
+//   char* dt = ctime(&now);
+//   cout << action << dt; 
 }
 
 void report_start(time_t *t){
@@ -140,13 +145,37 @@ void parseInput(int argc, char* argv[]){
 }
 
 
-time_t t0;
-time_t t1;
 
 int million = 1000000;
 int thousand = 1000;
 int hundred = 100;
 
+void  report_title(std::string title, std::string params ) {
+  cout << "Task: " << title << std::endl << params << std::endl;
+}
+
+void report_setup_data(int nAtts, long repeats, time_t initial, time_t final) {
+  double elapsed = final - initial;
+  cout << nAtts << "\t" << repeats << "\t" << elapsed << std::endl;
+}
+
+void report_encr_data(int nAtts, long repeats, time_t a_initial, time_t a_final, time_t h_initial, time_t h_final) {
+  double a_elapsed = a_final - a_initial;
+  double h_elapsed = h_final - h_initial;
+  cout << nAtts << "\t" << repeats << "\t" << a_elapsed << "\t" << h_elapsed << std::endl;
+}
+
+void report_key_data(int max, int k, long repeats, long nLeaves, long nSets, time_t initial, time_t final, std::string policy) {
+  double elapsed = final - initial;
+  cout << nLeaves << "\t" << nSets << "\t" << max << "\t" << k << "\t" << repeats << "\t" << elapsed << "\t" << policy << std::endl;
+}
+
+void report_dec_data(int max, int k, long repeats, long nLeaves, long nSets, long nAtts, long minSetSize, time_t a_initial, time_t a_final, 
+		     time_t h_initial, time_t h_final, std::string policy) {
+  double a_elapsed = a_final - a_initial;
+  double h_elapsed = h_final - h_initial;
+  cout << nLeaves << "\t" << nSets << "\t" << nAtts << "\t" << minSetSize << "\t" << max << "\t" << k << "\t" << repeats << "\t" << a_elapsed << "\t" << h_elapsed << "\t" << policy << std::endl;
+}
 
 void measureSetup(PFC &pfc) {
   Big order; // can not be initialized at global scope because that will require work from the mip, that is still not initialized
@@ -154,14 +183,22 @@ void measureSetup(PFC &pfc) {
   G2 Q;
 
   std::string expr = op_OR + "(1,2,3)";
-  shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, 3);
-  shared_ptr<BLSS> testScheme = make_shared<BLSS>(policy, pfc);
+  shared_ptr<SS_ACC_POL_TYPE> policy = make_shared<SS_ACC_POL_TYPE>(expr, 3);
+  shared_ptr<SS_TYPE> testScheme = make_shared<SS_TYPE>(policy, pfc);
 
   int attrsInUniverse[] = {5, 10, 100, 500, 1000};
   const int attInUnivVars = 5; 
-  int varRepeats[] = {10 * hundred, 10 * hundred, 150 , 5, 5};
+  //  int varRepeats[] = {1000,1000,500,200,100};
+  int varRepeats[] = {1,1,1,1,1};
 
   long repeats;
+
+  stringstream ss;
+  ss << "#Atts in Universe" << "\t" << "Repetitions" << "\t" << "Total time" << std::endl;
+  report_title("#1 Setup times: ", ss.str());
+
+  time_t t0;
+  time_t t1;
 
   for (int i = 0; i < attInUnivVars; i++){
     int nAtts = attrsInUniverse[i];
@@ -175,8 +212,9 @@ void measureSetup(PFC &pfc) {
     }
     report_finish(&t1);
     stringstream ss;
-    ss << "#1 Setup times: " << "Number of attributes in universe: " << nAtts;
-    report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
+    //    ss << "#1 Setup times: " << std::endl << "Number of attributes in universe: " << nAtts;
+    //    report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
+    report_setup_data(nAtts, repeats, t0, t1);
   }
 }
 
@@ -186,16 +224,19 @@ void measureEncrp(PFC &pfc, miracl* mip) {
   G2 Q;
 
   std::string expr = op_OR + "(1,2,3)";
-  shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, 3);
-  shared_ptr<BLSS> testScheme = make_shared<BLSS>(policy, pfc);
+  shared_ptr<SS_ACC_POL_TYPE> policy = make_shared<SS_ACC_POL_TYPE>(expr, 3);
+  shared_ptr<SS_TYPE> testScheme = make_shared<SS_TYPE>(policy, pfc);
 
   int attrsInUniverse = 1000;
 
 
   int attrsInCT[] = {5, 10, 100, 500, 1000};
   const int attInCTVars = 5; 
-  int varRepeats[] = {20 * hundred, 20 * hundred, 10 * hundred, 2 * hundred, 1 * hundred};
+  //  int varRepeats[] = {20 * hundred, 20 * hundred, 10 * hundred, 2 * hundred, 1 * hundred};
+  //  int varRepeats[] = {2500,2500,1000,500,250};
+  int varRepeats[] = {1,1,1,1,1};
   
+
   vector<int> CTAtts;
 #ifdef AttOnG1_KeyOnG2
   vector<G1> AttFrags;
@@ -209,11 +250,7 @@ void measureEncrp(PFC &pfc, miracl* mip) {
 
   KPABE testClass(testScheme, pfc, attrsInUniverse);
   testClass.paramsgen(P, Q, order);
-  //  OUT("Setting up scheme");
   testClass.setup();
-  //  OUT("Scheme set up");
-
-  //  OUT("random message");
   Big rand;
   GT pair = pfc.pairing(Q,P);
   pfc.random(rand); // picking a random message
@@ -225,6 +262,16 @@ void measureEncrp(PFC &pfc, miracl* mip) {
   // OUT("Message initialized");
 
   long repeats;
+
+time_t a_t0;
+time_t a_t1;
+time_t h_t0;
+time_t h_t1;
+
+
+  stringstream ss;
+  ss << "#Atts in Ciphertext" << "\t" << "Repetitions" << "\t" << "Total time (Algebraic)" << "\t" << "Total time (Hash)" << std::endl;
+  report_title("#2 Encryption times: ", ss.str());
 
   for (int i = 0; i < attInCTVars; i++){
     int nAtts = attrsInCT[i];
@@ -238,24 +285,24 @@ void measureEncrp(PFC &pfc, miracl* mip) {
     }
 
     // OUT("Calling report");
-    report_start(&t0);
+    report_start(&a_t0);
     for (int j = 0; j < repeats; j++) {
       testClass.encrypt(CTAtts, M, CT, AttFrags);
     }
-    report_finish(&t1);
-    stringstream ss;
-    ss << "#2 Encryption times (Algebraic): " << "Number of attributes in ciphertext: " << nAtts;
-    report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
+    report_finish(&a_t1);
+    //     stringstream ss;
+    //     ss << "#2 Encryption times (Algebraic): " << "Number of attributes in ciphertext: " << nAtts;
+    //     report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
 
-    report_start(&t0);
+    report_start(&h_t0);
     for (int j = 0; j < repeats; j++) {
       testClass.encryptS(CTAtts, sM, sCT, AttFrags);
     }
-    report_finish(&t1);
-    ss.str("");
-    ss << "#2 Encryption times (Hash): " << "Number of attributes in ciphertext: " << nAtts;
-    report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
-
+    report_finish(&h_t1);
+    //    ss.str("");
+    //    ss << "#2 Encryption times (Hash): " << "Number of attributes in ciphertext: " << nAtts;
+    //    report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
+    report_encr_data(nAtts, repeats, a_t0, a_t1, h_t0, h_t1);
   }
 }
 
@@ -276,17 +323,21 @@ std::string makeMinimalSet(int first, int codedLength) {
 }
 
 std::string makeKeyUnifPolicy(int nLeaves, int nSets, int &returnLeaves, int &returnSets){
+  ENHDEBUG("MakeKeyUnif Policy");
+  DEBUG("nLeaves: " << nLeaves << " - nSets: " << nSets << " - returnLeaves: " << returnLeaves << " - returnSets: " << returnSets);
   returnSets = 0;
   std::string expr = op_OR + "(";
   int leavesPerSet = nLeaves / nSets;
 
   for (int i = 0; i < nSets; i++) {
+    DEBUG("loop: " << i);
     int begin = i * leavesPerSet;
     std::string set = makeMinimalSet(begin, leavesPerSet);
     expr = expr + set;
     expr = expr + ",";
     returnSets++;
   }
+  DEBUG("wrapping up");
   expr = expr.substr(0, expr.length()-1);
   expr = expr + ")";
   returnLeaves = leavesPerSet * nSets;
@@ -382,7 +433,7 @@ int nextUnifPol(int k) {
 }
 
 bool stopUnifPol(int k, int nLeaves) {
-  return k < nLeaves;
+  return k <= nLeaves;
 }
 
 int middleSetUnifPol(int nLeaves, int nSets, int increment, int &begin){
@@ -447,8 +498,17 @@ void measureKeyFunc(PFC &pfc, std::string (*makePolicy) (int, int, int&, int&), 
   int realNLeaves;
   int realNSets;
 
+  time_t t0;
+  time_t t1;
+
+  stringstream ss;
+  ss << "#Leaves in Policy" << "\t" << "#Minimal Sets" << "\t" << "Max Leaves" << "\t" << "Control Param" << "\t" << "Repetitions" << "\t" << "Total time" << "\t" << "Policy" << std::endl;
+  report_title("#3 Key Generation with " + policy_type + " policy:", ss.str());
+
+
   for (int i = 0; i < nLeavesVars; i++){
     int nLeaves = leavesInPolicy[i];
+    ENHDEBUG("For Loop: leaves variants: " << nLeaves);
 
     for (int k = start_k; stop(k, nLeaves); k = next(k)) { 
       // for the uniform policy, k is the number of minimal sets
@@ -456,30 +516,43 @@ void measureKeyFunc(PFC &pfc, std::string (*makePolicy) (int, int, int&, int&), 
       // for an exponential policy, there should be only one case anyway, where the size of sets doubles each turn
       //    OUT("Number of Leaves: " << nLeaves << " -- Number of sets: " << k);
 
+      ENHDEBUG("For Loop: policy: " << k);
       std::string expr = makePolicy(nLeaves, k, realNLeaves, realNSets);      
+      //      ENHDEBUG("Current policy: " << expr);
+      DEBUG("created expression");
 
-      shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, realNLeaves);
-      shared_ptr<BLSS> testScheme = make_shared<BLSS>(policy, pfc);
+      shared_ptr<SS_ACC_POL_TYPE> policy = make_shared<SS_ACC_POL_TYPE>(expr, realNLeaves);
+      DEBUG("created policy");
+      shared_ptr<SS_TYPE> testScheme = make_shared<SS_TYPE>(policy, pfc);
+      DEBUG("created SS scheme");
 
-      repeats = varRepeats[i];
       KPABE testClass(testScheme, pfc, nLeaves);    
+      DEBUG("created ABE scheme");
       testClass.paramsgen(P, Q, order);
+      DEBUG("generated params");
       // OUT("Setting up scheme");
       testClass.setup();
+      DEBUG("finished setup");
       // OUT("Scheme set up");
+
+      repeats = varRepeats[i];
       
       report_start(&t0);
+      DEBUG("Start time: " << t0);
       for (int j = 0; j < repeats; j++) {
+	DEBUG("running repeat: " << j);
 	testClass.genKey();
       }
       report_finish(&t1);
-      stringstream ss;
-      ss << "#3 Key Generation with " << policy_type << " policy:\n" << "Number of leaves in policy: " << realNLeaves << " --- Number of minimal sets: " << realNSets;
-      if (k_meaning != "") {
-	ss << " --- Number of " << k_meaning << ": " << k;
-      }
-      report_time( ss.str(), "Leaf", repeats, realNLeaves, t0, t1);
+      //      stringstream ss;
+      //      ss << "#3 Key Generation with " << policy_type << " policy:\n" << "Number of leaves in policy: " << realNLeaves << " --- Number of minimal sets: " << realNSets;
+      //      if (k_meaning != "") {
+      //	ss << " --- Number of " << k_meaning << ": " << k;
+      //      }
+      //      report_time( ss.str(), "Leaf", repeats, realNLeaves, t0, t1);
+      report_key_data(nLeaves, k, repeats, realNLeaves, realNSets, t0, t1, expr);
     }
+    std::cout << std::endl;
   }
 }
  
@@ -547,15 +620,31 @@ void measureDecFunc(PFC &pfc, miracl* mip, std::string (*makePolicy) (int, int, 
   int realNLeaves;
   int realNSets;
 
+  time_t a_t0;
+  time_t a_t1;
+  time_t h_t0;
+  time_t h_t1;
+
+  stringstream ss;
+  ss << "#Leaves in Policy" << "\t" << "#Minimal Sets" << "\t" << "#Atts in Ciphertext" << "\t" 
+     << "minSetSize" << "\t" << "Max Leaves" << "\t" << "Control Params" << "\t" << "Repetitions" << "\t" << "Total time (Alg)" << "\t" << "Total time (Hash)" << "\t" << "Policy" << std::endl;
+
+  report_title("#4 Decryption with " + policy_type + " policy:", ss.str());
+
+
   for (int i = 0; i < lvsInPol; i++){
     int nLeaves = leavesInPolicy[i];
 
-    repeats = varRepeats[i];
+    if (varRepeats[i] == 0) {
+      OUT("Skipping");
+      continue; // for callibrating purposes
+    }
 
     for (int k = start_k; stop(k, nLeaves); k = next(k) ) { 
       std::string expr = makePolicy(nLeaves, k, realNLeaves, realNSets);      
-      shared_ptr<BLAccessPolicy> policy = make_shared<BLAccessPolicy>(expr, realNLeaves);
-      shared_ptr<BLSS> testScheme = make_shared<BLSS>(policy, pfc);
+      //      ENHDEBUG("Current policy: " << expr);
+      shared_ptr<SS_ACC_POL_TYPE> policy = make_shared<SS_ACC_POL_TYPE>(expr, realNLeaves);
+      shared_ptr<SS_TYPE> testScheme = make_shared<SS_TYPE>(policy, pfc);
 
       KPABE testClass(testScheme, pfc, attrsInUniverse);    
       testClass.paramsgen(P, Q, order);
@@ -590,6 +679,8 @@ void measureDecFunc(PFC &pfc, miracl* mip, std::string (*makePolicy) (int, int, 
 
       int begin;
       int minSetSize = findMiddleSetSizeAndFirstElement(realNLeaves, realNSets, k, begin);
+
+      repeats = varRepeats[i] / minSetSize;
      
       //      OUT("Number of minimal sets: " << k);
       //      OUT("Leaves per minimal set: " << minSetSize);
@@ -610,33 +701,43 @@ void measureDecFunc(PFC &pfc, miracl* mip, std::string (*makePolicy) (int, int, 
 	testClass.encrypt(CTAtts, M, CT, AttFrags);	
 	testClass.encryptS(CTAtts, sM, sCT, AttFrags);
 
-	report_start(&t0);
+	report_start(&a_t0);
 	for (int j = 0; j < repeats; j++) {
 	  testClass.decrypt( keyFrags, CTAtts, CT, AttFrags, PT);
 	}
-	report_finish(&t1);
-	stringstream ss;
+	report_finish(&a_t1);
 
-	ss << "#4 Decryption with " << policy_type << " policy:\n" << "Number of leaves in policy: " << realNLeaves << 
-	  "\nNumber of minimal sets: " << realNSets << " --- " << "Number of CT attributes: " << nAtts;
-	if (k_meaning != "") {
-	  ss << " --- Number of " << k_meaning << ": " << k;
-	}
-	report_time( ss.str(), "Leaves in minimal set", repeats, minSetSize, t0, t1);
+	report_start(&h_t0);
+// 	for (int j = 0; j < repeats; j++) {
+// 	  testClass.decryptS( keyFrags, CTAtts, sCT, AttFrags, sPT);
+// 	}
+	report_finish(&h_t1);
+
+// 	stringstream ss;
+// 	ss << "#4 Decryption with " << policy_type << " policy:\n" << "Number of leaves in policy: " << realNLeaves << 
+// 	  "\nNumber of minimal sets: " << realNSets << " --- " << "Number of CT attributes: " << nAtts;
+// 	if (k_meaning != "") {
+// 	  ss << " --- Number of " << k_meaning << ": " << k;
+// 	}
+// 	report_time( ss.str(), "Leaves in minimal set", repeats, minSetSize, t0, t1);
+	report_dec_data(nLeaves, k, repeats, realNLeaves, realNSets, nAtts, minSetSize, a_t0, a_t1, h_t0, h_t1, expr);
       }
+      std::cout << std::endl;
     }
+    std::cout << std::endl;
   }
 }
 
 
 void measureKeyUnif(PFC &pfc) {
-  //  int leavesInPolicy[] = {8, 32, 128, 512, 1024};
-  int leavesInPolicy[] = {8, 32, 128};
-  const int lvsInPol = 3; 
+  int leavesInPolicy[] = {8, 32, 128, 512, 1024};
+  const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  //  int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {1000,500,100,50,25};
+  int varRepeats[] = {1,1,1,1,1};
 
+  DEBUG("Calling measureKeyFunc");
   measureKeyFunc(pfc, makeKeyUnifPolicy, leavesInPolicy, lvsInPol, varRepeats, nextUnifPol, stopUnifPol, 1, "Uniform", "");
 }
 
@@ -644,8 +745,9 @@ void measureKeyLin(PFC &pfc) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {5000, 1000, 200, 50, 25};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureKeyFunc(pfc, makeKeyLinPolicy, leavesInPolicy, lvsInPol, varRepeats, nextLinPol, stopLinPol, 2, "Linear", "set size increment");
 }
@@ -654,8 +756,9 @@ void measureKeyExp(PFC &pfc) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {2500,500,250,50,1};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureKeyFunc(pfc, makeKeyExpPolicy, leavesInPolicy, lvsInPol, varRepeats, nextExpPol, stopExpPol, 2, "Exponential", "set size increment factor");
 }
@@ -664,8 +767,9 @@ void measureKeyLinInv(PFC &pfc) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {2500,1000,200,50,25};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureKeyFunc(pfc, makeKeyLinPolicyInv, leavesInPolicy, lvsInPol, varRepeats, nextLinPol, stopLinPol, 2, "Inverse Linear", "set size decrement");
 }
@@ -674,8 +778,9 @@ void measureKeyExpInv(PFC &pfc) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {2500, 500, 250, 50, 25};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureKeyFunc(pfc, makeKeyExpPolicyInv, leavesInPolicy, lvsInPol, varRepeats, nextExpPol, stopExpPol, 2, "Inverse Exponential", "set size decrement factor");
 }
@@ -684,8 +789,9 @@ void measureDecUnif(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {1024 * 10, 1024 * 16, 1024 * 16, 1024 * 16,1024 * 10};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureDecFunc(pfc, mip, makeKeyUnifPolicy, leavesInPolicy, lvsInPol, varRepeats, nextUnifPol, stopUnifPol, middleSetUnifPol, 1, "Uniform", ""); 
 }
@@ -694,8 +800,9 @@ void measureDecLin(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {1024 * 16,1024 * 16,1024 * 16,1024 * 16,1024 * 16};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureDecFunc(pfc, mip, makeKeyLinPolicy, leavesInPolicy, lvsInPol, varRepeats, nextLinPol, stopLinPol, middleSetLinPol, 2, "Linear", "set size increment"); 
 }
@@ -704,8 +811,9 @@ void measureDecExp(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {1024 * 8,1024 * 8,1024 * 8,1024 * 8,1024 * 8};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureDecFunc(pfc, mip, makeKeyExpPolicy, leavesInPolicy, lvsInPol, varRepeats, nextExpPol, stopExpPol, middleSetExpPol, 2, "Exponential", "set size increment factor"); 
 }
@@ -714,8 +822,9 @@ void measureDecLinInv(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {1024 * 8,1024 * 8,1024 * 8,1024 * 8,1024 * 8};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureDecFunc(pfc, mip, makeKeyLinPolicyInv, leavesInPolicy, lvsInPol, varRepeats, nextLinPol, stopLinPol, middleSetLinPolInv, 2, "Inverse Linear", "set size decrement"); 
 }
@@ -724,8 +833,9 @@ void measureDecExpInv(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  int varRepeats[] = {1 * thousand,3 * hundred, 75,25,15};
-  // int varRepeats[] = {1,1,1,1,1};
+  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
+  //  int varRepeats[] = {1024 * 8,1024 * 8,1024 * 8,1024 * 8,1024 * 8};
+  int varRepeats[] = {1,1,1,1,1};
 
   measureDecFunc(pfc, mip, makeKeyExpPolicyInv, leavesInPolicy, lvsInPol, varRepeats, nextExpPol, stopExpPol, middleSetExpPolInv, 2, "Inverse Exponential", "set size decrement factor"); 
 }
@@ -753,7 +863,7 @@ int main(int argc, char* argv[] ) {
   if (Setup) {
     measureSetup(pfc);
   }
-
+  
   // Encryption
   if (Encrp) {
     measureEncrp(pfc, mip);

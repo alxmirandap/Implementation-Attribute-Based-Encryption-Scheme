@@ -174,22 +174,18 @@ int testChildren(){  //append and get numbers
   shared_ptr<NodeContent> child4 = NodeContent::makeLeafNode(4);
 
 
-  //  test_diagnosis("testChildren - child1 ID", child1->getNodeID() == "0", errors);
   test_diagnosis("testChildren - child1 append", tree->appendChild(child1) == true, errors);
   test_diagnosis("testChildren - child1 ID", tree->getChild(0)->getNodeID() == "0:0:=1", errors);
   test_diagnosis("testChildren - child1 numChildren", tree->getNumChildren() == 1, errors);
 
-  //  test_diagnosis("testChildren - child2 ID", child2->getNodeID() == "0", errors);
   test_diagnosis("testChildren - child2 append", tree->appendChild(child2) == true, errors);
   test_diagnosis("testChildren - child2 ID", tree->getChild(1)->getNodeID() == "0:1:=2", errors);
   test_diagnosis("testChildren - child2 numChildren", tree->getNumChildren() == 2, errors);
 
-  //  test_diagnosis("testChildren - child3 ID", child3->getNodeID() == "0", errors);
   test_diagnosis("testChildren - child3 append", tree->appendChild(child3) == true, errors);
   test_diagnosis("testChildren - child3 ID", tree->getChild(2)->getNodeID() == "0:2:=3", errors);
   test_diagnosis("testChildren - child3 numChildren", tree->getNumChildren() == 3, errors);
 
-  //  test_diagnosis("testChildren - child4 ID", child4->getNodeID() == "0", errors);
   test_diagnosis("testChildren - child4 append", tree->appendChild(child4) == false, errors);
   try {  
     shared_ptr<TreeNode> subtree = tree->getChild(3);
@@ -362,8 +358,6 @@ int testTreeConstruction(){ // computing the number of leaves and checking the g
    ENHDEBUG("Addresses: subtree22 real: " << &subtree22);
    ENHDEBUG("Addresses: subtree22 from getchildren: " << subtree2->getChild(1));
  
-   //  DEBUG("subtree2 num leaves: " << subtree2->getNumLeavesDEBUG(0));
-   //  DEBUG("subtree2 num leaves: " << subtree23->getNumLeavesDEBUG(10));
    test_diagnosis("Test - Num Leaves: subtree2", subtree2->getNumLeaves() == 6, errors);
    test_diagnosis("Test - Num Leaves: subtree21", subtree21->getNumLeaves() == 1, errors);
    test_diagnosis("Test - Num Leaves: subtree22", subtree22->getNumLeaves() == 2, errors);

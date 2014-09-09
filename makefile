@@ -1,12 +1,12 @@
 WARNINGS=-W -Wall -Wextra -pedantic
 CVERS=-std=gnu++0x
 DEBUG=-g
-#OPT=-O2
-OPT=
+OPT=-O2
+#OPT=
 MIRACL=-DZZNS=4 -m64
 LIBS=-lbn -lpairs -lmiracl
 
-all: testutils testtree testBLcanonical testShTree testkpabe
+all: testutils testtree testBLcanonical testShTree testkpabe1 testkpabe2 benchmark_bl_1 benchmark_bl_2 benchmark_sh_2 benchmark_sh_1
 
 utils.o: utils.cpp utils.h utils_impl.tcc
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c utils.cpp -o utils.o
@@ -35,27 +35,63 @@ ShTree.o: ShTree.h ShTree.cpp utils.o tree.o secretsharing.o
 testShTree: ShTree.o testShTree.cpp 
 	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testShTree.cpp ShTree.o tree.o utils.o secretsharing.o $(LIBS) -o testShTree
 
-kpabe.o: kpabe.cpp kpabe.h 
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c kpabe.cpp -o kpabe.o 
+kpabe1.o: kpabe.cpp kpabe.h 
+	cp atts.h_1 atts.h
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c kpabe.cpp -o kpabe1.o 
 
-testkpabe: testkpabe.cpp utils.o kpabe.o secretsharing.o BLcanonical.o ShTree.o tree.o
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe.o utils.o secretsharing.o BLcanonical.o ShTree.o tree.o $(LIBS) -o testkpabe 
+kpabe2.o: kpabe.cpp kpabe.h 
+	cp atts.h_2 atts.h
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c kpabe.cpp -o kpabe2.o 
 
+testkpabe1: testkpabe.cpp utils.o kpabe1.o secretsharing.o BLcanonical.o ShTree.o tree.o
+	cp atts.h_1 atts.h
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe1.o utils.o secretsharing.o BLcanonical.o ShTree.o tree.o $(LIBS) -o testkpabe1 
 
+testkpabe2: testkpabe.cpp utils.o kpabe2.o secretsharing.o BLcanonical.o ShTree.o tree.o
+	cp atts.h_2 atts.h
+	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testkpabe.cpp kpabe2.o utils.o secretsharing.o BLcanonical.o ShTree.o tree.o $(LIBS) -o testkpabe2 
 
 
 bbench: basic-benchmark.cpp 
 	g++ $(WARNINGS) $(CVERS) $(MIRACL) basic-benchmark.cpp $(LIBS) -o bbench # no optimization!!!
 
-benchmark: benchmark.cpp utils.o kpabe.o secretsharing.o BLcanonical.o
-	g++ $(WARNINGS) $(CVERS) $(MIRACL) benchmark.cpp kpabe.o utils.o secretsharing.o BLcanonical.o $(LIBS) -o benchmark # no optimization!!!
+
+
+benchmark_bl_1: benchmark.cpp utils.o kpabe1.o secretsharing.o BLcanonical.o 
+	@echo "target: " $@
+	@echo "============="
+	cp benchmark_defs_bl.h benchmark_defs.h
+	cp atts.h_1 atts.h
+	g++ $(WARNINGS) $(CVERS) $(MIRACL) benchmark.cpp kpabe1.o utils.o secretsharing.o BLcanonical.o  $(LIBS) -o benchmark_bl_1 # no optimization!!!
+
+benchmark_bl_2: benchmark.cpp utils.o kpabe2.o secretsharing.o BLcanonical.o 
+	@echo "target: " $@
+	@echo "============="
+	cp benchmark_defs_bl.h benchmark_defs.h
+	cp atts.h_2 atts.h
+	g++ $(WARNINGS) $(CVERS) $(MIRACL) benchmark.cpp kpabe2.o utils.o secretsharing.o BLcanonical.o  $(LIBS) -o benchmark_bl_2 # no optimization!!!
+
+benchmark_sh_1: benchmark.cpp utils.o kpabe1.o secretsharing.o ShTree.o tree.o
+	@echo "target: " $@
+	@echo "============="
+	cp benchmark_defs_sh.h benchmark_defs.h
+	cp atts.h_1 atts.h
+	g++ $(WARNINGS) $(CVERS) $(MIRACL) benchmark.cpp kpabe1.o utils.o secretsharing.o ShTree.o tree.o $(LIBS) -o benchmark_sh_1 # no optimization!!!
+
+benchmark_sh_2: benchmark.cpp utils.o kpabe2.o secretsharing.o ShTree.o tree.o
+	@echo "target: " $@
+	@echo "============="
+	cp benchmark_defs_sh.h benchmark_defs.h
+	cp atts.h_2 atts.h
+	g++ $(WARNINGS) $(CVERS) $(MIRACL) benchmark.cpp kpabe2.o utils.o secretsharing.o ShTree.o tree.o $(LIBS) -o benchmark_sh_2 # no optimization!!!
+
 
 
 #BLCanonkpabe.o: BLCanonkpabe.cpp BLCanonkpabe.h 
 #	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c BLCanonkpabe.cpp -o BLCanonkpabe.o 
 
 #testBL: testBL.cpp utils.o tree.o BL.h BL.cpp BL.o secretsharing.o 
-	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testBL.cpp secretsharing.o utils.o tree.o BL.o $(LIBS) -o testBL
+#	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) testBL.cpp secretsharing.o utils.o tree.o BL.o $(LIBS) -o testBL
 
 #ShTreekpabe.o: ShTreekpabe.cpp ShTreekpabe.h 
 #	g++ $(DEBUG) $(WARNINGS) $(CVERS) $(OPT) $(MIRACL) -c ShTreekpabe.cpp -o ShTreekpabe.o 
@@ -89,34 +125,38 @@ testbed:
 	g++ -O2 -DZZNS=4 -m64 testbed.cpp -lbn -lpairs -lmiracl -o testbed
 
 clean:
+	rm -f testbed
+	rm -f bbench
+	rm -f benchmark_bl_1
+	rm -f benchmark_bl_2
+	rm -f benchmark_sh_1
+	rm -f benchmark_sh_2
+
+	rm -f atts.h
+
 	rm -f utils.o
 	rm -f secretsharing.o
 	rm -f tree.o
 	rm -f BLcanonical.o
-#	rm -f BLCanonkpabe.o
 	rm -f ShTree.o
-#	rm -f ShTreekpabe.o
-	rm -f kpabe.o
+	rm -f kpabe1.o
+	rm -f kpabe2.o
 #	rm -f shamir.o
 #	rm -f shamir2.o
-
-
-
-
-#	rm -f BL.o
+#	rm -f BLCanonkpabe.o
+#	rm -f ShTreekpabe.o
 
 	rm -f testutils
 	rm -f testtree
 	rm -f testBLcanonical
 	rm -f testShTree
-	rm -f testkpabe
+	rm -f testkpabe1
+	rm -f testkpabe2
 #	rm -f testshamir
 #	rm -f testshamir2
 #	rm -f testBL
+#	rm -f BL.o
 
-	rm -f testbed
-	rm -f bbench
-	rm -f benchmark
 
 #fuzzy: 
 #	g++ -O2 -DZZNS=4 -m64 fuzzy.cpp -lbn -lpairs -lmiracl -o fuzzy
