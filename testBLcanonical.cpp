@@ -1,9 +1,10 @@
 /*
- * testBLcanonical.cpp
- *
- *  Created on: 19 Aug 2014
- *      Author: uxah005
- */
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
+
+  This file holds tests for the classes implemented in BLcanonical.cpp.
+  The tests are divided in 2 groups: the access policy and the secret sharing scheme.
+*/
 
 #ifndef DEF_UTILS
 #include "utils.h"
@@ -771,8 +772,7 @@ int testObtainCoveredFrags() {
   return errors;
 }
 
-int runTests(std::string &testName, PFC &pfc) {
-  testName = "Test BLAccessPolicy";
+int runTests(PFC &pfc) {
   int errors = 0;
 
   // Policy tests
@@ -802,8 +802,8 @@ int main() {
   time(&seed);
   irand((long)seed);
 
-  std::string test_name;
-  int result = runTests(test_name, pfc);
+  std::string test_name = "Test BLAccessPolicy";
+  int result = runTests(pfc);
   print_test_result(result,test_name);
 
   return 0;

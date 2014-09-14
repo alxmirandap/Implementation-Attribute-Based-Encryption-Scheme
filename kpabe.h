@@ -16,7 +16,6 @@
 
 class KPABE {
   shared_ptr<SecretSharing> m_scheme;
-  shared_ptr<AccessPolicy> m_policy;
   PFC& m_pfc;
   unsigned int m_nAttr;
 
@@ -61,6 +60,12 @@ public:
   Big& getLastEncryptionRandomness() ;
   GT& getPublicCTBlinder() ;
   shared_ptr<SecretSharing> getScheme() ;
+
+  inline shared_ptr<AccessPolicy> getPolicy() {
+    return m_scheme->getPolicy();
+  }
+
+
 
 #ifdef AttOnG1_KeyOnG2
   vector<G1>& getPublicAttributes() ;

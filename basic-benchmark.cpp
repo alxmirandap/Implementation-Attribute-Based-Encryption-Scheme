@@ -1,12 +1,8 @@
 /*
-  Testbed for empirical evaluation of KP-ABE schemes.
-  Alexandre Miranda Pinto
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
 
   This file implements some basic time measurements, covering all the operations needed for the KP implementation
-
-  The group structure has two groups G1 and G2 and one Pairing Group GT
-  There are two distinct ways to use this: either G1 will hold the key fragments or it will hold the key fragments. That is determined by the definition of constants 
-  #define AttOnG1_KeyOnG2 or #define AttOnG2_KeyOnG1 in kpabe.h.
 
   My tests with measuring time by counting clicks have shown that this
   is not reliable. They usually give me half of the actual time
@@ -17,17 +13,14 @@
 
   The operations to measure are the following:
   
-  - Sampling of a pseudo-random Big (Ok)
-  - Creation of random elements in G1 and G2 (Ok)
-  - Creation of elements in G1 and G2 giving a generator and an exponent (multiplication) (Ok)
-  - Exponentiation in GT (Ok)
-  - Pairing of random elements in G1,G2 (Ok)
-  - Multiplication in GT (Ok)
-  - Modular Division with Bigs (Ok)
-  - Hash and XOR of message (Ok)
-
-
-  Then we will have to measure the secret sharing distribution time
+  - Sampling of a pseudo-random Big 
+  - Creation of random elements in G1 and G2 
+  - Creation of elements in G1 and G2 giving a generator and an exponent (multiplication) 
+  - Exponentiation in GT 
+  - Pairing of random elements in G1,G2 
+  - Multiplication in GT 
+  - Modular Division with Bigs 
+  - Hash and XOR of message 
 
 */
 

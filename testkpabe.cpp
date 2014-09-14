@@ -1,14 +1,10 @@
 /*
-  Testbed for empirical evaluation of KP-ABE schemes.
-  Alexandre Miranda Pinto
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
 
-  This file holds a testing framework for the KPABE class.
-  Note that the KPABE class has methods that reveal all sorts of private information, like the challenge randomness used or the private keys.
-  This is only for testing purposes, and not for production use
-
-  - Compile this file as
-
-  	g++ -O2 -m64 -DZZNS=4 testkpabe.cpp shamir.o utils.o -lbn -lmiracl -lpairs -o testkpabe
+  This file implements tests for the KPABE class. 
+  The tests are run for two specific secret sharing schemes, the canonical Benaloh-Leichter and the tree of Shamir gates. 
+  The tests run for each scheme are exactly the same.
 */
 
 
@@ -370,9 +366,8 @@ const string name() {
 } 
 
 
-int runTests(std::string &testName, KPABE testClass, PFC &pfc, miracl *mip, G1 &P, G2 &Q, Big order,
+int runTests(KPABE testClass, PFC &pfc, miracl *mip, G1 &P, G2 &Q, Big order,
 	     vector<int> authCTAtts, vector<int> badCTAtts, vector<int> unauthCTAtts ){
-  testName = "Test KPABE: " + testName;
   int errors = 0;
 
   errors += test1(errors, testClass, pfc, P, Q, order);
@@ -434,7 +429,7 @@ int main() {
   Big order = pfc.order();
   
   classSetup(testClass, P, Q, order, nattr);
-  std::string test_name = "BL canonical";
+  std::string test_name = "Test KPABE: " "BL canonical";
 
   //  DEBUG("Finished KPABE Setup");
 
@@ -471,7 +466,7 @@ int main() {
   unauthCTAtts.push_back(11);
 
   int result = 0;
-  result += runTests(test_name, testClass, pfc, mip, P, Q, order, authCTAtts, badCTAtts, unauthCTAtts);
+  result += runTests(testClass, pfc, mip, P, Q, order, authCTAtts, badCTAtts, unauthCTAtts);
   print_test_result(result, test_name);
 
   //==============================================================================================================
@@ -488,7 +483,7 @@ int main() {
 
   
   classSetup(testClassSH, P, Q, order, nattr);
-  std::string test_nameSH = "Shamir Tree";
+  std::string test_nameSH = "Test KPABE: " "Shamir Tree";
 
 
   vector<int> authCTAttsSH; // all valid attribute indices, authorized set
@@ -518,7 +513,7 @@ int main() {
   unauthCTAttsSH.push_back(11);
 
 
-  result += runTests(test_nameSH, testClassSH, pfc, mip, P, Q, order, authCTAttsSH, badCTAttsSH, unauthCTAttsSH);
+  result += runTests(testClassSH, pfc, mip, P, Q, order, authCTAttsSH, badCTAttsSH, unauthCTAttsSH);
   print_test_result(result, test_nameSH);
 
 

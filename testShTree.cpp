@@ -1,3 +1,13 @@
+/*
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
+
+  This file holds tests for the classes implemented in ShTree.cpp.
+  The tests are divided in 3 groups: the access policy, the secret sharing scheme, and static support functions for the work of these classes
+*/
+
+
+
 #include "utils.h"
 #include "ShTree.h"
 
@@ -1263,8 +1273,7 @@ int testStoreSharePrefixes() {
   return errors;
 }
 
-int runTests(std::string &testName, PFC &pfc) {
-  testName = "Test ShTreeAccessPolicy";
+int runTests(PFC &pfc) {
   int errors = 0;
 
   // Policy tests
@@ -1304,8 +1313,8 @@ int main() {
   time(&seed);
   irand((long)seed);
 
-  std::string test_name;
-  int result = runTests(test_name, pfc);
+  std::string test_name = "Test ShTreeAccessPolicy";
+  int result = runTests(pfc);
   print_test_result(result,test_name);
 
   return 0;

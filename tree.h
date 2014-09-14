@@ -1,11 +1,12 @@
 /*
- * tree.h
- *
- *  Created on: 18 Aug 2014
- *      Author: uxah005
- */
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
 
-#ifndef DEF_TREE
+  This file declares the classes necessary to implement a tree data structure specific for the secret sharing.
+  The basic class is TreeNode, which defines the framework for the interaction between nodes of the tree.
+  The actual data of the tree is held in tree nodes, which are implemented by the class NodeContent.
+*/
+
 #define DEF_TREE
 
 #ifndef DEF_UTILS
@@ -93,5 +94,3 @@ class TreeNode {
   static std::string findIDForNode(const std::string& parent, int childno, NodeContentType type, const std::string& value = "");
 };
 
-
-#endif /* TREE_H_ */

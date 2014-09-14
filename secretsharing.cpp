@@ -1,11 +1,10 @@
 /*
-  Testbed for empirical evaluation of KP-ABE schemes.
-  Alexandre Miranda Pinto
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
 
-  This file holds some implementation for the concept of an abstract secret
-  sharing scheme. Since not all of it belongs in an abstract class, there is
-  some real data imlementation here.
-
+  This file implements the classes defined in secretsharing.h
+  Since AccessPolicy and SecretSharing are abstract classes, they can not be directly instantiated. 
+  Since furthermore ShareTuple is trivially simple, there are not tests for these classes and so there is not a corresponding testfile.
 */
 
 #ifndef DEF_UTILS
@@ -102,37 +101,6 @@ vector<int> AccessPolicy::getParticipants() const
   return m_participants;
 }
 
-vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares, unsigned int k)
-// returns the first k distinct shares in the vector <shares>
-{
-  vector<ShareTuple> unique;
-  vector<std::string> indices;
-  unique.reserve(shares.size());
-  indices.reserve(shares.size());
-  int n;
-  ShareTuple share;
-  std::string shareIndex;
-
-  unsigned int i = 0;
-  while ( (i<k) && (i < shares.size())) {
-    share = shares[i];
-    shareIndex = share.getShareID();
-    n = contains(indices, shareIndex);
-    if (n < 0){
-      indices.push_back(shareIndex);
-      unique.push_back(share);
-      k++;
-    }
-    i++;
-  }
-  return unique;
-}
-
-vector<ShareTuple> getUniqueShares(vector<ShareTuple> &shares)
-{
-  return getUniqueShares(shares, shares.size());
-}
-
 bool AccessPolicy::evaluate(const vector<ShareTuple> shares, vector<ShareTuple> &witnessShares) const{
   witnessShares.clear();
  
@@ -172,9 +140,6 @@ Big SecretSharing::getOrder() const{
   return m_order;
 }
 
-shared_ptr<AccessPolicy> SecretSharing::getPolicy() const{
-  return m_policy;
-}
 
 unsigned int SecretSharing::getNumParticipants() const{
   return m_policy->getNumParticipants();

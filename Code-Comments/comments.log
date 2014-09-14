@@ -1,0 +1,197 @@
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.1.11)  12 SEP 2014 16:53
+entering extended mode
+ %&-line parsing enabled.
+**comments.tex
+(./comments.tex
+LaTeX2e <2009/09/24>
+Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, loaded.
+(/usr/share/texmf-texlive/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texmf-texlive/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+(/usr/share/texmf-texlive/tex/latex/tools/xspace.sty
+Package: xspace 2006/05/08 v1.12 Space after command names (DPC,MH)
+) (./comments.aux)
+\openout1 = `comments.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 5.
+LaTeX Font Info:    ... okay on input line 5.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 54.
+
+(/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 54.
+ [1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+Overfull \hbox (30.99918pt too wide) in paragraph at lines 81--82
+\OT1/cmr/m/n/10 gen-er-al-ity of the con-cepts they rep-re-sent, the classes \O
+T1/cmtt/m/n/10 SecretSharing \OT1/cmr/m/n/10 and \OT1/cmtt/m/n/10 AccessPolicy
+ []
+
+
+Overfull \hbox (12.55618pt too wide) in paragraph at lines 83--84
+[]\OT1/cmr/m/n/10 This im-ple-men-ta-tion pro-vides, so far, two con-crete im-p
+le-men-ta-tions: a Benaloh-
+ []
+
+
+Overfull \hbox (25.33066pt too wide) in paragraph at lines 85--87
+[]\OT1/cmr/m/n/10 The canon-i-cal BL scheme is im-ple-mented by the classes \OT
+1/cmtt/m/n/10 BLSS \OT1/cmr/m/n/10 and \OT1/cmtt/m/n/10 BLAccessPolicy\OT1/cmr/
+m/n/10 ,
+ []
+
+
+Overfull \hbox (23.58133pt too wide) in paragraph at lines 85--87
+\OT1/cmr/m/n/10 the tree of Shamir schemes is cap-tured by classes \OT1/cmtt/m/
+n/10 ShTreeSS \OT1/cmr/m/n/10 and \OT1/cmtt/m/n/10 ShTreeAccessPolicy\OT1/cmr/m
+/n/10 ,
+ []
+
+
+Overfull \hbox (49.77669pt too wide) in paragraph at lines 85--87
+\OT1/cmr/m/n/10 im-ple-mented and tested in the cor-re-spond-ing files \OT1/cmt
+t/m/n/10 ShTree.h\OT1/cmr/m/n/10 , \OT1/cmtt/m/n/10 ShTree.cpp\OT1/cmr/m/n/10 ,
+ \OT1/cmtt/m/n/10 testShTree.cpp\OT1/cmr/m/n/10 . 
+ []
+
+[2]
+Overfull \hbox (22.69345pt too wide) in paragraph at lines 90--91
+\OT1/cmr/m/n/10 ity'' func-tions, in files \OT1/cmtt/m/n/10 utils.h \OT1/cmr/m/
+n/10 and \OT1/cmtt/m/n/10 utils.cpp\OT1/cmr/m/n/10 , with some tests in file \O
+T1/cmtt/m/n/10 testutils.cpp\OT1/cmr/m/n/10 .
+ []
+
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 99.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 99.
+[3] [4] [5]
+Overfull \hbox (24.77715pt too wide) in paragraph at lines 178--179
+\OT1/cmr/m/n/10 These files hold dec-la-ra-tions and def-i-ni-tions for the cla
+sses \OT1/cmtt/m/n/10 ShareTuple\OT1/cmr/m/n/10 , \OT1/cmtt/m/n/10 AccessPolicy
+
+ []
+
+[6]
+Overfull \hbox (1.49951pt too wide) in paragraph at lines 209--210
+\OT1/cmr/m/n/10 and par-tic-i-pants in a given or-der, and then ex-tract \OT1/c
+mtt/m/n/10 obtainCoveredFrags()
+ []
+
+[7] [8] [9] [10] [11]
+Overfull \hbox (17.38855pt too wide) in paragraph at lines 284--285
+\OT1/cmr/m/n/10 com-mand will choose which of these files sup-plies the con-ten
+ts of []\OT1/cmtt/m/n/10 benchmark_defs.h\OT1/cmr/m/n/10 .
+ []
+
+[12] [13] [14]
+Overfull \hbox (6.51788pt too wide) in paragraph at lines 337--338
+[]\OT1/cmr/m/n/10 While the func-tion \OT1/cmtt/m/n/10 stop(...) \OT1/cmr/m/n/1
+0 al-lows the \OT1/cmtt/m/n/10 for \OT1/cmr/m/n/10 loop to be ex-e-cuted, \OT1/
+cmtt/m/n/10 makePolicy
+ []
+
+[15]
+Overfull \hbox (38.3334pt too wide) in paragraph at lines 357--359
+\OT1/cmr/m/n/10 (15\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 14\OML/cmm/m/it/10 ; \OT1
+/cmr/m/n/10 13\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 12\OML/cmm/m/it/10 ; \OT1/cmr/
+m/n/10 11\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 10\OML/cmm/m/it/10 ; \OT1/cmr/m/n/1
+0 9\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 8\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 7)\OM
+L/cmm/m/it/10 ; \OT1/cmr/m/n/10 (22\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 21\OML/cm
+m/m/it/10 ; \OT1/cmr/m/n/10 20\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 19\OML/cmm/m/i
+t/10 ; \OT1/cmr/m/n/10 18\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 17\OML/cmm/m/it/10 
+; \OT1/cmr/m/n/10 16)\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 (27\OML/cmm/m/it/10 ; \
+OT1/cmr/m/n/10 26\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 25\OML/cmm/m/it/10 ; \OT1/c
+mr/m/n/10 24\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 23)\OML/cmm/m/it/10 ; \OT1/cmr/m
+/n/10 (30\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 29\OML/cmm/m/it/10 ; \OT1/cmr/m/n/1
+0 28)\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 (31)$. 
+ []
+
+
+Overfull \hbox (297.01883pt too wide) in paragraph at lines 363--365
+\OT1/cmr/m/n/10 e-ments than the next set. An ex-am-ple pol-icy is $(16\OML/cmm
+/m/it/10 ; \OT1/cmr/m/n/10 15\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 14\OML/cmm/m/it
+/10 ; \OT1/cmr/m/n/10 13\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 12\OML/cmm/m/it/10 ;
+ \OT1/cmr/m/n/10 11\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 10\OML/cmm/m/it/10 ; \OT1
+/cmr/m/n/10 9\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 8\OML/cmm/m/it/10 ; \OT1/cmr/m/
+n/10 7\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 6\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 5\
+OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 4\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 3\OML/cmm
+/m/it/10 ; \OT1/cmr/m/n/10 2\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 1)\OML/cmm/m/it/
+10 ; \OT1/cmr/m/n/10 (24\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 23\OML/cmm/m/it/10 ;
+ \OT1/cmr/m/n/10 22\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 21\OML/cmm/m/it/10 ; \OT1
+/cmr/m/n/10 20\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 19\OML/cmm/m/it/10 ; \OT1/cmr/
+m/n/10 18\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 17)\OML/cmm/m/it/10 ; \OT1/cmr/m/n/
+10 (28\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 27\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 2
+6\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 25)\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 (30\O
+ML/cmm/m/it/10 ; \OT1/cmr/m/n/10 29)\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 (31)$. 
+ []
+
+[16]
+Overfull \hbox (7.36101pt too wide) in paragraph at lines 375--376
+\OT1/cmr/m/n/10 the true num-ber of rep-e-ti-tions is scaled for each pol-icy, 
+by di-vid-ing \OT1/cmtt/m/n/10 varRepeats[i]
+ []
+
+[17]
+Overfull \hbox (66.86685pt too wide) detected at line 397
+[]\OT1/cmr/m/n/10 (1 + (\OML/cmm/m/it/10 nSets \OMS/cmsy/m/n/10 ^^@ \OT1/cmr/m/
+n/10 1 \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 j\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/1
+0 ^^A \OML/cmm/m/it/10 k\OT1/cmr/m/n/10 ) = (\OML/cmm/m/it/10 nSets \OMS/cmsy/m
+/n/10 ^^@ \OT1/cmr/m/n/10 1 \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 i\OT1/cmr/m/n
+/10 ) [] \OML/cmm/m/it/10 :
+ []
+
+[18] [19] (./comments.aux) ) 
+Here is how much of TeX's memory you used:
+ 303 strings out of 495061
+ 3468 string characters out of 1182621
+ 52085 words of memory out of 3000000
+ 3552 multiletter control sequences out of 15000+50000
+ 5841 words of font info for 22 fonts, out of 3000000 for 9000
+ 28 hyphenation exceptions out of 8191
+ 23i,5n,20p,1283b,239s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/share/texmf-texlive/fonts/type1/public/amsfon
+ts/cm/cmbx10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx1
+2.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr
+/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texm
+f-texlive/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fo
+nts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/pu
+blic/amsfonts/cm/cmr7.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts
+/cm/cmsy10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7.p
+fb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/sh
+are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/share/texmf-t
+exlive/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
+Output written on comments.pdf (19 pages, 206533 bytes).
+PDF statistics:
+ 112 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

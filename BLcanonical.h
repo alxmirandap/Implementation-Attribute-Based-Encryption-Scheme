@@ -1,3 +1,13 @@
+/*
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
+
+  This file holds the declarations for the implementation of a specific Secret Sharing scheme: Benaloh-Leichter for canonical policies
+  There are two classes implemented here: 
+  - BLAccessPolicy is a subclass of the abstract AccessPolicy
+  - BLSS is a subclass of the abstract SecretSharing
+*/
+
 #ifndef DEF_UTILS
 #include "utils.h"
 #endif

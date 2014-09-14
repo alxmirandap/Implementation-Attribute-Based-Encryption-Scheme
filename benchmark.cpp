@@ -1,12 +1,20 @@
 /*
-  Testbed for empirical evaluation of KP-ABE schemes.
-  Alexandre Miranda Pinto
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
 
-  This file implements some basic time measurements, covering all the operations needed for the KP implementation
+  This file implements a full testbed for the operations of the KPABE scheme. It tests the time taken by each of the basic operations: 
+  Setup, Encryption, Key Generation, Decryption. 
 
-  The group structure has two groups G1 and G2 and one Pairing Group GT
-  There are two distinct ways to use this: either G1 will hold the key fragments or it will hold the key fragments. That is determined by the definition of constants 
-  #define AttOnG1_KeyOnG2 or #define AttOnG2_KeyOnG1 in kpabe.h.
+  The group structure has two groups G1 and G2 and one Pairing Group GT. One of the groups will serve to build the key fragments, while the other group will build
+  the attribute fragments. 
+  The function of each group is determined by using one of two constants: #define AttOnG1_KeyOnG2 or #define AttOnG2_KeyOnG1.
+
+  This source code is used to produce 4 different variants: for each of the two variants of attribute use, there are two possible secret sharing schemes to use: 
+  a canonical Benaloh-Leichter or a tree of Shamir schemes.
+
+  These variants are obtained by four different compiling instructions: 
+  - the definition of attribute use is defined in atts.h, which is a copy of either atts.h_1 or atts.h_2
+  - the definition of secret sharing scheme to use is defined in benchmark_defs.h, which is a copy of either benchmark_defs_bl.h or benchmark_defs_sh.h.
 
   My tests with measuring time by counting clicks have shown that this
   is not reliable. They usually give me half of the actual time
@@ -15,12 +23,6 @@
   time function. This has the added benefit of smoothing out
   variations in individual executions.
 
-  The aim of this section is to perform efficiency measurements of ready made encryption schemes.
-  
-  I should collect measurements for the following variants:
-  - encryption based on algebraic multiplication // encryption based on XOR with hash
-  - Key on G1 // Key on G2
-  
   Then, I must have variants for the number of attributes in the universe, in the ciphertext, and particular policies
 
 */
@@ -39,6 +41,7 @@
 #include "kpabe.h"
 #endif
 
+// #define TEST_RUN
 
 
 void report_time(const string& description, const string& parameter, long repeats, long nparams, time_t initial, time_t final) {
@@ -94,11 +97,9 @@ void get_time(time_t *t) {
 }
 
 void report_action(const string& action, time_t *t){
-  get_time(t);
-
-//   time_t now = time(t);
-//   char* dt = ctime(&now);
-//   cout << action << dt; 
+   time_t now = time(t);
+   char* dt = ctime(&now);
+   cout << action << dt; 
 }
 
 void report_start(time_t *t){
@@ -146,35 +147,145 @@ void parseInput(int argc, char* argv[]){
 
 
 
-int million = 1000000;
-int thousand = 1000;
-int hundred = 100;
+double million = 1000000;
+double thousand = 1000;
+double hundred = 100;
 
-void  report_title(std::string title, std::string params ) {
-  cout << "Task: " << title << std::endl << params << std::endl;
+void adjustScale(double value, std::string &unit, double &adjustedValue) {
+  if (value >= 1) {
+    unit = "seconds";
+    adjustedValue = value;
+    return;
+  }
+
+  if (value >= 1/thousand) {
+    unit = "milliseconds";
+    adjustedValue = value * thousand;
+    return;
+  }
+
+  if (value >= 1/million) {
+    unit = "microseconds";
+    adjustedValue = value * million;
+    return;
+  } else {
+    unit = "seconds";
+    adjustedValue = value;
+  }
+
+}
+
+void  report_title(std::string title, std::string varParam, std::string params1, std::string params2="", std::string params3="" ) {
+  stringstream ss;
+  ss << "Task: " << title << std::endl 
+     << params1 << "\t" << "Time per rep" << "\t\t" << "Time per " << varParam << "\t";
+
+  if (params2 != "") {
+    ss << params2 << "\t" << "Time per rep" << "\t\t" << "Time per " << varParam << "\t";
+  }
+
+  ss << params3 << std::endl;
+
+  cout << ss.str();
 }
 
 void report_setup_data(int nAtts, long repeats, time_t initial, time_t final) {
   double elapsed = final - initial;
-  cout << nAtts << "\t" << repeats << "\t" << elapsed << std::endl;
+  double timeRep = elapsed / repeats;
+  double timeAtt = timeRep / nAtts;
+
+  std::string unit1;
+  double value1;
+
+  std::string unit2;
+  double value2;
+
+  adjustScale(timeRep, unit1, value1);
+  adjustScale(timeAtt, unit2, value2);
+ 
+  cout << nAtts << "\t" << repeats << "\t" << elapsed << "\t" << value1 << "\t" << unit1 << "\t" << value2 << "\t" << unit2 << std::endl;
 }
 
 void report_encr_data(int nAtts, long repeats, time_t a_initial, time_t a_final, time_t h_initial, time_t h_final) {
   double a_elapsed = a_final - a_initial;
   double h_elapsed = h_final - h_initial;
-  cout << nAtts << "\t" << repeats << "\t" << a_elapsed << "\t" << h_elapsed << std::endl;
+  double a_timeRep = a_elapsed / repeats;
+  double h_timeRep = h_elapsed / repeats;
+  double a_timeAtt = a_timeRep / nAtts;
+  double h_timeAtt = h_timeRep / nAtts;
+
+  std::string a_unit1;
+  double a_value1;
+
+  std::string a_unit2;
+  double a_value2;
+
+  adjustScale(a_timeRep, a_unit1, a_value1);
+  adjustScale(a_timeAtt, a_unit2, a_value2);
+
+  std::string h_unit1;
+  double h_value1;
+
+  std::string h_unit2;
+  double h_value2;
+
+  adjustScale(h_timeRep, h_unit1, h_value1);
+  adjustScale(h_timeAtt, h_unit2, h_value2);
+  
+  cout << nAtts << "\t" << repeats << "\t" << a_elapsed << "\t" << a_value1 << "\t" << a_unit1 << "\t" << a_value2 << "\t" << a_unit2
+       << "\t" << h_elapsed << "\t" << h_value1 << "\t" << h_unit1 << "\t" << h_value2 << "\t" << h_unit2 << std::endl;
 }
 
 void report_key_data(int max, int k, long repeats, long nLeaves, long nSets, time_t initial, time_t final, std::string policy) {
   double elapsed = final - initial;
-  cout << nLeaves << "\t" << nSets << "\t" << max << "\t" << k << "\t" << repeats << "\t" << elapsed << "\t" << policy << std::endl;
+  double timeRep = elapsed / repeats;
+  double timeAtt = timeRep / nLeaves;
+
+  std::string unit1;
+  double value1;
+
+  std::string unit2;
+  double value2;
+
+  adjustScale(timeRep, unit1, value1);
+  adjustScale(timeAtt, unit2, value2);
+  
+  cout << nLeaves << "\t" << nSets << "\t" << max << "\t" << k << "\t" << repeats << "\t" << elapsed 
+       << "\t" << value1 << "\t" << unit1 << "\t" << value2 << "\t" << unit2
+       << "\t" << policy << std::endl;
 }
 
 void report_dec_data(int max, int k, long repeats, long nLeaves, long nSets, long nAtts, long minSetSize, time_t a_initial, time_t a_final, 
 		     time_t h_initial, time_t h_final, std::string policy) {
   double a_elapsed = a_final - a_initial;
   double h_elapsed = h_final - h_initial;
-  cout << nLeaves << "\t" << nSets << "\t" << nAtts << "\t" << minSetSize << "\t" << max << "\t" << k << "\t" << repeats << "\t" << a_elapsed << "\t" << h_elapsed << "\t" << policy << std::endl;
+  double a_timeRep = a_elapsed / repeats;
+  double h_timeRep = h_elapsed / repeats;
+  double a_timeAtt = a_timeRep / minSetSize;
+  double h_timeAtt = h_timeRep / minSetSize;
+
+  std::string a_unit1;
+  double a_value1;
+
+  std::string a_unit2;
+  double a_value2;
+
+  adjustScale(a_timeRep, a_unit1, a_value1);
+  adjustScale(a_timeAtt, a_unit2, a_value2);
+
+  std::string h_unit1;
+  double h_value1;
+
+  std::string h_unit2;
+  double h_value2;
+
+  adjustScale(h_timeRep, h_unit1, h_value1);
+  adjustScale(h_timeAtt, h_unit2, h_value2);
+  
+  cout << nLeaves << "\t" << nSets << "\t" << nAtts << "\t" << minSetSize << "\t" << max << "\t" << k << "\t" << repeats 
+       << "\t" << a_elapsed << "\t" << a_value1 << "\t" << a_unit1 << "\t" << a_value2 << "\t" << a_unit2
+       << "\t" << h_elapsed << "\t" << h_value1 << "\t" << h_unit1 << "\t" << h_value2 << "\t" << h_unit2 
+       << "\t" << policy << std::endl;
 }
 
 void measureSetup(PFC &pfc) {
@@ -188,14 +299,19 @@ void measureSetup(PFC &pfc) {
 
   int attrsInUniverse[] = {5, 10, 100, 500, 1000};
   const int attInUnivVars = 5; 
-  //  int varRepeats[] = {1000,1000,500,200,100};
+
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {1000,1000,500,250,100};
+#endif
+
 
   long repeats;
 
   stringstream ss;
-  ss << "#Atts in Universe" << "\t" << "Repetitions" << "\t" << "Total time" << std::endl;
-  report_title("#1 Setup times: ", ss.str());
+  ss << "#Atts in Universe" << "\t" << "Repetitions" << "\t" << "Total time";
+  report_title("#1 Setup times: ", "Attribute", ss.str());
 
   time_t t0;
   time_t t1;
@@ -206,11 +322,11 @@ void measureSetup(PFC &pfc) {
     KPABE testClass(testScheme, pfc, nAtts);    
     testClass.paramsgen(P, Q, order);
 
-    report_start(&t0);
+    get_time(&t0);
     for (int j = 0; j < repeats; j++) {
       testClass.setup();
     }
-    report_finish(&t1);
+    get_time(&t1);
     stringstream ss;
     //    ss << "#1 Setup times: " << std::endl << "Number of attributes in universe: " << nAtts;
     //    report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
@@ -232,10 +348,13 @@ void measureEncrp(PFC &pfc, miracl* mip) {
 
   int attrsInCT[] = {5, 10, 100, 500, 1000};
   const int attInCTVars = 5; 
-  //  int varRepeats[] = {20 * hundred, 20 * hundred, 10 * hundred, 2 * hundred, 1 * hundred};
-  //  int varRepeats[] = {2500,2500,1000,500,250};
+
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
-  
+#else
+  int varRepeats[] = {2500,2500,2000,500,500};
+#endif
+ 
 
   vector<int> CTAtts;
 #ifdef AttOnG1_KeyOnG2
@@ -270,8 +389,9 @@ time_t h_t1;
 
 
   stringstream ss;
-  ss << "#Atts in Ciphertext" << "\t" << "Repetitions" << "\t" << "Total time (Algebraic)" << "\t" << "Total time (Hash)" << std::endl;
-  report_title("#2 Encryption times: ", ss.str());
+  ss << "#Atts in Ciphertext" << "\t" << "Repetitions" << "\t" << "Total time (Algebraic)";
+
+  report_title("#2 Encryption times: ", "Attribute", ss.str(), "Total time (Hash)");
 
   for (int i = 0; i < attInCTVars; i++){
     int nAtts = attrsInCT[i];
@@ -285,20 +405,20 @@ time_t h_t1;
     }
 
     // OUT("Calling report");
-    report_start(&a_t0);
+    get_time(&a_t0);
     for (int j = 0; j < repeats; j++) {
       testClass.encrypt(CTAtts, M, CT, AttFrags);
     }
-    report_finish(&a_t1);
+    get_time(&a_t1);
     //     stringstream ss;
     //     ss << "#2 Encryption times (Algebraic): " << "Number of attributes in ciphertext: " << nAtts;
     //     report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
 
-    report_start(&h_t0);
+    get_time(&h_t0);
     for (int j = 0; j < repeats; j++) {
       testClass.encryptS(CTAtts, sM, sCT, AttFrags);
     }
-    report_finish(&h_t1);
+    get_time(&h_t1);
     //    ss.str("");
     //    ss << "#2 Encryption times (Hash): " << "Number of attributes in ciphertext: " << nAtts;
     //    report_time( ss.str(), "Attribute", repeats, nAtts, t0, t1);
@@ -437,6 +557,7 @@ bool stopUnifPol(int k, int nLeaves) {
 }
 
 int middleSetUnifPol(int nLeaves, int nSets, int increment, int &begin){
+  // increment = # of sets, so equal to nSets in this function
   int middleSet = nSets / 2;
   int setSize = nLeaves / nSets;
   begin = setSize * middleSet;
@@ -460,8 +581,10 @@ int middleSetLinPol(int nLeaves, int nSets, int increment, int &begin){
 
 int middleSetLinPolInv(int nLeaves, int nSets, int increment, int &begin){
   int middleSet = nSets / 2;
-  int setSize = 1 + (nSets - middleSet) * increment;
-  begin = (middleSet - 1) * (1 + increment - increment * middleSet/2);
+  int n = nSets - middleSet - 1;
+  int setSize = 1 + n * increment;
+
+  begin = (nLeaves - 1) - n * (1 + increment * (nSets - 1) - increment * (nSets - 2 + middleSet)/2);
   return setSize;
 }
 
@@ -475,15 +598,17 @@ bool stopExpPol(int k, int nLeaves) {
 
 int middleSetExpPol(int nLeaves, int nSets, int increment, int &begin){
   int middleSet = nSets / 2;
-  int setSize = std::pow(2, middleSet);
-  begin = setSize - 1;
+  int setSize = std::pow(increment, middleSet);
+  begin = (setSize - 1) / (increment - 1);
   return setSize;
 }
 
 int middleSetExpPolInv(int nLeaves, int nSets, int increment, int &begin){
   int middleSet = nSets / 2;
-  int setSize = std::pow(2, nSets - middleSet);
-  begin = std::pow(2, nSets) - std::pow(2, nSets - middleSet);
+  int n = nSets - middleSet - 1;
+  int setSize = std::pow(increment, n);
+  int cumSize = (setSize * increment - 1)/(increment - 1);
+  begin = nLeaves - cumSize;
   return setSize;
 }
 
@@ -502,8 +627,10 @@ void measureKeyFunc(PFC &pfc, std::string (*makePolicy) (int, int, int&, int&), 
   time_t t1;
 
   stringstream ss;
-  ss << "#Leaves in Policy" << "\t" << "#Minimal Sets" << "\t" << "Max Leaves" << "\t" << "Control Param" << "\t" << "Repetitions" << "\t" << "Total time" << "\t" << "Policy" << std::endl;
-  report_title("#3 Key Generation with " + policy_type + " policy:", ss.str());
+  ss << "#Leaves in Policy" << "\t" << "#Minimal Sets" << "\t" << "Max Leaves" << "\t" << "Control Param" << "\t" << "Repetitions" 
+     << "\t" << "Total time";
+  
+  report_title("#3 Key Generation with " + policy_type + " policy:", "Share", ss.str(), "Policy");
 
 
   for (int i = 0; i < nLeavesVars; i++){
@@ -537,13 +664,13 @@ void measureKeyFunc(PFC &pfc, std::string (*makePolicy) (int, int, int&, int&), 
 
       repeats = varRepeats[i];
       
-      report_start(&t0);
+      get_time(&t0);
       DEBUG("Start time: " << t0);
       for (int j = 0; j < repeats; j++) {
 	DEBUG("running repeat: " << j);
 	testClass.genKey();
       }
-      report_finish(&t1);
+      get_time(&t1);
       //      stringstream ss;
       //      ss << "#3 Key Generation with " << policy_type << " policy:\n" << "Number of leaves in policy: " << realNLeaves << " --- Number of minimal sets: " << realNSets;
       //      if (k_meaning != "") {
@@ -627,9 +754,9 @@ void measureDecFunc(PFC &pfc, miracl* mip, std::string (*makePolicy) (int, int, 
 
   stringstream ss;
   ss << "#Leaves in Policy" << "\t" << "#Minimal Sets" << "\t" << "#Atts in Ciphertext" << "\t" 
-     << "minSetSize" << "\t" << "Max Leaves" << "\t" << "Control Params" << "\t" << "Repetitions" << "\t" << "Total time (Alg)" << "\t" << "Total time (Hash)" << "\t" << "Policy" << std::endl;
+       << "minSetSize" << "\t" << "Max Leaves" << "\t" << "Control Params" << "\t" << "Repetitions" << "\t" << "Total time (Alg)";
 
-  report_title("#4 Decryption with " + policy_type + " policy:", ss.str());
+  report_title("#4 Decryption with " + policy_type + " policy:", "Size of Decrypting Set", ss.str(), "Total time (Hash)", "Policy");
 
 
   for (int i = 0; i < lvsInPol; i++){
@@ -678,9 +805,13 @@ void measureDecFunc(PFC &pfc, miracl* mip, std::string (*makePolicy) (int, int, 
       // generates smaller minimal sets and so is a better method to use.
 
       int begin;
-      int minSetSize = findMiddleSetSizeAndFirstElement(realNLeaves, realNSets, k, begin);
+      int minSetSize = findMiddleSetSizeAndFirstElement(nLeaves, realNSets, k, begin);
 
-      repeats = varRepeats[i] / minSetSize;
+      if (varRepeats[i] < minSetSize) {
+	repeats = varRepeats[i];
+      } else {
+	repeats = varRepeats[i] / minSetSize;
+      }
      
       //      OUT("Number of minimal sets: " << k);
       //      OUT("Leaves per minimal set: " << minSetSize);
@@ -701,17 +832,17 @@ void measureDecFunc(PFC &pfc, miracl* mip, std::string (*makePolicy) (int, int, 
 	testClass.encrypt(CTAtts, M, CT, AttFrags);	
 	testClass.encryptS(CTAtts, sM, sCT, AttFrags);
 
-	report_start(&a_t0);
+	get_time(&a_t0);
 	for (int j = 0; j < repeats; j++) {
 	  testClass.decrypt( keyFrags, CTAtts, CT, AttFrags, PT);
 	}
-	report_finish(&a_t1);
+	get_time(&a_t1);
 
-	report_start(&h_t0);
-// 	for (int j = 0; j < repeats; j++) {
-// 	  testClass.decryptS( keyFrags, CTAtts, sCT, AttFrags, sPT);
-// 	}
-	report_finish(&h_t1);
+	get_time(&h_t0);
+ 	for (int j = 0; j < repeats; j++) {
+ 	  testClass.decryptS( keyFrags, CTAtts, sCT, AttFrags, sPT);
+ 	}
+	get_time(&h_t1);
 
 // 	stringstream ss;
 // 	ss << "#4 Decryption with " << policy_type << " policy:\n" << "Number of leaves in policy: " << realNLeaves << 
@@ -734,8 +865,13 @@ void measureKeyUnif(PFC &pfc) {
   const int lvsInPol = 5; 
 
   //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {1000,500,100,50,25};
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {2500,1000,500,250,100};
+#endif
+
+
 
   DEBUG("Calling measureKeyFunc");
   measureKeyFunc(pfc, makeKeyUnifPolicy, leavesInPolicy, lvsInPol, varRepeats, nextUnifPol, stopUnifPol, 1, "Uniform", "");
@@ -745,9 +881,11 @@ void measureKeyLin(PFC &pfc) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {5000, 1000, 200, 50, 25};
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {5000, 2500, 500, 250, 100};
+#endif
 
   measureKeyFunc(pfc, makeKeyLinPolicy, leavesInPolicy, lvsInPol, varRepeats, nextLinPol, stopLinPol, 2, "Linear", "set size increment");
 }
@@ -756,9 +894,12 @@ void measureKeyExp(PFC &pfc) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {2500,500,250,50,1};
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {5000, 2500, 500, 250, 100};
+#endif
+
 
   measureKeyFunc(pfc, makeKeyExpPolicy, leavesInPolicy, lvsInPol, varRepeats, nextExpPol, stopExpPol, 2, "Exponential", "set size increment factor");
 }
@@ -767,9 +908,12 @@ void measureKeyLinInv(PFC &pfc) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {2500,1000,200,50,25};
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {5000, 2500, 500, 250, 100};
+#endif
+
 
   measureKeyFunc(pfc, makeKeyLinPolicyInv, leavesInPolicy, lvsInPol, varRepeats, nextLinPol, stopLinPol, 2, "Inverse Linear", "set size decrement");
 }
@@ -778,9 +922,12 @@ void measureKeyExpInv(PFC &pfc) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {2500, 500, 250, 50, 25};
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {5000, 2500, 500, 250, 100};
+#endif
+
 
   measureKeyFunc(pfc, makeKeyExpPolicyInv, leavesInPolicy, lvsInPol, varRepeats, nextExpPol, stopExpPol, 2, "Inverse Exponential", "set size decrement factor");
 }
@@ -789,9 +936,12 @@ void measureDecUnif(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {1024 * 10, 1024 * 16, 1024 * 16, 1024 * 16,1024 * 10};
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {1024 * 16, 1024 * 16, 1024 * 16, 1024 * 32,1024 * 64};
+#endif
+
 
   measureDecFunc(pfc, mip, makeKeyUnifPolicy, leavesInPolicy, lvsInPol, varRepeats, nextUnifPol, stopUnifPol, middleSetUnifPol, 1, "Uniform", ""); 
 }
@@ -800,9 +950,14 @@ void measureDecLin(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {1024 * 16,1024 * 16,1024 * 16,1024 * 16,1024 * 16};
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {9000, 15000, 20000, 40000,40000};
+#endif
+
+
+
 
   measureDecFunc(pfc, mip, makeKeyLinPolicy, leavesInPolicy, lvsInPol, varRepeats, nextLinPol, stopLinPol, middleSetLinPol, 2, "Linear", "set size increment"); 
 }
@@ -811,9 +966,13 @@ void measureDecExp(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {1024 * 8,1024 * 8,1024 * 8,1024 * 8,1024 * 8};
+
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {9000, 15000, 20000, 40000,40000};
+#endif
+
 
   measureDecFunc(pfc, mip, makeKeyExpPolicy, leavesInPolicy, lvsInPol, varRepeats, nextExpPol, stopExpPol, middleSetExpPol, 2, "Exponential", "set size increment factor"); 
 }
@@ -822,9 +981,12 @@ void measureDecLinInv(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {1024 * 8,1024 * 8,1024 * 8,1024 * 8,1024 * 8};
+
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {9000, 15000, 20000, 40000,40000};
+#endif
 
   measureDecFunc(pfc, mip, makeKeyLinPolicyInv, leavesInPolicy, lvsInPol, varRepeats, nextLinPol, stopLinPol, middleSetLinPolInv, 2, "Inverse Linear", "set size decrement"); 
 }
@@ -833,18 +995,17 @@ void measureDecExpInv(PFC &pfc, miracl* mip) {
   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
   const int lvsInPol = 5; 
 
-  //  int varRepeats[] = {1 * thousand,5 * hundred, 2*hundred ,1 * hundred,1 * hundred};
-  //  int varRepeats[] = {1024 * 8,1024 * 8,1024 * 8,1024 * 8,1024 * 8};
+
+#ifdef TEST_RUN
   int varRepeats[] = {1,1,1,1,1};
+#else
+  int varRepeats[] = {9000, 15000, 20000, 40000,40000};
+#endif
 
   measureDecFunc(pfc, mip, makeKeyExpPolicyInv, leavesInPolicy, lvsInPol, varRepeats, nextExpPol, stopExpPol, middleSetExpPolInv, 2, "Inverse Exponential", "set size decrement factor"); 
 }
 
 
-//   int leavesInPolicy[] = {8, 32, 128, 512, 1024};
-//   const int lvsInPol = 5; 
-// 
-//   int varRepeats[] = {1 * thousand,4 * hundred,1 * hundred,50,25};
 
 int main(int argc, char* argv[] ) {
   PFC pfc(AES_SECURITY);  // initialise pairing-friendly curve
@@ -858,6 +1019,11 @@ int main(int argc, char* argv[] ) {
 
   parseInput(argc, argv);
   cout << endl;
+
+  time_t t0;
+  time_t t1;
+
+  report_start(&t0);
 
   // Setup
   if (Setup) {
@@ -909,8 +1075,19 @@ int main(int argc, char* argv[] ) {
   if (DecExpInv) {
     measureDecExpInv(pfc, mip);
   }
-
   cout << "Nothing left to do" << endl;
+
+  report_finish(&t1);
+
+  int elapsed = t1 - t0;
+  int seconds = elapsed % 60;
+  int elapsed_m = (elapsed - seconds) / 60;
+  int minutes = elapsed_m % 60;
+  int hours = (elapsed_m - minutes) / 60;
+  
+  cout << "Total time (seconds): " << elapsed << std::endl;
+  cout << "Total time: " << hours << "h" << minutes << "m" << seconds << std::endl;
+
   
   return 0;
 }

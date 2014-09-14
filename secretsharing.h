@@ -1,3 +1,18 @@
+/*
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
+
+  This file holds the declarations for the basic classes implementing the notion of Secret Sharing scheme.
+  It declares three classes: 
+  - ShareTuple: describes each share individual share of a secret sharing scheme. It has three relevant pieces of information: 
+    * the value of the share
+    * the participant of the scheme that holds the share
+    * a unique identifier for each share within the policy. This identifier must hold all the information necessary to reconstruct the secret from the shares, including all the information associated to the share that must be publicly known.
+  - AccessPolicy: it is an abstract class that describes an access policy for a generic secret sharing scheme
+  - SecretSharing: also an abstract class, that describes a generic secret sharing scheme. Each such scheme holds exactly one Access Policy that it enforces.
+*/
+
+
 #define DEF_SECRET_SHARING
 
 #ifndef DEF_UTILS
@@ -23,6 +38,7 @@ class ShareTuple{
   std::string getShareID() const;
   Big getShare() const;
 };
+
 
 //=============================================================================
 
@@ -51,9 +67,6 @@ class AccessPolicy{
   virtual ~AccessPolicy(){};
 };
 
-vector<ShareTuple> getUniqueShares(const vector<ShareTuple> &shares); //outside the class, since it is more of an utility function
-vector<ShareTuple> getUniqueShares(const vector<ShareTuple> &shares, unsigned int k);
-
 //=======================================================================
 
 class SecretSharing
@@ -75,7 +88,11 @@ public:
   SecretSharing(shared_ptr<AccessPolicy> policy, PFC &pfc);
   SecretSharing(shared_ptr<AccessPolicy> policy, const Big &order, PFC &pfc);
   Big getOrder() const;
-  shared_ptr<AccessPolicy> getPolicy() const;
+
+  inline shared_ptr<AccessPolicy> getPolicy() {
+    return m_policy;
+  }
+
   unsigned int getNumParticipants() const;
   unsigned int getNumShares();
   vector<int> getParticipants() const;

@@ -1,21 +1,6 @@
 /*
- * utils.cpp
- *
- *  Created on: 18 Aug 2014
- *      Author: uxah005
- */
-/*
-  Testbed for empirical evaluation of KP-ABE schemes.
-  Alexandre Miranda Pinto
-
-  This file holds some utilities that I want to use in many different files
-
-  Compile with modules as specified below:
-
-  - Compile this file as
-
-  	g++ -O2 -m64 -c -DZZNS=4 utils.cpp -lbn -lmiracl -lpairs -o utils.o
-
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
 */
 
 

@@ -1,10 +1,12 @@
 /*
- * BLcanonical.cpp
- *
- *  Created on: 19 Aug 2014
- *      Author: uxah005
- */
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
 
+  This file implements a specific Secret Sharing scheme: Benaloh-Leichter for canonical policies
+  There are two classes implemented here: 
+  - BLAccessPolicy is a subclass of the abstract AccessPolicy
+  - BLSS is a subclass of the abstract SecretSharing
+*/
 #ifndef DEF_BL_CANON
 #include "BLcanonical.h"
 #endif

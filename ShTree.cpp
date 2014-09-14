@@ -1,3 +1,14 @@
+/*
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
+
+  This file implements a specific Secret Sharing scheme: a tree of Shamir threshold schemes.
+  There are two classes implemented here: 
+  - ShTreeAccessPolicy is a subclass of the abstract AccessPolicy
+  - ShTreeSS is a subclass of the abstract SecretSharing
+*/
+
+
 #include "ShTree.h"
 
 void ShTreeAccessPolicy::init(){

@@ -1,3 +1,10 @@
+/*
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
+
+  This file holds the implementation of the template functions declared in utils.h
+*/
+
 template<typename T> 
 int contains(const vector<T> &set, const T element){
   for (unsigned int i = 0; i < set.size(); i++){

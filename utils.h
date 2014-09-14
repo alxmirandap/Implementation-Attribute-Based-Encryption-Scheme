@@ -1,22 +1,11 @@
 /*
- * utils.h
- *
- *  Created on: 18 Aug 2014
- *      Author: uxah005
- */
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
 
+  This file holds some utilities that are used in the rest of the source code.
+  These utilities are mainly used for tests and debug.
 
-/*
-  Testbed for empirical evaluation of KP-ABE schemes.
-  Alexandre Miranda Pinto
-
-  This file holds some utilities that I want to use in many different files
-
-  Compile with modules as specified below:
-
-  - Compile this file as
-
-  	g++ -O2 -m64 -c -DZZNS=4 utils.cpp -lbn -lmiracl -lpairs -o utils.o
+  The line #include "utils_impl.tcc" holds implementations for the template functions, in order for these functions to be available still in the header file.
 
 */
 
@@ -25,8 +14,7 @@
 #define AES_SECURITY 128
 //*********************************************
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#define UTILS_H
 
 #define DEF_UTILS
 
@@ -40,7 +28,7 @@
 #include <map>
 #include <typeinfo> // For std::bad_cast
 #include <stdexcept>
-#include <memory>
+#include <memory> // for smart pointers
 #include <cmath>
 
 #define shRED "\x1b[1;31m"
@@ -51,7 +39,7 @@
 #define shCYAN "\x1b[0;36m"
 #define shGREEN "\x1b[1;32m"
 
-// #define NODEBUG
+#define NODEBUG
 
 #ifdef NODEBUG
 #  define DEBUG(x) do {} while (0)
@@ -80,7 +68,6 @@ void print_test_result(int result, const string& name);
 void guard(string s, bool b);
 void test_diagnosis(const string& name, bool success, int& errors);
 
-
 template<typename T> int contains(const vector<T> &set, const T element);
 template<typename T> void addVector(vector<T> &storage, const vector<T> &data);
 template<typename T> void debugVector(std::string text, vector<T> list);
@@ -95,4 +82,4 @@ void exprTokenize(const std::string &expr, vector<std::string> &tokens, const st
 std::string trim(std::string s);
 bool isSuffix(std::string& s1, std::string& s2);
 
-#endif /* UTILS_H_ */
+

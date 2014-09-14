@@ -66,8 +66,10 @@ shared_ptr<SecretSharing> KPABE::getScheme()  {
   return m_scheme;
 }
 
+
+
 KPABE::KPABE(shared_ptr<SecretSharing> scheme, PFC& pfc, int nAttr): // the last argument specifies which group is used to build attribute fragments.
-  m_scheme(scheme), m_policy(scheme->getPolicy()), m_pfc(pfc), m_nAttr(nAttr), m_privateKeyRand(0), m_lastCTRandomness(0), m_order(m_pfc.order())
+  m_scheme(scheme), m_pfc(pfc), m_nAttr(nAttr), m_privateKeyRand(0), m_lastCTRandomness(0), m_order(m_pfc.order())
 {
   m_privateAttributes.reserve(m_nAttr);
   m_publicAtts.reserve(m_nAttr);
@@ -290,7 +292,7 @@ bool KPABE::decrypt_main_body(vector<G2> keyFrags, const vector<int>& atts, vect
 
   debugVector("Ciphertext attributes", atts);
 
-  m_policy->obtainCoveredFrags(atts, attFragIndices, keyFragIndices, coveredShareIDs); // this computation is independent of the values of fragments themselves
+  getPolicy()->obtainCoveredFrags(atts, attFragIndices, keyFragIndices, coveredShareIDs); // this computation is independent of the values of fragments themselves
 
   debugVector("IDs of covered shares", coveredShareIDs);
   debugVector("Indices for att fragments", attFragIndices);
@@ -298,7 +300,7 @@ bool KPABE::decrypt_main_body(vector<G2> keyFrags, const vector<int>& atts, vect
 
 
   vector<int> witnessSharesIndices;
-  if (!m_policy->evaluateIDs(coveredShareIDs, witnessSharesIndices)) return false;
+  if (!getPolicy()->evaluateIDs(coveredShareIDs, witnessSharesIndices)) return false;
 
   debugVector("witnessSharesIndices", witnessSharesIndices);
 
@@ -327,7 +329,7 @@ bool KPABE::decrypt_main_body(vector<G2> keyFrags, const vector<int>& atts, vect
   G2 bufferArray[countAtts]; // this is a temporary placeholder so that computed fragments can have an address that can be used by g1 or g2
 #endif
 
-  vector<Big> coeffs = m_policy->findCoefficients(minimalShareIDs, m_order);
+  vector<Big> coeffs = getPolicy()->findCoefficients(minimalShareIDs, m_order);
   for (int i = 0; i < countAtts; i++) {    
     Big coeff = coeffs[i];
     int keyFragIndex = keyFragIndices[witnessSharesIndices[i]];

@@ -1,3 +1,11 @@
+/*
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
+
+  This file implements tests for the implementation of the tree data structure implemented in tree.cpp.
+*/
+
+
 #ifndef DEF_TREE
 #include "tree.h"
 #endif
@@ -595,8 +603,7 @@ int testUpdateID(){
   return errors;
 }
 
-int runTests(std::string &testName) {
-  testName = "Test Tree";
+int runTests() {
   int errors = 0;
 
   errors += testResets();
@@ -614,8 +621,8 @@ int runTests(std::string &testName) {
 
 
 int main() {
-  std::string test_name;
-  int result = runTests(test_name);
+  std::string test_name = "Test Tree";
+  int result = runTests();
 
   DEBUG("Printing testResults");
   print_test_result(result,test_name);

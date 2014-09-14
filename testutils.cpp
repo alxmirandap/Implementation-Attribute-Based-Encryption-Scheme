@@ -1,9 +1,9 @@
 /*
- * testutils.cpp
- *
- *  Created on: 18 Aug 2014
- *      Author: uxah005
- */
+  Testbed for empirical evaluation of KP-ABE schemes, according to Crampton, Pinto (CSF2014).
+  Code by: Alexandre Miranda Pinto
+
+  This file holds tests for the main functions of utils.h.
+*/
 
 #ifndef DEF_UTILS
 #include "utils.h"
@@ -325,17 +325,16 @@ int testIsSuffix(){
   std::string s3 = "abcdjklefghij";
   std::string s4 = "xafd";
 
-  test_diagnosis("testIsSuffix: " + s1 + "; " + s2, isSuffix(s1, s2), errors);
-  test_diagnosis("testIsSuffix: " + s1 + "; " + s3, !isSuffix(s1, s3), errors);
-  test_diagnosis("testIsSuffix: " + s1 + "; " + s4, !isSuffix(s1, s4), errors);
-  test_diagnosis("testIsSuffix: " + s2 + "; " + s1, !isSuffix(s2, s1), errors);
-  test_diagnosis("testIsSuffix: " + s1 + "; " + s1, isSuffix(s1, s1), errors);
+  test_diagnosis("testIsSuffix: " + s1 + "; " + s2,   isSuffix(s1, s2), errors);
+  test_diagnosis("testIsSuffix: " + s1 + "; " + s3, ! isSuffix(s1, s3), errors);
+  test_diagnosis("testIsSuffix: " + s1 + "; " + s4, ! isSuffix(s1, s4), errors);
+  test_diagnosis("testIsSuffix: " + s2 + "; " + s1, ! isSuffix(s2, s1), errors);
+  test_diagnosis("testIsSuffix: " + s1 + "; " + s1,   isSuffix(s1, s1), errors);
 
   return errors;
 }
 
-int runTests(std::string &testName) {
-  testName = "Test Utils";
+int runTests() {
   int errors = 0;
 
   errors += testContains();
@@ -348,8 +347,8 @@ int runTests(std::string &testName) {
 }
 
 int main() {
-  std::string test_name;
-  int result = runTests(test_name);
+  std::string test_name  = "Test Utils";
+  int result = runTests();
   print_test_result(result,test_name);
 
   return 0;
