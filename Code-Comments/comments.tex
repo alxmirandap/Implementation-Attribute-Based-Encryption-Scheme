@@ -137,6 +137,7 @@ The third line is not strictly needed. It is already included in the constructor
 Class \cPFC does not redefine a copy constructor, and uses the default. This does not seem to work well in practice, attempts to pass an instance of \cPFC by value have always resulted in a long list of errors. There should be no reason to do that either, as this is mostly used for access to functions over external data. Therefore, variables of \cPFC type should always be passed as references, which is also the fastest way to pass values in and out of functions.
 
 \subsection{\fhutils / \fcutils / \code{utils\_impl.tcc}}
+\label{sec:utils}
 
 These files hold declarations and definitions of basic constants and functions to be used throughout the whole code. In most cases, they are nothing more than conveniences.
 
@@ -251,23 +252,232 @@ These files hold the declarations and definitions for the class \cKPABE. This re
 \item[\code{m\_order}] the order of the underlying groups;
 \item[\code{m\_privateAttributes}] the secret values associated to each attribute. These are written in [Crampton,Pinto'14] as $t_a$;
 \item[\code{m\_publicAtts}] the public values associated to each attribute. These are written in [Crampton,Pinto'14] as $T_a$. In this paper, the public attributes are computed as elements of $G_2$, but the present code allows the choice between $G_2$ and $G_1$. That is determined by which macro is defined, either \verb|AttOnG1_KeyOnG2| or \verb|AttOnG2_KeyOnG1|. The latter corresponds to the scheme described in the paper.
-\item[\code{m\_P, \m_Q}] the generators for groups $G_1$ and $G_2$ respectively;
+\item[\code{m\_P, m\_Q}] the generators for groups $G_1$ and $G_2$ respectively;
 \item[\code[m\_publicCTBlinder] the factor that is multiplied by the message in order to produce the ciphertext. This corresponds to the pairing of group generators raised to \code{m\_privateKeyRand};
+\end{description}
 
+The public interface of this class has several non-trivial functions.
+\begin{description}
+\item[\code{paramsgen()}] this function initializes the values of the group generators: \code{P} for $G_1$ and \code{Q} for $G_2$. These are passed from the outside as outbound arguments. It also computes the pairing of these generators and fixes the order of the ABE scheme to be that of the \cPFC instance.
+\item[\code{setup()}] this function creates the key randomness $t$ and ensures it is smaller than the group order. It also randomly generates all the private attribute values, $t_a$. Then, it computes the public ciphertext blinder, $e(P,Q)^t$, and the public attributes, either $P^{t_a}$ or $Q^{t_a}$.
+
+Notice that the key randomness is biased: if the group order does not evenly divide the possible largest value for a \cBig that \code{PFC.random(Big)} can generate, then some values will be more frequent than others. For a small example, consider that random would uniformly generate values from $0$ to $17$ inclusive, and that the order would be $11$. Then, final values from $0$ to $6$ would be twice as frequent as values from $7$ to $10$. In production code, a better way of generating randomness should be used.
+
+\item[\code{genkey()}] this function generates a decryption key, that is, a set of key fragments. First, it invokes the distribution algorithm of the secret sharing scheme, and then calls \code{makeKeyFrags} on the resulting shares (see paragraph \ref{para:private}). 
+
+Note: If it receives a vector of randomness as argument, it calls the deterministic version of the distribution algorithm.
+
+\item[\code{encrypt(), encryptS()}] these functions perform an encryption. The main work is done by calling the private function \verb|encrypt_main_body|, which returns a blinder and a set of ciphertext fragments. This blinder is then combined with the message to produce the full cipherext in either of two ways (see paragraph \ref{para:encrypt}).
+\item[\code{decrypt(), decryptS()}] these functions perform a decryption. The main work is done by calling the private function \verb|decrypt_main_body|, which returns a blinder if decryption is successful. This is then combined in the appropriate manner with part of the ciphertext in order to produce the original message.
 \end{description}
 
 \paragraph{Choice of group for fragments and public attributes}
 
-As has been mentioned a few times already, the project allows two ways to define key fragments, depending on which group is used to build key fragments, and which group is used to build public attributes and ciphertext fragments. The choice depends on the definition of one constant, and if the compilation commands are used, they are never both set at the same time.
+As has been mentioned above, the project allows two ways to define key fragments, depending on which group is used to build key fragments, and which group is used to build public attributes and ciphertext fragments. The choice depends on the definition of one constant, and if the compilation commands are used, they are never both set at the same time.
 
-To avoid code duplication, the code is the same for both variants, except that the types of certain structures change. In these cases, type declarations and function signatures are compiled conditionally, inside \verb|#ifdef...#endif| blocks. This is quite frequent in this class.
+To avoid code duplication, the code is the same for both variants, except that the types of certain structures change. In these cases, type declarations and function signatures are compiled conditionally, inside \verb|#ifdef...#endif| blocks. This happens frequently in these files, making the code a bit hard to read.
 
+\paragraph{Alternate encryption and decryption}
+\label{para:encrypt}
+The \cKPABE class offers two ways to do encryption and decryption. One implements exactly what is in the papers in the literature: a message is an element of $G_T$, and the ciphertext includes its multiplication by a public blinder factor. The second way is taken from the MIRACL implementation of Fuzzy-IBE: a message is a string, and the ciphertext includes the EXOR of this string with the hash of the public blinder factor. 
+Most of the work done in either case is exactly the same, and has been extracted into these auxiliary functions \code{encrypt\_main\_body} and \code{decrypt\_main\_body}.
 
+In both cases, encryption works by first computing a blinder factor that raises the pairing $e(P,Q)$ to the key and the ciphertext randomnesses. The two methods then differ in how this blinder is used: in one case, it is multiplied with the plaintext message; in the other, it is hashed into a string and the result is then EXORed with the plaintext. Since there was no indication in the MIRACL source code why this alternative was used, I coded both and hope that the benchmark testing can show a justification in terms of performance.
+
+\paragraph{Private functions}
+\label{para:private}
+There a few functions that are strictly  auxiliary, and need not be part of the exposed interface of the class. These are:
+
+\begin{description}
+\item[\code{makeKeyFrags}] this function receives a list of shares and produces a corresponding list of fragments, which are elements of either $G_1$ or $G_2$.
+\item[\code{encrypt\_main\_body}] this function implements the essential part of the encryption process, that is equal for both encryption alternatives. It obtains fresh randomness and then computes the public blinder. It also creates the ciphertext fragments, by masking each attribute's public value with the ciphertext randomness.
+
+\item[\code{decrypt\_main\_body}] this function is the counterpart of the previous one, and implements all the essentials of decryption. It first invokes its policy's \code{obtainCoveredFrags} to obtain a matching between the fragments in the decryption key and those in the ciphertext. If these are enough to satisfy the key's policy, then it proceeds with decryption.
+
+It first obtains the reconstruction coefficients for a set of fragments that is sufficient and minimal to decrypt the ciphertext, by calling \code{findCoefficients}. Instead of performing an individual pairing between each couple of fragments in this set, we follow the technique in MIRACL's implementation of Fuzzy-IBE. We store in arrays of elements of $G_1$ and $G_2$ the couples of elements to be paired, and then execute the \cPFC function \verb|multi\_pairing| that realizes all the pairings at once, in a more efficient manner.
+
+To avoid the exponentiation of an element in $G_T$ by a reconstruction coefficient, the latter is multiplied by the attribute fragment, which by linearity of the pairing will accomplish the same result. The choice of doing this multiplication always over the attribute fragments was arbitrary: it will be an exponentiation over $G_1$ or $G_2$ and will afford us a useful comparison, in benchmark testing, between the efficiency of said operations. In production code, this multiplication should always be done on the most efficient group, which means that in one case it should be done over attribute fragments and in other cases over key fragments.
+
+Since \verb|multi\_pairing| receives two arrays of pointers to $G_1$ and $G_2$, all their elements must be valid addresses. For that reason, when the fragment to be passed into the array is first multiplied by a coefficient we have to store it in a third array, to force it to be stored in memory and have a physical address. Otherwise, the compiler will produce a temporary value that then does not have a physical address leading to run-time errors.
+\end{description}
+
+\paragraph{Precomputation of elements}
+The implementation of \cKPABE makes use of pre-computation, to make some operations over the groups $G_1$ and $G_2$ faster. This was inspired in such use of precomputation in MIRACL's implementation of Fuzzy-IBE. The latter did not give much intuition on when such precomputation can or should be used, so I only mirrored their use as much as possible. In short, this is what happens:
+\begin{itemize}
+\item in parameter generation for the scheme, precomputation is set for the generator of the group where the key fragments will be formed. This will make multiplications with $Q$ faster, and thereby the production of key fragments.
+\item in the scheme setup, precomputation is set for the public attribute values. These values only depend on the private attribute values and on the appropriate group generator, and so are fixed at setup time. The attribute fragments are then produced by multiplying these public values by each ciphertext randomness, and so setting precomputation on each public attribute value will make the production of ciphertext fragments faster.
+\item MIRACL also offers precomputation for pairing, but only over elements of $G_2$ (at least, for Barreto-Naehrig curves). This is set in two distinct ways in the current project:
+\begin{itemize}
+\item in \code{makeKeyFrags}, precomputation is set for each key fragment if these are built in $G_2$.
+\item in \verb|encrypt_main_body|, precomputation is set for attribute fragments if these are build in $G_2$. 
+\end{itemize}
+Thus, in each pairing, it is the case that one fragment has precomputation set on it, to improve the efficiency of the operation.
+\end{itemize}
 
 
 \subsection{\fhblcanon / \fcblcanon}
 
+These files hold the declarations and definitions for the class \cBLcanonAP and \cBLcanon. These represent a Benaloh-Leichter Access Policy represented in canonical form, that is, corresponding to a DNF formula, and the corresponding type of Benaloh-Leichter Secret Sharing scheme. They are, respectively, concrete descendants of the abstract classes \cAP and \cSS.
+
+\paragraph{\cBLcanonAP}
+
+This class represents an access policy in canonical form. Such forms consist of a disjunction of conjunctive clauses, each of them representing a minimal set. This makes for a very simple data structure, and accordingly simple-ish code.
+
+The internal data of this class include a description of the represented policy, which is a \cstring, and a vector of minimal sets, each represented as a vector of integers (\code{vector<int>}). The resulting type is \code{vector< vector<int> >}.
+
+Each share of the policy is uniquely identified by a \cstring with format \code{nn:mm}, where \code{nn} is an integer numbering the minimal set the share belongs to (starting at $1$) and \code{mm} is an integer representing the share participant (which normally should not be $0$). 
+
+
+NOTE: It is assumed that the same literal does not appear twice in each conjunctive clause, as that is logically redundant. This, however, is not checked, and could possibly be exploited by a malicious user. Some guard against this should be introduced in the code at some point.
+
+There are the following non-trivial functions in the public interface:
+\begin{description}
+\item[\code{parseFromExpression()}] this is the function that interprets a policy and extracts the corresponding minimal sets. This function is recursive, due to the nature of a legal expression. A correct expression has two levels: at the highest level (0), it has one OR operator and a its arguments are AND expressions; at the lowest level (1), it has one AND operator and its arguments are numbers. The first call of this method should be at level $0$, and eventually it will call itself several times at level (1). 
+
+In each call, it first verifies extreme cases: if the policy is empty there is nothing to do, and if it is only one number, then it creates a single minimal set with a single element. The general case is handled in the \code{catch} block of the \code{try...catch} construction. This is triggered if the conversion from the expression into an integer was not possible, which means the expression is some richer string. At a high level, this identifies the operator of the expression, the argument list and then tries to parse each argument to produce the internal representation. More detailedly:
+\begin{itemize}
+\item the function tries to locate a legal operator at the start of the expression by locating the first instance of an opening parenthesis.
+\item if the function does not find the right operator at the level it is in, it throws an exception and finishes.
+\item after locating the first opening parenthesis, the function looks for the last closing parenthesis and checks that this is the last character in the expression. 
+\item it retrieves the expression inside the two parentheses and identifies the individual arguments in it, using \code{exprTokenize} (see \ref{sec:utils}).
+\item if it is at level $0$, it makes a recursive call for each of the identified tokens, processing them now at level $1$. The result of each process is a minimal set, so it collects them in a vector of minimal sets and returns the result.
+\item if it is at level $1$, then it tries to interpret each of the tokens as a participant and to produce the corresponding minimal set for the  expression. 
+\end{itemize}
+
+
+\item[\code{getNumShares()}] in a Benaloh-Leichter scheme, the number of shares is the sum of number of elements in each minimal set. 
+\item[\code{evaluteIDs()}] this is an implementation of a virtual method in the parent function. It returns true if the vector of shares it receives as argument satisfies any of the minimal sets of the policy. It returns as soon as it finds a satisfied minimal set and so produces a minimal list of witness shares.
+If the current minimal set is not satisfied, it ensures that the vector \code{satisfyingSharesIndices}, which may have been altered in the call to \code{satisfyMinimalSet}, is cleared.
+
+\item[\code{findCoefficients()}] this function returns the reconstruction coefficients for a vector of shares. In the Benaloh-Leichter scheme, these are always $1$ or $0$. Since this function is supposed to be called for minimal sets, the result is always $1$. Otherwise, this function would have to reproduce work that is done elsewhere to find a minimal set of the shares it receives, which would be more expensive. Therefore, this method makes no checks and assumes all shares are needed for the reconstruction of the scheme and so all of them have coefficient $1$.
+
+NOTE: Currently, this function has redundant code, but I can not change it because I am midway through benchmarking. In short, the conditional to check if \code{id} is in \code{shareIDs} is obviously unnecessary, since \code{id} was defined as exactly one certain element of that vector. The inside of the \code{for} loop should be only \code{coeffs.push\_back(1);}.
+
+\item[\code{obtainCoveredFrags()}] this function discovers which shares are covered by the attributes received as argument. It processes each minimal set in the policy individually. For each element in this set:
+\begin{itemize}
+\item it obtains its share identifier
+\item checks if this identifier is in the inbound vector
+\item if it is, it updates the outbound structures (see documentation for parent class)
+\item the variable \code{count} keeps track of how many shares have been inspected so far, across all minimal sets.
+\end{itemize}
+\end{description}
+
+\paragraph{Private and protected functions}
+\begin{description}
+\item[\code{init()}] this function is called in the constructors, and calls \code{parseFromExpression()} to compute the minimal sets that compose the 
+initialize the internal representation of the policy. 
+\item[\code{satisfyMinimalSet()}] this is a protected function that is called by \code{evaluateIDs}. It receives a minimal set (\code{vector<int>}) and a list of shares identifiers, and verifies if each element in the minimal set is satisfied by at least some share. If the test is successful, the function also returns in an outbound parameter the indices of the shares (in the inbound vector argument) that satisfy the elements of the minimal set. 
+
+This function checks each element of the minimal set. It computes its share identifier and checks if it is in the vector of shares. If it is, it adds the index of the satisfying share to the outbound argument. If it isn't, it leaves the outer \code{for} loop and clears the outbound vector, before retuning \code{false}.
+\end{description}
+
+\paragraph{\cSS}
+
+This class represents a Benaloh-Leichter secret sharing scheme equipped with a canonical policy. Its internal data include a pointer to a \cBLcanonAP, which is only a convenient casting of the member \code{m\_policy} of the parent class. This recasting is done in the function \code{initPolicy} during the constructor call.  They also include a vector of \cBig that represents the randomness used in the distribution function.
+
+There are the following non-trivial functions:
+
+\begin{description}
+\item[\code{manageRandomness}] this function is used with two purposes, indicated by a \code{RandomnessAction} argument: initialization or randomization. This is an enumeration defined as a protected member of \cSS, which has two possible values: \code{init} and \code{randomize}.
+
+For each minimal set, this scheme requires a number of random pieces equal to the size of the minimal set minus one. The function traverses the internal structure of minimal sets linearly, and executes the correct number of times for each set. Each times this inner loop executes, it checks the action given as argument and:
+\begin{itemize}
+\item if it is \code{init}, it createa a new position in the randomness vector, with value $0$
+\item if it is \code{randomize}, it invokes \code{PFC.random(Big)} to randomize the respective position in the randomness vector. This is so because \cPFC does not offer a function to produce a new random value, it can only randomize a reference it receives as argument.
+\end{itemize}
+
+
+\item[\code{distribute\_random()}] this calls \code{manageRandomness} to obtain fresh randomness and then calls \code{distribute\_determ} with it.
+\item[\code{distribute\_determ()}] this distributes the secret among each minimal set. For each set, each share but the last is a different random value, taken from the randomness vector. The last share is the secret minus the sum of all these values. After the right value of the share is computed, it is used to create a \cST element that is then added to the output vector.
+
+\item[\code{reconstruct()}] this function reconstructs the secret from a set of shares. It first calls \code{evaluate} to obtain a minimal set of shares if a successful reconstruction can be made. If successful, it simply sums the value of all the shares in the minimal set.
+\end{description}
+
 \subsection{\fhtree / \fctree}
+
+These files hold the declarations and definitions for the implementation of a tree data structure. This structure is implemented via classes \cnode and \ctree, which are specific to the specific problem of representing a tree-like Secret Sharing Access Policy.
+
+Access Policies can, in general, be represented by a parse tree, that corresponds to a functional view of the policy expression. A Shamir Tree is a good example to understand this: the whole policy can be seen as a boolean function, defined by a threshold operator that takes as arguments the result of evaluating other threshold operators. This naturally leads to a tree like structure where each branch is evaluated fully before the final expression can be computed. Given the focus of this project, this tree is not agnostic of its contents, and knows what kind of data it holds and what variants are allowed. It is meant to work not only with Shamir tree structures, that only require threshold gates, but also with, for example, a generic Benaloh Leichter scheme that would allow OR and AND gates on top of the Threshold ones. It is naturally possible to extend this tree to accept other kinds of gates and accept, eventually, generic circuits as policies.
+
+File \fhtree defines two enumerations that are of fundamental importance for these and the Shamir Tree classes:
+\begin{description}
+\item[\code{NodeContentType}] this represents the three kinds of node that the tree may have: leaf nodes, inner (non-leaf) nodes, and an empty node, that is merely a placeholder until something useful comes along.
+\item[\code{InnerNodeType}] this represents the three different kinds of non-leaf node, according to the corresponding policy operator: AND, OR and THRESHOLD.
+\end{description}
+
+\paragraph{\cnode}
+Class \cnode represents the contents of an individual tree node, independently of its placement inside a tree. There are different kinds of \cnode.
+
+NOTE:  In hindsight, it would have been better to implement them as individual classes, all descendent of \cnode. Yet, the decision was made at the start that the nodes would be distinguished by their type, as it seemed that there was not much behaviour differing according to node type.
+
+The internal data of a node include:
+\begin{description}
+\item[\code{m\_type}] a variable of type \code{NodeContentType}, indicating the type of this node
+\item[\code{m\_innerNode}] a union that describes the node in more detail. Since the node can be of three different types, it may have different data describing it:
+\begin{description}
+\item[If it is a leaf node] it only stores its value in \code{m\_leafValue}
+\item[If it is an inner node] it has a sub-type (a variable of type \code{InnerNodeType}) and two numeric values, that are enough to characterize any of its three possible sub-types. AND and OR gates only have an -arity, that is, the number of arguments they take; THRESHOLD gates add to this the value of their threshold.
+\item[If it is a nil node] none of these data should be used. This has to be enforced by the functions that use this data, which once again is a clear sign these should have been individual classes.
+\end{description}
+\end{description}
+
+There are the following non-trivial functions:
+\begin{description}
+\item[Accessor functions] These functions would ordinarily be considered trivial, since they only return interal data. However, given the fact that the different types of nodes are handled via member data and not an object-oriented design of classes and polimorphism, these functions become more complicated to ensure that they are only called for the correct types of nodes. Accordingly, they all start with a test of the node's type and return an exception in case that is not correct. Otherwise, they simply return the right member data.
+	\begin{description}
+	\item[\code{getLeafValue()}] 
+	\item[\code{getInnerNodeType()}] 
+	\item[\code{getThreshold()}] 
+	\item[\code{getArity()}] 
+	\end{description}
+\item[\code{to\_string()}] this function returns a \cstring description of the contents of the node. This indicates in a convenient format the parameters that govern it.
+\end{description}
+
+\paragraph{Node Construction}
+
+Uncommonly, this class does not have a public constructor. All the constructors it defines are private. That means that it is not possible to directly create an instance of \cnode. Instead, it implements the Factory Method software pattern. The reason for this is again the handling of different types through members instead of classes. Giving a public constructor would make it possible to create inconsistent instanes of \cnode, with internal data mismatching the node type. By only offering factory methods instead of a constructor in the public interface, it is possible to exactly regulate how instances of \cnode are created and ensure that they are all internally consistent. These methods are all static, since there could not be an instance of \cnode on which to call these methods. 
+
+All these methods return pointers (actually, smart pointers) to \cnode, instead of direct instances, since the tree structure needs to work with pointers. Otherwise, obtaining nodes from the tree and changing them such the changes are reflected on the tree will involve tedious and wasteful copying of structures. 
+
+The \code{shared\_ptr} pointers that these methods return can not be initialized by the preferred way of invoking \code{make\_shared}. That is because \code{make\_shared} would implicitly call the appropriate constructor, but since these are private, that call would fail. Instead, these pointers are initialized from a raw pointer to \cnode.
+
+List of methods:
+
+\begin{description}
+\item[\code{makeNILNode()}] returns a pointer to a \cnode of \code{nil} type. Does not initialize any internal data.
+\item[\code{makeOrNode()}] returns a pointer to a \cnode of \code{inner} type and \code{OR} sub-type. It initializes the inner type and the first argument of the inner node's data.
+\item[\code{makeAndNode()}] returns a pointer to a \cnode of \code{inner} type and \code{AND} sub-type. It initializes the inner type and the first argument of the inner node's data. 
+\item[\code{makeThreshNode()}] returns a pointer to a \cnode of \code{inner} type and \code{THR} sub-type. It initializes the inner type and both arguments of the inner node's data.
+\item[\code{makeLeafNode()}] returns a pointer to a \cnode of \code{leaf} type. It initializes the leaf value.
+\end{description}
+
+\paragraph{\ctree}
+
+Class \ctree represents nodes of a tree. Each instance of \ctree should be understood as a \cnode \emph{in a tree}, since it keeps its relation to other instances of \ctree. When taking together, these connected nodes represent the whole tree.
+
+The internal data include:
+
+\begin{description}
+\item[\code{m\_node}] a pointer to a concrete \cnode, that holds all the information about this node of the tree;
+\item[\code{m\_nodeID}] a \cstring that includes the unique identifier of this node in the tree;
+\item[\code{m\_childen}] a vector of pointers to \ctree that represent the children nodes of this node;
+\end{description}
+
+\paragraph{Node Construction}
+
+Just like \cnode, this class implements a factory-method software pattern. Its main constructor is private and instances are created via factory methods that are static and return pointers to \ctree instances. There is a public constructor that only returns an empty tree. There is also a private method, \code{initNodeID()}, that computes the unique identifier for each node in the tree.
+
+This class has the following non-trivial functions:
+\begin{description}
+\item[\code{getChild()}] 
+\item[\code{appendChild()}] 
+\item[\code{appendTree()}] 
+\item[\code{to\_string(), full\_to\_string()}] 
+\item[\code{getNumLeaves()}] 
+\item[\code{getNumChildren()}] 
+\item[\code{updateID()}] 
+\item[\code{findIDForNode()}] 
+\end{description}
 
 \subsection{\fhshtree / \fcshtree}
 
@@ -315,6 +525,12 @@ All the classes and main functions used in this project are tested, albeit in an
 The function \code{runTests} might take more or less arguments, depending on what is needed by the individual tests, but it has some invariants: it always initializes an variable \code{errors} to $0$ that counts how many tests have failed so far, and it always returns this value. Inside, \code{runTests} usually calls other functions that run specific tests and return their own count of errors. These functions, do all the heavy lifting, preparing and executing each test. One test corresponds to one call to the utility function \code{test\_diagnosis}, which takes three parameters: the message to output to the terminal signalling that a test was called; the condition that the test must satisfy, and the current error count. This function increments the counter if the condition fails, and outputs a message to the terminal saying that the test has either passed (in green) or failed (in red). 
 
 Finally, \code{runTests} always calls the utility function \code{print\_test\_result} that shows how many tests have failed in the total package. If all tests pass, with colour coding for quick perception of the result.
+
+\paragraph{Technical details}
+This project was implemented and compiled in C++, over Linux Kubuntu 12.04.  The compiler used was gcc version 4.6.3 (Ubuntu/Linaro 4.6.3-1ubuntu5), for a target architecture \verb|x86_64-linux-gnu|. The target computer had a quadcore Intel CPU, i5-3210M running at 2.50 GHz, and 4GB of RAM memory.
+
+The benchmark tests were ran overnight, as the sole user process running on the machine.
+
 
 \section{Performance Measurement}
 

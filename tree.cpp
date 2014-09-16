@@ -216,9 +216,6 @@ shared_ptr<NodeContent> TreeNode::getNode(){
   return m_node;
 }
 
-shared_ptr<TreeNode> TreeNode::getParent(){
-  return NULL;
-}
 
 std::shared_ptr<TreeNode> TreeNode::getChild(unsigned int i){  
   stringstream ss;
@@ -394,31 +391,6 @@ unsigned int TreeNode::getNumChildren(){
 
 std::string TreeNode::getNodeID() const{
   return m_nodeID;
-
-  /*
-  switch(m_node->getType()){
-  case NodeContentType::nil:
-    {
-      return "";
-    }
-    break;
-  case NodeContentType::leaf:
-    {
-	std::string value = convertIntToStr(m_node->getLeafValue());
-	int n = m_nodeID.rfind(":");
-	std::string parentID = m_nodeID.substr(0,n+1);
-	std::string finalID = parentID + "=" + value;
-	return finalID;
-    }
-    break;
-  case NodeContentType::inner:
-    {
-  return m_nodeID;
-    }
-    break;
-  }
-  return ""; // should never get here, but -Wreturn-type gives a warning without this
-  */
 }
 
 void TreeNode::setNodeID(const std::string nodeID){

@@ -158,10 +158,10 @@ std::vector<std::vector<int> > BLAccessPolicy::parseFromExpression(int level, st
 // level 0 denotes the top-level of the expression. An OR is expected here
 // level 1 denotes the arguments of the OR. These could be either leaves or AND expressions
 
-	vector<vector<int> > minimalSets;
-	if (expr == "") {
-		return minimalSets;
-	}
+  vector<vector<int> > minimalSets;
+  if (expr == "") {
+    return minimalSets;
+  }
 
   try {
     int leafValue = convertStrToInt(expr);
@@ -227,14 +227,14 @@ std::vector<std::vector<int> > BLAccessPolicy::parseFromExpression(int level, st
     // each token is a single leaf and will be returned as a single element set
     // inside a vector
     if (level == 1) {
-    	vector<int> minimalSet;
-    	for (unsigned int i = 0; i < tokens.size(); i++) {
-    		vector<vector<int> > literal = parseFromExpression(level+1, tokens[i]);
-    		minimalSet.push_back(literal[0][0]);
-		}
-		minimalSets.push_back(minimalSet);
-		return minimalSets;
-   	}
+      vector<int> minimalSet;
+      for (unsigned int i = 0; i < tokens.size(); i++) {
+	vector<vector<int> > literal = parseFromExpression(level+1, tokens[i]);
+	minimalSet.push_back(literal[0][0]);
+      }
+      minimalSets.push_back(minimalSet);
+      return minimalSets;
+    }
     minimalSets.clear();
     return minimalSets;
   }

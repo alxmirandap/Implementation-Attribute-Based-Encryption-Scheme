@@ -24,9 +24,6 @@ class NodeContent {
   NodeContent(InnerNodeType nodeType, int arg1, int arg2);
 
   NodeContentType m_type;
-  // this uniquely identifies each node in the tree. A simple scheme is to describe the path to root.
-  // Each node concatenates ":" and its position within children to the Id of its parent. For example, root would be "0". Immediate children of root would be
-  // "0:0", "0:1", "0:2". Children of the second child would be "0:1:0", "0:1:1" and so on.
 
   union{
     int m_leafValue;
@@ -74,8 +71,6 @@ class TreeNode {
   static std::shared_ptr<TreeNode> makeTree(std::shared_ptr<NodeContent> node);
   std::shared_ptr<NodeContent> getNode();
   std::shared_ptr<TreeNode> getChild(unsigned int i);
-  shared_ptr<TreeNode> getParent();
-  void setParent(shared_ptr<TreeNode> parent);
   bool operator==(const TreeNode& rhs) const;
   TreeNode& operator=(const TreeNode& rhs);
   bool appendChild(std::shared_ptr<NodeContent> node);
