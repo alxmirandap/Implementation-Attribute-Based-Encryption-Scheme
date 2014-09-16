@@ -62,11 +62,13 @@ GT& KPABE::getPublicCTBlinder()
   return m_publicCTBlinder;
 }
 
-shared_ptr<SecretSharing> KPABE::getScheme()  {
-  return m_scheme;
+
+KPABE::KPABE(PFC& pfc, int nAttr): // the last argument specifies which group is used to build attribute fragments.
+  m_scheme(nullptr), m_pfc(pfc), m_nAttr(nAttr), m_privateKeyRand(0), m_lastCTRandomness(0), m_order(m_pfc.order())
+{
+  m_privateAttributes.reserve(m_nAttr);
+  m_publicAtts.reserve(m_nAttr);
 }
-
-
 
 KPABE::KPABE(shared_ptr<SecretSharing> scheme, PFC& pfc, int nAttr): // the last argument specifies which group is used to build attribute fragments.
   m_scheme(scheme), m_pfc(pfc), m_nAttr(nAttr), m_privateKeyRand(0), m_lastCTRandomness(0), m_order(m_pfc.order())
@@ -125,14 +127,10 @@ vector<G2> KPABE::genKey()
 vector<G1> KPABE::genKey()
 #endif
 {
+  guard("genKey was called with a null scheme", !(m_scheme==0));
   //  SecretSharing ssscheme(policy, m_pfc);
   ENHDEBUG("Inside genKey()");
   DEBUG("privateKeyrand: " << m_privateKeyRand);
-  if (m_scheme == 0) {
-    DEBUG("is scheme null? " << "YES");
-  } else {
-    DEBUG("is scheme null? " << "NO");
-  }
   DEBUG("calling distribute_random");
   std::vector<ShareTuple> shares = m_scheme->distribute_random(m_privateKeyRand);
   DEBUG("distribute_random returned");
@@ -149,6 +147,7 @@ vector<G2> KPABE::genKey(vector<Big> randomness)
 vector<G1> KPABE::genKey(vector<Big> randomness)
 #endif
 {
+  guard("genKey(randomness) was called with a null scheme", !(m_scheme==0));
   ENHDEBUG("Inside genKey(randomness)");
   // SecretSharing ssscheme(policy, m_pfc);
   std::vector<ShareTuple> shares = m_scheme->distribute_determ(m_privateKeyRand, randomness);

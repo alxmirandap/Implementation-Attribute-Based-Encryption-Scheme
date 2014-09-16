@@ -51,6 +51,7 @@ class KPABE {
 
 public:
 
+  KPABE(PFC &pfc, int nAttr);
   KPABE(shared_ptr<SecretSharing> scheme, PFC &pfc, int nAttr);
   void paramsgen(G1& P, G2& Q, Big& order);  
   unsigned int numberAttr() const;
@@ -59,12 +60,14 @@ public:
   Big& getPrivateKeyRand() ;
   Big& getLastEncryptionRandomness() ;
   GT& getPublicCTBlinder() ;
-  shared_ptr<SecretSharing> getScheme() ;
+
+  inline shared_ptr<SecretSharing> getScheme()  {
+    return m_scheme;
+  }
 
   inline shared_ptr<AccessPolicy> getPolicy() {
     return m_scheme->getPolicy();
   }
-
 
 
 #ifdef AttOnG1_KeyOnG2

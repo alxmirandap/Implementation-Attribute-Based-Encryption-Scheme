@@ -89,6 +89,10 @@ public:
   SecretSharing(shared_ptr<AccessPolicy> policy, const Big &order, PFC &pfc);
   Big getOrder() const;
 
+  inline void setPolicy(shared_ptr<AccessPolicy> policy) {
+    m_policy = policy;
+  }
+
   inline shared_ptr<AccessPolicy> getPolicy() {
     return m_policy;
   }
@@ -96,7 +100,7 @@ public:
   unsigned int getNumParticipants() const;
   unsigned int getNumShares();
   vector<int> getParticipants() const;
-  static vector<ShareTuple> getSharesForParticipants(vector<int> &parts, vector<ShareTuple> &shares); // returns the subset of shares that are held by certain participants
+  static vector<ShareTuple> getSharesForParticipants(const vector<int> &parts, const vector<ShareTuple> &shares); // returns the subset of shares that are held by certain participants
   virtual bool evaluate(const vector<ShareTuple> uniqueShares, vector<ShareTuple> &witnessShares) const;
   virtual vector<Big> getDistribRandomness() = 0;
   virtual std::vector<ShareTuple> distribute_random(const Big& s) = 0;

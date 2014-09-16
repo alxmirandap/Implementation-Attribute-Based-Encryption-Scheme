@@ -1,6 +1,6 @@
-#ifndef DEF_BL_CANON
-#include "BLcanonical.h"
+#ifndef DEF_SH_TREE
+#include "ShTree.h"
 #endif
 
-#define SS_TYPE BLSS
-#define SS_ACC_POL_TYPE BLAccessPolicy
+#define SS_TYPE ShTreeSS
+#define SS_ACC_POL_TYPE ShTreeAccessPolicy

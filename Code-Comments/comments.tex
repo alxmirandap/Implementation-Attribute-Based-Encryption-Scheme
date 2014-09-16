@@ -19,6 +19,7 @@
 \newcommand{\cnode}{\code{NodeContent}}
 \newcommand{\ctree}{\code{TreeNode}}
 \newcommand{\cBig}{\code{Big}}
+\newcommand{\cPFC}{\code{PFC}}
 
 \newcommand{\cstring}{\code{std::string}}
 
@@ -93,7 +94,7 @@ Some operations are repeatedly needed throughout the code that were not readily 
 \section{Implementation Details}
 
 \subsection{Using MIRACL}
-
+\label{sec_miracl}
 This project implements a cryptographic scheme for use in the real-world. Since its security is based on number-theoretic complexity assumptions, it requires very large numbers that can not be handled by the primitive types and functions of C++. Therefore, implementation relies on an external library, MIRACL, to provide these services. The current version is 4.0.
 
 In particular, it uses MIRACL's ability to manipulate large integers, and operations on asymmetric pairings of groups $G_1 \times G_2 \to G_T$.
@@ -122,18 +123,18 @@ Miracl precision(5,0);
 miracl* mip = &precision;
 \end{verbatim}
 
-However, even this is not necessary in this particular project. The basis for the pairing computations we use is the class \code{PFC} (for Pairing Friendly Curve), declared in \verb|pairing_3.h|. For the choice of curve of this project, the respective implementation is in \verb|bn_pair.cpp|. There, it can be seen that the constructor of \code{PFC} already calls \code{mirsys}, and so another call is not needed. 
+However, even this is not necessary in this particular project. The basis for the pairing computations we use is the class \cPFC (for Pairing Friendly Curve), declared in \verb|pairing_3.h|. For the choice of curve of this project, the respective implementation is in \verb|bn_pair.cpp|. There, it can be seen that the constructor of \cPFC already calls \code{mirsys}, and so another call is not needed. 
 
-Therefore, in this project initialization is done simply by creating a \code{PFC} class and then getting a handle to the Miracl pointer. This can be done with:
+Therefore, in this project initialization is done simply by creating a \cPFC class and then getting a handle to the Miracl pointer. This can be done with:
 \begin{verbatim}
 PFC pfc(AES_SECURITY);  
 miracl *mip=get_mip();  
 mip->IOBASE=16;
 \end{verbatim}
 
-The third line is not strictly needed. It is already included in the constructor of \code{PFC}. I include it only for clarity, so that the reader will know its value without having to read the source code of an external library.
+The third line is not strictly needed. It is already included in the constructor of \cPFC. I include it only for clarity, so that the reader will know its value without having to read the source code of an external library.
 
-Class \code{PFC} does not redefine a copy constructor, and uses the default. This does not seem to work well in practice, attempts to pass an instance of \code{PFC} by value have always resulted in a long list of errors. There should be no reason to do that either, as this is mostly used for access to functions over external data. Therefore, variables of \code{PFC} type should always be passed as references, which is also the fastest way to pass values in and out of functions.
+Class \cPFC does not redefine a copy constructor, and uses the default. This does not seem to work well in practice, attempts to pass an instance of \cPFC by value have always resulted in a long list of errors. There should be no reason to do that either, as this is mostly used for access to functions over external data. Therefore, variables of \cPFC type should always be passed as references, which is also the fastest way to pass values in and out of functions.
 
 \subsection{\fhutils / \fcutils / \code{utils\_impl.tcc}}
 
@@ -219,9 +220,50 @@ Pure virtual functions are not defined in this class, and must forcibly be imple
 
 \paragraph{\cSS}
 
-This class represents a generic secret sharing scheme. It is an abstract class, with only basic functionality. 
+This class represents a generic secret sharing scheme. It is an abstract class, with only basic functionality. This class holds a pointer for one \cAP, a \cBig representing the order of the underlying groups and a reference to an external \cPFC instance. As explained in Section \ref{sec_miracl}, this is because there is no need, nor indeed a way, to copy instances of \cPFC.
+
+The reason why this class holds a pointer, instead of an instance of \cAP, is the following: both \cSS and \cAP are abstract classes. Important methods will be called by their descendants, which will have a specific type descendant of \cAP. Therefore, descendants of \cSS need to downcast their internal policy instance. C++ affords a safe way to perform downcast, by using the operator \verb|dynamic_cast|. This, however, requires the argument to be a pointer or a reference. For added safety, I have used smart pointers instead of raw pointers. A positive consequence of this option is that the memory footprint of \cSS is smaller since it does not need to store the complete information of a \cAP. This also saves the time needed to copy instances.
+
+A possible alternative would have been to represent the policy as a reference instead of a pointer. This would force the policy to be fully initialized in the constructor. This inflexibility might not be a good idea. In fact, I am not entirely happy with the present design: the benchmark code shows a scenario where it would have been preferable to initialize \cSS without defining the \cAP immediately and instead define this later via a specific method. That would have allowed the benchmark for key generation and decryption, for example, to setup the KPABE scheme only once, defining the randomness and the attributes, and then changing the policy for the several scenarios. Currently, the only way to specify a new policy is to create the instance a new, and this entails doing the setup yet again. This is a big hit in the running time of the tests, although it does not affect the measured performances for key generation and decryption, since the timers only start after the setup has been done.
+
+Changing the code to accommodate that change requires code to check that the KPABE class can not function while it does not have a policy and possibly adding a copy constructor in each \cSS class and maybe its descendants. There might be more elegant solutions, but lack of time prevented me of exploring them. 
+
+
+The non-trivial functions are:
+\begin{description}
+\item[\code{getSharesForParticipants()}] {\bf static} this function receives a vector of shares and a vector of participant numbers, and it returns a new vector that contains exactly those shares whose participant is contained in the first argument.
+\item[\code{distribute\_random()}] {\bf pure virtual} this function implements the distribution algorithm of the secret sharing scheme. This is a randomized algorithm, but the details of how to generate that randomness are the responsibility of the descendant classes. 
+\item[\code{distribute\_determ()}] {\bf pure virtual} in some purposes, for example for tests, it might be necessary to perform the distribution with fixed random coins. That is achieved by this method, the deterministic version of \verb|distribute_random()|, which receives the randomness as an argument.
+\item[\code{getDistribRandomness()}] this method simply returns the last randomness that was used to perform a distribution.
+\item[\code{reconstruct()}] this method receives a list of shares and uses its internal policy to interpret them accordingly and reconstruct the secret.
+\end{description}
+
 
 \subsection{\fhkpabe / \fckpabe}
+
+These files hold the declarations and definitions for the class \cKPABE. This represents the concept of Key-Policy Attribute Based Encryption scheme. Its internal data include:
+\begin{description}
+\item[\code{m\_scheme}] a smart pointer for a secret sharing scheme;
+\item[\code{m\_pfc}] a reference to a \cPFC instance;
+\item[\code{m\_nAttr}] the number of attributes in the universe;
+\item[\code{m\_privateKeyRand}] the random value that is split among the attributes during the key generation. This is written in [Crampton,Pinto'14] as $t$;
+\item[\code{m\_lastCTRandomness}] the random value that was used to blind the ciphertext in the last encryption. This is written in [Crampton,Pinto'14] as $s$;
+\item[\code{m\_order}] the order of the underlying groups;
+\item[\code{m\_privateAttributes}] the secret values associated to each attribute. These are written in [Crampton,Pinto'14] as $t_a$;
+\item[\code{m\_publicAtts}] the public values associated to each attribute. These are written in [Crampton,Pinto'14] as $T_a$. In this paper, the public attributes are computed as elements of $G_2$, but the present code allows the choice between $G_2$ and $G_1$. That is determined by which macro is defined, either \verb|AttOnG1_KeyOnG2| or \verb|AttOnG2_KeyOnG1|. The latter corresponds to the scheme described in the paper.
+\item[\code{m\_P, \m_Q}] the generators for groups $G_1$ and $G_2$ respectively;
+\item[\code[m\_publicCTBlinder] the factor that is multiplied by the message in order to produce the ciphertext. This corresponds to the pairing of group generators raised to \code{m\_privateKeyRand};
+
+\end{description}
+
+\paragraph{Choice of group for fragments and public attributes}
+
+As has been mentioned a few times already, the project allows two ways to define key fragments, depending on which group is used to build key fragments, and which group is used to build public attributes and ciphertext fragments. The choice depends on the definition of one constant, and if the compilation commands are used, they are never both set at the same time.
+
+To avoid code duplication, the code is the same for both variants, except that the types of certain structures change. In these cases, type declarations and function signatures are compiled conditionally, inside \verb|#ifdef...#endif| blocks. This is quite frequent in this class.
+
+
+
 
 \subsection{\fhblcanon / \fcblcanon}
 

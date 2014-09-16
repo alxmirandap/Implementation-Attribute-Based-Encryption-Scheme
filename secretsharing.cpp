@@ -153,7 +153,7 @@ vector<int> SecretSharing::getParticipants() const{
   return m_policy->getParticipants();
 }
 
-vector<ShareTuple> SecretSharing::getSharesForParticipants(vector<int> &parts, vector<ShareTuple> &shares){
+vector<ShareTuple> SecretSharing::getSharesForParticipants(const vector<int> &parts, const vector<ShareTuple> &shares){
   vector<ShareTuple> outShares;
   outShares.reserve(shares.size());
   int n; // this must be a signed int, otherwise contains always returns a positive value and we can not detect an error.

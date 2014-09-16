@@ -178,10 +178,10 @@ void adjustScale(double value, std::string &unit, double &adjustedValue) {
 void  report_title(std::string title, std::string varParam, std::string params1, std::string params2="", std::string params3="" ) {
   stringstream ss;
   ss << "Task: " << title << std::endl 
-     << params1 << "\t" << "Time per rep" << "\t\t" << "Time per " << varParam << "\t";
+     << params1 << "\t" << "Time per rep" << "\t\t" << "Time per " << varParam << "\t\t";
 
   if (params2 != "") {
-    ss << params2 << "\t" << "Time per rep" << "\t\t" << "Time per " << varParam << "\t";
+    ss << params2 << "\t" << "Time per rep" << "\t\t" << "Time per " << varParam << "\t\t";
   }
 
   ss << params3 << std::endl;
@@ -630,7 +630,7 @@ void measureKeyFunc(PFC &pfc, std::string (*makePolicy) (int, int, int&, int&), 
   ss << "#Leaves in Policy" << "\t" << "#Minimal Sets" << "\t" << "Max Leaves" << "\t" << "Control Param" << "\t" << "Repetitions" 
      << "\t" << "Total time";
   
-  report_title("#3 Key Generation with " + policy_type + " policy:", "Share", ss.str(), "Policy");
+  report_title("#3 Key Generation with " + policy_type + " policy:", "Share", ss.str(), "", "Policy");
 
 
   for (int i = 0; i < nLeavesVars; i++){
