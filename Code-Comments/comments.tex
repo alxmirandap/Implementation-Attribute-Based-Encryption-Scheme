@@ -191,7 +191,7 @@ This class represents a share. It maintains three pieces of information:
 The methods of this class are mostly trivial, allowing access to the internal data, string representation of a query and the basic needs: constructors, copy-constructor, assignment operator and equality testing.  
 
 \paragraph{\cAP}
-
+\label{para:cAP}
 This class represents an Access Policy. Since this is the base class for any such policy, it has only basic functionality. The only internal data is a list of participants, held in a \code{vector<int>}. Constructors at this level only initialize this participants list in three different ways: with one single participant, with participants numbered from $1$ to $n$, or with an arbitrary list of participants. 
 
 It has the following non-trivial functions:
@@ -455,6 +455,12 @@ List of methods:
 
 Class \ctree represents nodes of a tree. Each instance of \ctree should be understood as a \cnode \emph{in a tree}, since it keeps its relation to other instances of \ctree. When taking together, these connected nodes represent the whole tree.
 
+This class is not as dynamic as a general tree. It is expected that trees are formed once and then not changed again. Therefore, the content of nodes should not change. This means that a node that is going to rest at the bottom of a tree should be created as a leaf node even before it is added to any tree. Analogously, a future non-leaf node should be created as an inner node.
+
+The tree assigns a unique identifier to each node. The ID of an inner node represents its position in the tree, encoding the path from the root to that node. The ID of root is simply \code{0}. The ID of the $i^{th}$ child of a node with ID \code{y}, where $y$ is some \cstring, is \code{y:i}, where $i$ is an integer that may start at $0$.
+
+Leaf nodes have some extra information, because these IDs are used as the identifiers of the respective shares. These have to hold all the public information of the share, which includes its participant index. Thus, the Id of a leaf node is equal to the ID of an inner node in the same position followed by \code{:=n}, where $n$ is the participant number.
+
 The internal data include:
 
 \begin{description}
@@ -463,23 +469,241 @@ The internal data include:
 \item[\code{m\_childen}] a vector of pointers to \ctree that represent the children nodes of this node;
 \end{description}
 
-\paragraph{Node Construction}
-
-Just like \cnode, this class implements a factory-method software pattern. Its main constructor is private and instances are created via factory methods that are static and return pointers to \ctree instances. There is a public constructor that only returns an empty tree. There is also a private method, \code{initNodeID()}, that computes the unique identifier for each node in the tree.
+NOTE: in what follows, when I write ``the current \ctree'' I mean the instance of \ctree whose function is executed.
 
 This class has the following non-trivial functions:
 \begin{description}
-\item[\code{getChild()}] 
-\item[\code{appendChild()}] 
-\item[\code{appendTree()}] 
-\item[\code{to\_string(), full\_to\_string()}] 
-\item[\code{getNumLeaves()}] 
-\item[\code{getNumChildren()}] 
-\item[\code{updateID()}] 
-\item[\code{findIDForNode()}] 
+\item[\code{getChild()}] this method returns a pointer to the $i^{th}$ child of a node, if the index $i$ is legal. Otherwise, it throws an exception.
+
+\item[\code{appendChild()}] this function takes a pointer to \cnode, creates a corresponding \ctree based on it and adds it to the current \ctree. The new node is inserted at the end of the current \ctree's children. In case the current \ctree is an empty tree (its own type is nil), then the inner \cnode of this \ctree is changed to be the new node and its ID is updated. If the current \ctree is a leaf node, then the operation is rejected, since leaf nodes can not have children. 
+
+Otherwise, if the arity of the \ctree can accommodate one more node, the new \ctree is added to the children and given a new ID.
+\item[\code{appendTree()}] this function takes a tree rooted at a given \ctree and adds it to the current \ctree. It does the same checks of \code{appendChild} but has a little more functionality, since now it is adding a whole tree instead of just one node. For that reason, when it creates a new entry in its children list it invokes the function \code{updateID} to change the IDs of all the nodes of the appended tree, so that these reflect their new position in a larger tree.
+
+\item[\code{to\_string(), full\_to\_string()}] these methods return a recursive description of the tree, listing a node and a parenthesized list of its sub-trees. The second version adds the ID of each node to the output, giving more complete information for debugging purposes but being harder to read.
+
+\item[\code{getNumLeaves()}] this function returns the number of leaves in the tree. It works recursively, traversing the tree in a depth-first manner.
+\item[\code{updateID()}] this method is invoked for a particular \ctree that has been added to a parent \ctree. Its purpose is to give the current \ctree and all its descendants an ID that reflects their new position. It is therefore invoked recursively. In every invocation, it receives as arguments the ID of the parent for this whole tree and its position among its children.
+
+The first node of the appended \ctree must have an ID of \code{0}, and subsequent nodes will hang below this. Therefore, they will have an ID starting with \code{0:}. When the root becomes a child of another tree, its own ID changes from \code{0} to some prefix describing its position, say \code{x}. Consequently, all descendants of this node must reflect this change in their IDs, and the initial \code{0} must be replaced by the new ID of their initial root, that is, \code{x}.
+
+NOTE: This method only works correctly when the tree that is appended is not a subtree of any other tree, since it assumes that the ID of the first node is "0". However, it is not natural to add the same nodes to two trees at the same time, and since there is no function in this class to remove nodes from a tree, it should never occur that we would be appending a sub-tree of another tree.
+
+\item[\code{findIDForNode()}] this function computes the right ID for a node in the tree, deriving it from the ID of the parent node and the node's position among the parent's children as was explained above. A nil node does not have an ID. 
 \end{description}
 
+
+\paragraph{Node Construction}
+
+Just like \cnode, this class implements a factory-method software pattern. Its main constructor is private and instances are created via factory methods that are static and return pointers to \ctree instances. There is a public constructor that only returns an empty tree. There is also a private method, \code{initNodeID()}, that computes a unique identifier for each node when the node is created.
+
+When a \ctree is created, it is disconnected from any other nodes, forming a tree with only one element. The function \code{initNodeID()} is called in the constructor, giving a default root ID to the node, that is, \code{0} or \code{0:=x} for some integer $x$. 
+
+
 \subsection{\fhshtree / \fcshtree}
+
+These files hold the declarations and definitions for the classes \cShTreeAP and \cShTree. These represent secret sharing access policies that are represented by Trees of Shamir threshold nodes, and the resulting secret sharing schemes.
+
+\paragraph{\cShTreeAP}
+
+This class represents an access policy based on Shamir threshold gates. In its simplest case, it is just like the original Shamir scheme, where a reconstruction is successful if it presents at least as many shares as its threshold. To obtain the general case, shares are replaced by other sub-trees, meaning that a reconstruction is successful if a given number of sub-policies are successful. This in turn will depend on their subtrees until eventually success depends on presenting a given share.
+
+A natural way to represent such policies is as a tree where each node represents a threshold basic secret sharing scheme, and sub-policies are indeed subtrees. A node's children can be either other trees or leaf nodes, representing individual shares. The value of a leaf is merely the participant associated to the corresponding share. 
+This kind of policy is implemented by a tree based on the \ctree class.
+
+The internal data of \cShTreeAP include \code{m\_description}, a \cstring that holds the expression representing this policy, and \code{m\_treePolicy}, a pointer to \ctree that represents the root of the tree for the policy. Despite the fact that the internal representation is based only on Threshold gates, the policy expression can be described using also AND and OR operators, since these can be converted to threshold representations and are convenient and better-known operators.
+
+The class has the following non-trivial non-static functions in its public interface.
+\begin{description}
+\item[\code{parsePolicy()}] this is a redundant method that unwittingly escaped deletion before I started the benchmarks.
+
+\item[\code{parseTreeFromExpression()}] this is a recursive method that receives an expression and returns a pointer to the root of the corresponding tree. 
+
+Base cases:
+\begin{itemize}
+\item if the expression is the null string, it returns an empty tree.
+\item if the expression can be converted into a number, it represents a leaf. The function creates the corresponding \cnode and transforms into a \ctree, which is then returned.
+\end{itemize}
+
+Recursive case:
+
+If the conversion to an integer failed, which is caught in the \code{catch} block, the expression is more complex than a single number and must be fully parsed. This code is similar to a corresponding method in class \cBLcanonAP, except that it must handle more complex policies, with threshold gates and an unlimited amount of levels. The work occurs in several steps:
+\begin{itemize}
+\item As in \cBLcanonAP, it starts by locating an operator and identifying its argument list;
+\item it tokenizes this list and creates a pointer to \cnode (\code{newNode}) with a type suiting the operator;
+\item it creates a \ctree out of \code{newNode}, \code{pTree}.
+\item if the operator is not a threshold gate, every token is a sub-expression, and so the function invokes itself recursively for each child. After the invocation, it appends the resulting tree to its own \code{pTree}.
+\item if the operator is a threshold gate, the first token must indicate the threshold, and so the function proceeds as in the previous case for all tokens except the first.
+\end{itemize}
+
+It finally returns the tree that has thus been constructed.
+ 
+\item[\code{findCoefficients()}] this function computes a vector of reconstruction coefficients, one for each share in the argument it receives. It is assumed that these shares can successfully recover the secret.
+
+This is a fairly complex method that requires a few auxiliary methods. The reconstructing shares are not necessarily a full set of shares. If we trace the path to root from all the reconstructing shares, we expect to obtain only a subset of the policy tree. It is only this subtree that matters to this function. For reference, I call it reconstruction-tree.
+
+Each node in the reconstruction tree has siblings and is associated to a Lagrange coefficient. The secret is obtained from computing the linear combination of the root's direct children's shares with their Lagrange coefficients in the reconstruction-tree. But these shares are themselves reconstructed from lower children, such that at each level we have to compute the appropriate Lagrange coefficients and combine them.
+
+Due to linearity, this reduces to multiplying only the shares at the base of the tree by their full Lagrange coefficients. By this term, I mean the coefficients that result from multiplying all the coefficents in the path from a share to root. These coefficients may be used by different shares, since some paths may overlap at higher levels of the tree.
+
+The strategy to find these coefficients is this:
+\begin{itemize}
+\item the function creates two maps (hashtables) that associate nodes in the tree to reconstructing sets and coefficients. Reconstructing sets are the child numbers of paths in the reconstruction-tree that arrive at that node, coming from the leaves. These are stored in \code{setChildNos}. Each element in such a reconstruction set has a different coefficient, and these will be stored in map \code{setCoeffs}.
+\item the first loop obtains the prefix of each reconstructing share and invokes \code{storeSharePrefixes}, registering the path for this share in \code{setChildNos}.
+\item a second loop traverses \code{setChildNos}. Each key in this map represents a different note in the reconstruction-tree. The corresponding value is the set of child numbers of the reconstructing elements. An inner loop computes the Lagrange coefficient for each element in such set and stores it in a vector \code{vec\_coeffs}. This is then added to the map \code{setCoeffs} with the key of the corresponding node. 
+\item at this point the whole reconstruction tree is represented in the two maps, and the Lagrange coefficients of each node are computed. It remains only to compute the final coefficients for each share. This is done by a final loop that takes each share in the inbound argument for this method and invokes \code{findFinalCoefficient} for this share and the two maps. The resulting coefficient is then added to a result vector \code{coeffs}. When the loop terminates, this vector is returned.
+\end{itemize}
+
+
+\item[\code{getNumShares()}] this function returns the number of shares in the policy, which is equal to the number of leaves in the tree;
+\item[\code{evaluateIDs()}] this function calls the recursive method \code{satisfyNodeID()} giving it the policy tree as a starting point. If this tree is satisfied, the policy is satisfied and this function simply relays the results of \code{satisfyNodeID()}.
+\item[\code{obtainCoveredFrags()}] this function must be implemented because it corresponds to a pure virtual function in the base class. It calls the recursive function \code{obtainCoveredFragsRec()} with \code{count} initialized to $0$ and starting at the class's internal policy tree root.
+\end{description}
+
+\paragraph{Static functions}
+It also has a number of static functions. All of these can be invoked without needing an instance of \cShTreeAP. They perform somewhat utility functions that are needed by the normal methods of the class.
+
+\begin{description}
+\item[\code{satisfyNode()}] this function receives a pointer to a \ctree and decides whether this is satisfied. If that is the case, it returns a minimal set of shares that satisfy the policy. It delegates the work to function \code{satisfyNodeID()}, that only receives a vector of share identifiers instead of a vector of \cST. This function, then, acts as a wrapper for this call, preparing the input and extracting its output from the result it receives. To prepare the input, it creates a vector with the identifiers of all the shares it receives; to extract an output, it creates a sub-vector of its shares whose index is in the vector returned by \code{satisfyNodeID()}.
+
+\item[\code{satisfyNodeID()}] this function does all the work of verifying if a policy is satisfied. It calls itself recursively descending in the original \ctree until a direct satisfaction decision can be made at a base case.
+
+It returns a boolean indicating satisfaction and the indices to a minimal set of sufficient shares via its outbound argument \code{satisfyingSharesIndices}, which I call the witness set. Each time this method finds a satisfying branch, it adds the contents of the branch's witnesses to its own witnesses. However, if at the end the satisfied branches are insufficient to satisfy the threshold, the current witness vector is erased: since the node is unsatisfied, there can be not be a set of satisfying shares.
+
+The base cases for the recursion are:
+\begin{itemize}
+\item the \ctree is empty (nil): These trees are always unsatisfied by convention.
+\item the \ctree is a leaf: such tree is satisfied only if its identifier is in the received vector of identifiers. If that is the case, the share's index is added to the witness vector \code{satisfyingSharesIndices} and the function returns success. Otherwise, the witness vector is cleared.
+\end{itemize}
+
+The recursive case happens if none of the base cases is satisfied. The procedure depends on the sub-type of the \ctree's internal node:
+\begin{enumerate}
+\item if it is an AND gate, it recursively invokes \code{satisfyNodeID()} for each child. If an invocation passes, the returned indices are added to the current witness vector. As soon as an invocation fails, this witness vector is cleared, and the function returns false;
+\item if it is an OR gate, the logic is the dual. The function recursively invokes \code{satisfyNodeID()} for each child. As soon as one passes, the returned indices are added to the witness vector and the function returns successfully. If the loop ends, no child succeeded and so the function returns false;
+\item if it is a Threshold gate, the function keeps track of the number of satisfied children so far, then recursively invokes \code{satisfyNodeID()} for each child: each time a child is satisfied, the indices are added to the witness vector. As soon as enough children are satisfied (the threshold number), the function returns true. If the loop terminates and the number of satisfied children is insufficient, the function returns false. 
+\end{enumerate}
+
+
+\item[\code{storeSharePrefixes()}] this function is used as an auxiliary for the computation of the share coefficients. Its task is to register a share's path in the map \code{setChildNos}. It calls \code{extractPrefixAndNoFromID} repeatedly to obtain each step in the path of the share to root. It bears noting that a share identifier should start in $0$ and that each number following a ``:'' is in fact the child number the path takes at each step. The loop traverses the path from the root to the leaf, and at each stage the code reconstructs the identifier of each node. This is used to check if there is already a set for that node in \code{setChildNos}. If there is no such set, one is created with the current path's number as sole element. If the set exists, this path number is added to it only if it is not already there. 
+
+\item[\code{extractPrefixAndNoFromID()}] this function receives a share identifier and extracts the information about the share's parent, removing one level from its path to root: it returns in \code{prefix} the position of the parent's node; in \code{childNo} the current node's position among the parent's children; and removes the prefix from \code{shareID}. For example, the identifier \code{0:1:7:4:=3} is transformed into \code{1:7:4:=3}, returning $0$ in \code{prefix} and $1$ in \code{childNo}. In case the identifier describes a share with an empty path, for example \code{4:=3}, it does not change any outbound argument and returns false.
+
+\item[\code{findFinalCoefficient()}] this function computes the reconstruction coefficient for a share in this policy. This requires building the Lagrange coefficient for its node in the path from the root to the share. This method is called as part of the \code{findCoefficients} method, and relies on receiving two maps (typically implemented as Hash tables) that hold crucial information about the tree. Both maps are indexed by node identifiers. To understand how these maps are build see \code{findCoefficients} and \code{storeSharePrefixes}.
+\begin{itemize}
+\item \code{setChildNos} associates a node to the child numbers of the relevant children. 
+\item \code{setChildNos} associates a node to a set of Lagrange coefficients, one for each relevant child.
+\end{itemize}
+
+This function invokes \code{extractPrefixAndNoFromID()} to recover the path from the root to the share. While this function returns true, it is possible to cover one more step of that path and reconstruct the identifier of the respective node and the position of the path in that node. This position gives the right Lagrange coefficient for the share at this level in the tree. The coefficients for the share at each level are multiplied together and the result is returned.
+
+\item[\code{computeLagrangeCoefficient()}] this function computes the Lagrange coefficient for a share within a set of shares. In fact, it delegates the work to \code{computeLagrangeCoefficientChildNos()} by first creating a vector with the child numbers of each share. These are extracted from the share identifier by the method \code{extractChildNoFromID}.
+
+\item[\code{computeLagrangeCoefficientChildNos()}] this function computes the Lagrange coefficient for a share index given a set of share positions. The child number is just an index in a vector, and so it is 0-based. Participant indices for the computation of the Lagrange coefficient are never $0$, and so the method \code{extractPublicInfoFromChildNo} is used to obtain the right value of the participant from its child number. 
+
+\item[\code{extractChildNoFromID()}] this method receives a share identifier and locates within it the child number of this share among the children of its parent. This is the value immediately before \code{:=}.
+\item[\code{extractPublicInfoFromChildNo()}] this simply returns the child number plus one.
+\end{description}
+
+
+\paragraph{Private and Protected functions}
+
+There is a private function \code{init} that is invoked only in the constructor to finish initialization. It only calls \code{parsePolicy()} to initialize \code{m\_treePolicy}. 
+
+There is also a protected function \code{obtainCoveredFragsRec} that is called by  \code{obtainCoveredFrags} and start a recursive implementation of this virtual function of its ancestor class. The goal of this function is to identify which shares are covered by the fragments that are received as argument. Given the tree nature of the data structure, a recursive function is the easiest approach for the solution. 
+
+There are three outbound arguments, all of them vectors that will have an entry per each covered share: \code{keyFragIndices} indicates the number of that share in the policy, which amounts to its index in a prefix enumeration of all leaves in the tree; \code{attFragIndices} will hold the index, in \code{atts}, of the attribute that covered the share; finally, \code{coveredShareIDs} will hold the ID of the covered share. The variable \code{count} must keep track of a leaf's position in the full tree, even when the function is invoked for a sub-case. This is done by passing \code{count} by reference, letting it serve as an inbound/outbound argument. Each time a leaf is found, this value is increased.
+
+As base cases:
+\begin{itemize}
+\item it checks if the current node is empty (nil) and simply returns an empty result in that case, that is, it does not insert any data in the outbound arguments: \code{attFragIndices, keyFragIndices, coveredShareIDs}. 
+\item it checks if the current node is a leaf. In that case, it only has to check if the participant associated to that share is in the received list of participants (this is named \code{atts}\footnote{For a comment on this name mismatch, see Section \ref{para:cAP}.}). If yes, then it adds the corresponding data to the outbound arguments.
+\item in the remaining case, the node must still have subtrees under it, so it successively recursively invokes the function again for each of its children. 
+\end{itemize} 
+
+
+\paragraph{\cShTree}
+
+This class represents a Secret Sharing scheme equipped with a Shamir Tree access policy. It is a concrete implementation of the class \cSS and so gives implementations for the pure virtual methods of that class.
+
+Its internal data include a pointer to a \cShTreeAP,  which is only a convenient casting of the member \code{m\_policy} of the parent class. This recasting is done in the function \code{initPolicy} during the constructor call.  They also include a vector of \cBig that represents the randomness used in the distribution function.
+
+There are the following non-trivial non-static functions in this class:
+\begin{description}
+\item[\code{distribute\_random()}] this performs a randomized secret distribution. To do this, it first calls \code{manageRandomness} to obtain fresh randomness and then calls \code{distribute\_determ} with it.
+\item[\code{distribute\_determ()}] this distributes the secret among the policy, taking its randomness as an input. The implementation of the virtual method in the base class has to call a recursive version, due to the tree-nature of the policy.
+
+The recursive version receives a tree indicating and has the mission of distributing a secret among this tree. It also receives an integer argument, \code{count}, indicating the first value of the randomness vector that it can use for this tree.
+As a result, it produces a vector of \cST. If the tree is empty, it returns an empty vector, and if the tree is a leaf, it returns a simple share whose value is the secret.
+
+The recursiveness is triggered for non-leaf nodes. These should all be of Threshold sub-type, and the function terminates with an exception if that is not the case. For an inner node, the function creates a polynomial of degree equal to the threshold, according to the scheme definition. The first value of the polynomial is the secret, and the remaining values are taken from the randomness vector. 
+
+After the polynomial is thus initialized, it computes the share for each child of this node, evaluating the polynomial at the corresponding point. If this child is a leaf, then it creates a share and adds it to the result vector. If it is an inner node, then it descends recursively to distribute this share value among the sub-tree starting in that child. Since this sub-tree also consumes randomness, the changes to the value of \code{count} inside this invocation have to be reflected for the caller, and that is why this variable should be passed by reference.
+
+
+\item[\code{reconstruct()}] this method reconstructs a secret from a set of shares. It first checks if those shares satisfy the policy, by invoking its \code{evaluate} method. If only one share is needed to satisfy the secret, then that share's value is the secret and so the function simply returns it. Otherwise, it creates a vector with the identifiers of those shares and calls \code{findCoefficients()} to obtain the general reconstruction coefficients for the shares. Finally, it computes the linear combination of shares and coefficients that returns the secret.
+\end{description}
+
+\paragraph{Protected Functions}
+
+There are a few protected functions in this class. The function \code{init} is called in the constructor to finish initialization. It does this by calling \code{initPolicy} and \code{manageRandomness}. 
+\begin{itemize}
+\item \code{initPolicy} initializes \code{i\_policy} by downcasting \code{m\_policy}, as was done in \cBLcanon.
+\item \code{manageRandomness} covers exactly the same purpose of the equally named method in \cBLcanon. Unlike that class, the version of \cShTree requires the use of a recursive version that is invoked by the simple one.
+
+This scheme requires a number of random pieces for each simple threshold node in the tree. This number is equal to the threshold minus one. 
+The recursive version receives as arguments, besides the action to perform, a pointer to a \ctree and an integer. The function traverses the tree it received as argument depth-first managing the randomness for each inner node it encounters. Leaf nodes are not associated to any randomness. The variable \code{count} is used for the \code{randomize} action, to keep track of the positions that have been already randomized before the current subtree, similarly to \code{obtainCoveredFragsRec()}.
+
+\end{itemize}
+
+\paragraph{Alternative reconstruction}
+The reconstruction algorithm given above is the general reconstruction method proposed in Crampton, Pinto'14. It works for any linear secret sharing scheme. For the KPABE scheme, this implementation is not relevant, as the reconstruction algorithm is never called directly. Instead, the KPABE scheme uses the reconstruction coefficients returned by \code{findCoefficients}. But this class is a Secret Sharing class, and can be used outside the scope of a KPABE scheme. 
+
+In this case, it is conceivable that a dedicated reconstruction algorithm be faster than the generic one. For this class, I did implement a dedicated reconstruction scheme before the general one. The coding process was very complex and the result requires numerous functions and is difficult to analyse. I kept it in the code base, but I did not measure its efficiency compared to the general method. This is because I found the simplicity of the general method preferable for maintenance reasons. 
+
+The dedicated reconstruction, called \code{reconstruct\_old}, calls \code{evaluate} to obtain a minimal set of satisfying shares, if one exists, and then delegates the reconstruction work to \code{reduceLowestShares}.
+This function is, and uses a number of, an auxiliary static function. This is the list, along with an explanation of how they work:
+
+\begin{description}
+\item[\code{reduceLowestShares()}] This is a complex function. It relies on the shares that it receives coming in the same order in which they were produced. The reconstruction follows a bottom-up approach. The important point is that shares are list in the order of a depth first traversal: if a share's identifier contains the previous share's identifier as a prefix, then it is a descendant of the previous one; if it has the same prefix as the previous one then the shares are siblings; otherwise, the new share is in a different branch of the tree and the shares before it can be used to reconstruct a secret until a point that shares a parent with the current share.
+
+This function, like \code{findCoefficients}, uses a map to organize the nodes in the tree. Each key in the map is a node identifier, and is associated to a set of \cST. 
+
+The function examines one share at a time and keeps track of a \code{currentSetPrefix} variable. This is the identifier of the parent node of the last share. The parent node of the current share is kept in \code{setPrefix}. The relation between these prefixes governs what is done in this method:
+
+\begin{itemize}
+\item If these prefixes are equal, then the current and the last share have the same parent and there should be already an entry in the map for that node, so the current share is added to it, by calling \code{updateSet}.
+\item If \code{currentSetPrefix} is a prefix of \code{setPrefix}, then the new share is a descendant of the last one, and a new entry has to be created in the map, by calling \code{addNewSet}.
+\item Otherwise, the new share starts a new branch at a higher level in the tree. The map then contains all the shares that could happen to the left of the current share and so these can be used for reconstruction until a node that has the same parent of the current share. This reconstruction is done by \code{reduceMapShares()}, which also receives the two prefixes so it can learn when to stop. It then does some checks to detect if the final node has been reached. That is the case if the prefix is \code{0} (the root) and there are no more shares in the map waiting to be processed. It also sets the variable \code{finished} to \code{true}.
+\end{itemize}
+
+It is possible to leave the loop traversing all shares without setting \code{finished}. This is the case when the last share's parent is a descendant or a sibling of the previous share. When this is the case, the function runs the final reconstruction by calling \code{reduceMapShares()}.
+
+
+
+\item[\code{updateSet()}] this function retrieves a set of \cST from a map and adds a new element to it. Because the map structure returns values by copy and not by reference, it is necessary to reassign the value for that key, hence the instruction \code{  setShares[prefix] = set; }.
+
+\item[\code{addNewSet()}] this function creates a new set of \cST with only one element and adds it to the map as the value for the key received as argument.
+
+\item[\code{putShareInSet()}] this function tries to retrieve a vector of \cST from a map for a given key. If the key exists, it adds a new share to it, otherwise it calls \code{addNewSet} to create a new set for that share.
+
+\item[\code{getSetPrefix()}] this function returns the set prefix of a share from its identifier, that is, the identifier of its parent node.
+
+\item[\code{detailedReconstruction()}] this function creates a temporary share for an inner node of the policy tree, auxiliating to propagate the shares from the ground up until the secret at root level can be computed from its direct children. 
+
+It reconstructs the secret for a set of shares corresponding to an simple Shamir node in the tree. It obtains the Lagrange coefficients and computes the linear combination of shares and coefficients. Since this is no longer a leaf node but yet must have a \cST the function computes a suitable identifier for this node. This is done by invoking \code{findIDForNode} and associating a \code{:=?} termination to signal the node as a pseudo-leaf.
+
+\item[\code{solveSet()}] this function triggers the reconstruction of a secret for a particular node. It obtains from the map the set of shares for a given node identifier (\code{prefix}) and removes it from the map. It calls \code{detailedReconstruction} to obtain a new share that replaces that set and returns this share.
+
+\item[\code{reduceMapShares()}] this function is used to reconstruct intermediate shares in the policy tree in a bottom-up approach, until it reaches a node that corresponds to a certain target identifier passed as argument.
+
+Conceptually, it takes a few sibling shares hanging from an inner node, and replaces this by a pseudo-leaf node whose value is the secret reconstructed from those shares. This process goes on until the identifier of the new node's parent is equal to a target prefix.
+
+It calls \code{solveSet} to reconstruct the lowest available set in the tree, as given by \code{prefix}, and receiving a new \cST. This is added to the map of shares, and \code{prefix} is updated to its own parent.
+
+When the loop terminates, the function returns the last computed share.
+\end{description}
+
+
 
 \section{Comparison of Canonical BL and Shamir Tree schemes}
 

@@ -296,6 +296,7 @@ bool TreeNode::appendTree(shared_ptr<TreeNode> pTree){
   case NodeContentType::nil:
     m_node = pTree->m_node;
     m_children = pTree->m_children;
+    setNodeID(initNodeID(m_node));    
     break;
   case NodeContentType::leaf:
     throw std::runtime_error("An attempt was made to append a tree to a leaf node");

@@ -91,87 +91,7 @@ bool ShTreeAccessPolicy::satisfyNode(shared_ptr<TreeNode> treeNode, vector<Share
   // invoked for each child until such a decision can be made. Each time it is invoked, it gives a new vector to be filled with the satisfying shares for this node.
   // This vector collects the shares of all satisfying subtrees and returns that for the next level if it is satisfied, and returns an empty vector if not.
 
-  /*  
-  vector<ShareTuple> goodShares;
-  satisfyingShares.clear();
 
-  shared_ptr<NodeContent> node = treeNode->getNode();
-  if (node->getType() == NodeContentType::nil) {
-    //    DEBUG("Fail: nilNode");
-    return false;
-  }
-
-  if (node->getType() == NodeContentType::leaf) {
-    DEBUG("Checking leaf");
-    std::string shareID = node->getNodeID();
-    int partID = node->getLeafValue();
-    DEBUG("PartID: " << partID);
-    DEBUG("ShareID: " << shareID);
-    for (unsigned int i = 0; i < shares.size(); i++) {
-      ShareTuple share = shares[i];
-      DEBUG("tested part id: " << share.getPartIndex());
-      DEBUG("tested share id: " << share.getShareIndex());
-      if ((shareID == share.getShareIndex()) && (partID == share.getPartIndex())) {
-	satisfyingShares.push_back(share);
-	return true;
-      }
-    }
-    //    DEBUG("Fail: wrong leaf id");
-    satisfyingShares.clear();
-    return false;
-  } else {
-    switch(node->getInnerNodeType()){
-    case InnerNodeType::AND:     
-      for (unsigned int i = 0; i < treeNode->getNumChildren(); i++){
-	if (!satisfyNode(treeNode->getChild(i), shares, goodShares)) {
-	  //	  DEBUG("Fail: AND Node with a non-satisfied child");
-	  satisfyingShares.clear();
-	  return false;
-	} else {
-	  addVector(satisfyingShares, goodShares);
-	}
-      }      
-      return true; 
-      break;
-    case InnerNodeType::OR:
-      //      DEBUG("Or node verification");
-      for (unsigned int i = 0; i < treeNode->getNumChildren(); i++){
-	//	DEBUG("Checking child " << i);
-	if (satisfyNode(treeNode->getChild(i), shares, goodShares)) {
-	  //	  DEBUG("child " << i << " passed");
-	  addVector(satisfyingShares, goodShares);
-	  return true;
-	}
-      }
-      //      DEBUG("Fail: OR: all nodes are unsatisfied");
-      satisfyingShares.clear();
-      return false;
-      break;
-    case InnerNodeType::THR:
-      int nSat = 0;
-      int threshold = node->getThreshold();
-      unsigned int i = 0;
-      while ((nSat < threshold) && (i < treeNode->getNumChildren())){
-	ENHDEBUG("Threshold node. Checking child: " << i);
-	if (satisfyNode(treeNode->getChild(i), shares, goodShares)) {	  
-	  DEBUG("Satisfied");
-	  nSat++;
-	  addVector(satisfyingShares, goodShares);
-	}
-	i++;
-      }
-      if (nSat >= threshold) return true;
-      DEBUG("Fail: Threshold - insufficient nodes satisfied");
-      satisfyingShares.clear();
-      return false; break;
-      //default: return false;break;
-    }
-  }
-  //  DEBUG("Fail: Default case - not leaf, not inner node");
-  satisfyingShares.clear();
-  return false;
-
-*/
 
   satisfyingShares.clear();
 
@@ -291,12 +211,6 @@ bool ShTreeAccessPolicy::satisfyNodeID(shared_ptr<TreeNode> treeNode, vector<std
   return false;
 }
 
-
-// MAYBE I SHOULD CHANGE THIS
-// to accept participants specified as strings
-// and then to have a list of participants and store in the tree their respective indices 
-// this involves changing the first part, and being less specific about int conversions. 
-// These might not even be needed. All it requires is searching for an operator, which is identified by a "("
 
 shared_ptr<TreeNode> ShTreeAccessPolicy::parsePolicy() {
   return parseTreeFromExpression(m_description);
@@ -453,21 +367,14 @@ void ShTreeAccessPolicy::storeSharePrefixes(std::map<std::string, vector<int> >&
   std::string oldprefix = "";
   int childNo;
   std::map<std::string, vector<int> >::iterator it;
-  //  ENHDEBUG("Before while. ID: " << ID);
   while (extractPrefixAndNoFromID(ID, prefix, childNo)) {
-    //    ENHDEBUG("While: prefix=" << prefix);
     prefix = oldprefix + prefix;
-//     ENHDEBUG("ID: " << ID);
-//     ENHDEBUG("prefix: " << prefix);
-//     ENHDEBUG("childNo: " << childNo);
     it = setChildNos.find(prefix);
     if (it == setChildNos.end()) { // prefix does not exist in map
       vector<int> vec;
       vec.push_back(childNo);     
-      //      ENHDEBUG("New Prefix " << prefix);
       setChildNos[prefix] = vec;
     } else { // see if childNo is already part of the prefix's vector. If not, add it
-      //      ENHDEBUG("Existing Prefix " << prefix);
       vector<int> vec = it->second;
       ENHDEBUG("current vector in " + prefix);
       debugVector("vec", vec);
@@ -614,9 +521,9 @@ vector<Big> ShTreeAccessPolicy::findCoefficients(const vector<std::string> share
   for (std::map<std::string, vector<int> >::iterator it=setChildNos.begin(); !(it==setChildNos.end()); ++it) {
     DEBUG("childNos: " << it->first);
   }
-   for (std::map<std::string, vector<Big> >::iterator it=setCoeffs.begin(); !(it==setCoeffs.end()); ++it) {
-     DEBUG("coeffs: " << it->first);
-   }
+  for (std::map<std::string, vector<Big> >::iterator it=setCoeffs.begin(); !(it==setCoeffs.end()); ++it) {
+    DEBUG("coeffs: " << it->first);
+  }
   for (unsigned int i = 0; i < shareIDs.size(); i++) {
     std::string shareID = shareIDs[i];
     Big coeff = ShTreeAccessPolicy::findFinalCoefficient(shareID, setChildNos, setCoeffs, order);
@@ -629,6 +536,52 @@ vector<Big> ShTreeAccessPolicy::findCoefficients(const vector<std::string> share
   return coeffs;
 }
 
+int ShTreeAccessPolicy::extractChildNoFromID(std::string& shareID) {
+  int n0 = shareID.rfind(":=");
+  int n1 = shareID.rfind(":", n0-1);
+  if (n1 == -1) {
+    stringstream ss(ERR_BAD_SHARE);
+    ss << "Bad share received. It is a root share: " + shareID;
+    throw std::runtime_error(ss.str());	  
+  }
+  int index = convertStrToInt(shareID.substr(n1+1, n0-n1-1));
+  return index;
+}
+
+Big ShTreeAccessPolicy::computeLagrangeCoefficient(unsigned int shareIndex, vector<ShareTuple>& witnessShares, const Big& order) {
+  vector<int> childNos;
+  for (unsigned int i = 0; i < witnessShares.size(); i++) {
+    std::string shareID = witnessShares[i].getShareID();
+    int index = extractChildNoFromID(shareID);
+    childNos.push_back(index);
+  }
+  return computeLagrangeCoefficientChildNos(shareIndex, childNos, order);
+}
+
+Big ShTreeAccessPolicy::computeLagrangeCoefficientChildNos(unsigned int shareIndex, vector<int>& witnessChildNos, const Big& order) {
+  Big z=1;
+  Big shareCoef;
+
+  ENHDEBUG("Lagrange coefficient");
+  debugVector("childNos", witnessChildNos);
+  int childNo = witnessChildNos[shareIndex];
+  int index = ShTreeAccessPolicy::extractPublicInfoFromChildNo(childNo);
+  DEBUG("anchor share: " << index);
+  guard("Participant index must be positive", index > 0);
+
+  for (unsigned int k=0;k<witnessChildNos.size();k++) {      
+    if (k == shareIndex) continue;
+    int tempChildNo =  witnessChildNos[k];
+    int tempIndex = ShTreeAccessPolicy::extractPublicInfoFromChildNo(tempChildNo);
+    
+    DEBUG("varying share: " << tempIndex);
+    
+    shareCoef = moddiv(order - tempIndex,(Big)(order + index - tempIndex),order);
+    DEBUG("Multiplying term: " << shareCoef);
+    z=modmult(z,shareCoef,order);
+  }
+  return z;
+}
 
 //==============================================
 
@@ -658,7 +611,7 @@ ShTreeSS::ShTreeSS(shared_ptr<ShTreeAccessPolicy>  policy, const Big &order, PFC
   init();
 }
 
-void ShTreeSS::manageRandomness(RandomnessActions action, shared_ptr<TreeNode> root, int count) {  
+void ShTreeSS::manageRandomness(RandomnessActions action, shared_ptr<TreeNode> root, int &count) {  
   //  ENHDEBUG("inside manageRandomness.");
 
 //   if (action == RandomnessActions::init) {
@@ -679,12 +632,6 @@ void ShTreeSS::manageRandomness(RandomnessActions action, shared_ptr<TreeNode> r
   if (node->getInnerNodeType() != InnerNodeType::THR) {
     stringstream ss(ERR_BAD_TREE);  
     ss << ": ShTreeSS: ManageRandomness algorithm received a gate different from Threshold: " << node->to_string();
-    throw std::runtime_error(ss.str());
-  }
-
-  if (node->getInnerNodeType() != InnerNodeType::THR) {
-    stringstream ss(ERR_BAD_TREE);  
-    ss << ": ShTreeSS: Distribution algorithm received a gate different from Threshold: " << node->to_string();
     throw std::runtime_error(ss.str());
   }
 
@@ -718,7 +665,8 @@ void ShTreeSS::manageRandomness(RandomnessActions action, shared_ptr<TreeNode> r
 }
 
 void ShTreeSS::manageRandomness(RandomnessActions action) {  
-  manageRandomness(action, i_policy->getPolicy(), 0);
+  int count = 0;
+  manageRandomness(action, i_policy->getPolicy(), count);
 }
 
   // Need to review this after I start implementing distrib algorithms. Those will dictate the best way to use randomness
@@ -753,7 +701,7 @@ std::vector<ShareTuple> ShTreeSS::distribute_random(const Big& s){
 }
 
 
-std::vector<ShareTuple> ShTreeSS::distribute_determ(shared_ptr<TreeNode> root, const Big& s, const vector<Big>& randomness, int count){
+std::vector<ShareTuple> ShTreeSS::distribute_determ(shared_ptr<TreeNode> root, const Big& s, const vector<Big>& randomness, int &count){
   ENHDEBUG("Inside distribute_determ");
   vector<ShareTuple> shares;
 
@@ -852,8 +800,8 @@ std::vector<ShareTuple> ShTreeSS::distribute_determ(const Big& s, const vector<B
   // each distribution requires some share public information, that is simply going to be the index of the respective child for that tree
   // this is therefore independent of the participant's value
   // this applies normally even to the case where a participant receives several different shares
-
-  vector<ShareTuple> shares = distribute_determ(i_policy->getPolicy(), s, randomness, 0);
+  int count = 0;
+  vector<ShareTuple> shares = distribute_determ(i_policy->getPolicy(), s, randomness, count);
   return shares;
 }
 
@@ -901,52 +849,6 @@ std::string ShTreeSS::getSetPrefix(std::string& shareID) {
 //   return extractChildNoFromID(shareID) + 1;
 // }
 
-int ShTreeAccessPolicy::extractChildNoFromID(std::string& shareID) {
-  int n0 = shareID.rfind(":=");
-  int n1 = shareID.rfind(":", n0-1);
-  if (n1 == -1) {
-    stringstream ss(ERR_BAD_SHARE);
-    ss << "Bad share received. It is a root share: " + shareID;
-    throw std::runtime_error(ss.str());	  
-  }
-  int index = convertStrToInt(shareID.substr(n1+1, n0-n1-1));
-  return index;
-}
-
-Big ShTreeAccessPolicy::computeLagrangeCoefficient(unsigned int shareIndex, vector<ShareTuple>& witnessShares, const Big& order) {
-  vector<int> childNos;
-  for (unsigned int i = 0; i < witnessShares.size(); i++) {
-    std::string shareID = witnessShares[i].getShareID();
-    int index = extractChildNoFromID(shareID);
-    childNos.push_back(index);
-  }
-  return computeLagrangeCoefficientChildNos(shareIndex, childNos, order);
-}
-
-Big ShTreeAccessPolicy::computeLagrangeCoefficientChildNos(unsigned int shareIndex, vector<int>& witnessChildNos, const Big& order) {
-  Big z=1;
-  Big shareCoef;
-
-  ENHDEBUG("Lagrange coefficient");
-  debugVector("childNos", witnessChildNos);
-  int childNo = witnessChildNos[shareIndex];
-  int index = ShTreeAccessPolicy::extractPublicInfoFromChildNo(childNo);
-  DEBUG("anchor share: " << index);
-  guard("Participant index must be positive", index > 0);
-
-  for (unsigned int k=0;k<witnessChildNos.size();k++) {      
-    if (k == shareIndex) continue;
-    int tempChildNo =  witnessChildNos[k];
-    int tempIndex = ShTreeAccessPolicy::extractPublicInfoFromChildNo(tempChildNo);
-    
-    DEBUG("varying share: " << tempIndex);
-    
-    shareCoef = moddiv(order - tempIndex,(Big)(order + index - tempIndex),order);
-    DEBUG("Multiplying term: " << shareCoef);
-    z=modmult(z,shareCoef,order);
-  }
-  return z;
-}
 
 ShareTuple ShTreeSS::detailedReconstruction(vector<ShareTuple>& minimalShares, std::string& prefix, const Big& order){
   Big sum = 0;
@@ -1081,8 +983,8 @@ ShareTuple ShTreeSS::reduceLowestShares(const vector<ShareTuple>& shares, Big or
   return computedShare;
 }
 
-/*
-Big ShTreeSS::reconstruct(const vector<ShareTuple> shares){
+
+Big ShTreeSS::reconstruct_old(const vector<ShareTuple> shares){
     vector<ShareTuple> witnessShares;
     DEBUG("CALLING EVALUATE");
     if (!i_policy->evaluate(shares, witnessShares)) return -1;
@@ -1098,7 +1000,7 @@ Big ShTreeSS::reconstruct(const vector<ShareTuple> shares){
     return share.getShare();
     
 }
-*/
+
 
 Big ShTreeSS::reconstruct(const vector<ShareTuple> shares){
     vector<ShareTuple> witnessShares;

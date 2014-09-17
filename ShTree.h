@@ -77,7 +77,7 @@ class ShTreeSS : public SecretSharing
  protected:
   void init();
   void initPolicy();
-  void manageRandomness(RandomnessActions action, shared_ptr<TreeNode> root, int count);
+  void manageRandomness(RandomnessActions action, shared_ptr<TreeNode> root, int &count);
   void manageRandomness(RandomnessActions action);
 
  public:
@@ -88,8 +88,9 @@ class ShTreeSS : public SecretSharing
   vector<Big> getDistribRandomness();  
   std::vector<ShareTuple> distribute_random(const Big& s);
   std::vector<ShareTuple> distribute_determ(const Big& s, const vector<Big>& randomness);
-  std::vector<ShareTuple> distribute_determ(shared_ptr<TreeNode> root, const Big& s, const vector<Big>& randomness, int count);
+  std::vector<ShareTuple> distribute_determ(shared_ptr<TreeNode> root, const Big& s, const vector<Big>& randomness, int &count);
   Big reconstruct (const vector<ShareTuple> shares);
+  Big reconstruct_old(const vector<ShareTuple> shares);
 
   // util-type functions
   static void updateSet(std::map<std::string, vector<ShareTuple> >& setShares, const std::string& prefix, ShareTuple& share);

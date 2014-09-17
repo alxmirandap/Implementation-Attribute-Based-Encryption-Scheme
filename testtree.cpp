@@ -603,6 +603,29 @@ int testUpdateID(){
   return errors;
 }
 
+int testNilTree() {
+  int errors = 0;
+
+  shared_ptr<TreeNode> niltree = make_shared<TreeNode>();
+  shared_ptr<NodeContent> root = NodeContent::makeOrNode(2);
+  shared_ptr<TreeNode> tree = TreeNode::makeTree(root);
+
+  shared_ptr<NodeContent> child1 = NodeContent::makeLeafNode(1);
+  shared_ptr<NodeContent> child2 = NodeContent::makeLeafNode(2);
+
+  tree->appendChild(child1);
+  tree->appendChild(child2);
+
+  niltree->appendTree(tree);
+
+  test_diagnosis("testNilTree - root", niltree->getNodeID() == "0", errors);
+  test_diagnosis("testNilTree - child1", niltree->getChild(0)->getNodeID() == "0:0:=1", errors);
+  test_diagnosis("testNilTree - child2", niltree->getChild(1)->getNodeID() == "0:1:=2", errors);
+  
+
+  return errors;
+}
+
 int runTests() {
   int errors = 0;
 
@@ -613,6 +636,7 @@ int runTests() {
   errors += testAppendTree();
   errors += testNodeIDAfterAppends();
   errors += testUpdateID();
+  errors += testNilTree();
   
   DEBUG("Returning from runTests");
 
